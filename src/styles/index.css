@@ -1,0 +1,31 @@
+@import "../assets/styles/design-tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--ems-font-body);
+  background-color: var(--ems-color-background);
+  color: var(--ems-color-text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+}
+
+img {
+  display: block;
+}

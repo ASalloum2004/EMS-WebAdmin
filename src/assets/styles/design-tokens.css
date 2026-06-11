@@ -1,0 +1,57 @@
+:root {
+  --ems-color-primary: #0a8782;
+  --ems-color-primary-text: #f8fafb;
+  --ems-color-brand: #006972;
+  --ems-color-primary-dark: #00535b;
+
+  --ems-color-page: #f6faf9;
+  --ems-color-background: #ffffff;
+  --ems-color-surface: #f8f9fa;
+  --ems-color-white: #ffffff;
+  --ems-color-white-80: rgba(255, 255, 255, 0.8);
+  --ems-color-white-90: rgba(255, 255, 255, 0.9);
+
+  --ems-color-text: #191c1d;
+  --ems-color-heading: #181d1c;
+  --ems-color-muted: #3e494a;
+  --ems-color-muted-alt: #3e4948;
+  --ems-color-muted-light: #6f797a;
+
+  --ems-color-border: #bec8ca;
+  --ems-color-border-soft: #e5e9e8;
+  --ems-color-modal-border: #bdc9c7;
+
+  --ems-color-link: #00535b;
+  --ems-color-purple: #5d2a8a;
+  --ems-color-purple-bright: #7946a7;
+  --ems-color-danger: #b42318;
+
+  --ems-color-overlay-start: rgba(0, 83, 91, 0.9);
+  --ems-color-overlay-end: rgba(145, 82, 57, 0.8);
+  --ems-color-hero-dim: rgba(0, 0, 0, 0.6);
+  --ems-color-modal-backdrop: rgba(24, 29, 28, 0.58);
+  --ems-color-focus-ring: rgba(10, 135, 130, 0.12);
+  --ems-color-success-surface: rgba(0, 130, 126, 0.2);
+
+  --ems-font-body: Inter, Arial, Helvetica, sans-serif;
+  --ems-font-display: "Plus Jakarta Sans", Inter, Arial, Helvetica, sans-serif;
+
+  --ems-radius-xs: 4px;
+  --ems-radius-sm: 8px;
+  --ems-radius-md: 12px;
+
+  --ems-auth-card-width: 448px;
+  --ems-auth-content-width: 512px;
+  --ems-auth-panel-padding: 32px;
+  --ems-auth-card-padding: 32px;
+  --ems-auth-modal-padding: 49px;
+  --ems-auth-field-height: 48px;
+  --ems-auth-mobile-card-padding: 28px;
+
+  --ems-shadow-field: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ems-shadow-button: 0 1px 1px rgba(0, 0, 0, 0.05);
+  --ems-shadow-success-card: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --ems-shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.08);
+
+  --ems-blur-modal-backdrop: blur(14px) saturate(0.9);
+}

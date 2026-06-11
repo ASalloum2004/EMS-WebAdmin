@@ -7,7 +7,7 @@ import {
   LoginForm,
   PasswordResetSuccess,
 } from "../components";
-import "./LoginPage.css";
+import "./LoginPage.scss";
 
 export default function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);

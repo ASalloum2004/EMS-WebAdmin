@@ -6,7 +6,7 @@ import { isBlank } from "../../../utils";
 
 interface ForgotPasswordModalProps {
   onCancel: () => void;
-  onProceed: (email: string) => void;
+  onProceed: (email: string) => Promise<void> | void;
 }
 
 export function ForgotPasswordModal({
@@ -15,8 +15,9 @@ export function ForgotPasswordModal({
 }: ForgotPasswordModalProps) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isBlank(email)) {
@@ -24,7 +25,16 @@ export function ForgotPasswordModal({
       return;
     }
 
-    onProceed(email);
+    try {
+      setError("");
+      setIsSubmitting(true);
+
+      await onProceed(email.trim());
+    } catch {
+      setError("Unable to send reset request. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -51,19 +61,25 @@ export function ForgotPasswordModal({
             setEmail(value);
             if (error) setError("");
           }}
-          placeholder="type your email here to restart the password"
+          placeholder="type your email here to reset the password"
           type="email"
           value={email}
         />
 
         <div className="forgot-modal-actions">
-          <button className="forgot-confirm-button" type="submit">
-            Yes, proceed
+          <button
+            className="forgot-confirm-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Sending..." : "Yes, proceed"}
           </button>
+
           <button
             className="forgot-cancel-button"
             type="button"
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Cancel
           </button>

@@ -8,7 +8,7 @@ import {
   PasswordResetSuccess,
 } from "../components";
 import "./LoginPage.scss";
-
+import { forgotPassword } from "../api/forgetpasswordApi.ts";
 export default function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isResetSent, setIsResetSent] = useState(false);
@@ -34,7 +34,12 @@ export default function LoginPage() {
       {isForgotPasswordOpen && (
         <ForgotPasswordModal
           onCancel={() => setIsForgotPasswordOpen(false)}
-          onProceed={() => {
+          onProceed={async (email) => {
+            console.log("Before forgotPassword API:", email);
+
+            await forgotPassword(email);
+
+            console.log("After forgotPassword API success");
             setIsForgotPasswordOpen(false);
             setIsResetSent(true);
           }}

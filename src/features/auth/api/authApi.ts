@@ -1,18 +1,12 @@
+import { apiRequest } from "../../../api";
 import type { AuthSession, LoginCredentials } from "../../../types";
 
-const MOCK_AUTH_TOKEN = "local-auth-token";
-
 export function login(credentials: LoginCredentials): Promise<AuthSession> {
-  console.log("Email:", credentials.email);
-  console.log("Password:", credentials.password);
-
-  return Promise.resolve({
-    token: MOCK_AUTH_TOKEN,
-    user: {
-      id: "admin-user",
+  return apiRequest<AuthSession>("login", {
+    method: "POST",
+    body: JSON.stringify({
       email: credentials.email,
-      name: "Admin User",
-      role: "admin",
-    },
+      password: credentials.password,
+    }),
   });
 }

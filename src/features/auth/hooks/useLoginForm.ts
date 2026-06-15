@@ -39,7 +39,7 @@ export function useLoginForm() {
     try {
       await signIn(credentials);
     } catch {
-      setError("Unable to log in. Please try again.");
+      setError("password or email inncorect.");
     } finally {
       setIsSubmitting(false);
     }

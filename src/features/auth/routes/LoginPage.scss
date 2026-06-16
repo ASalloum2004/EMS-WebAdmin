@@ -499,3 +499,13 @@
     gap: 12px;
   }
 }
+.login-card {
+  input[type="password"] {
+    &::-ms-reveal,
+    &::-ms-clear {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+}

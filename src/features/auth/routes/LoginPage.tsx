@@ -7,13 +7,22 @@ import {
   LoginForm,
   PasswordResetSuccess,
 } from "../components";
+import { forgotPassword } from "../api/forgetpasswordApi";
 import "./LoginPage.scss";
-import { forgotPassword } from "../api/forgetpasswordApi.ts";
+
 export default function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [isResetSent, setIsResetSent] = useState(false);
+
   const heroImageSrc = isResetSent ? successHeroImage : loginHeroImage;
   const overlayVariant = isResetSent ? "dim" : "brand";
+
+  async function handleForgotPassword(email: string) {
+    await forgotPassword(email);
+
+    setIsForgotPasswordOpen(false);
+    setIsResetSent(true);
+  }
 
   return (
     <>
@@ -34,15 +43,7 @@ export default function LoginPage() {
       {isForgotPasswordOpen && (
         <ForgotPasswordModal
           onCancel={() => setIsForgotPasswordOpen(false)}
-          onProceed={async (email) => {
-            console.log("Before forgotPassword API:", email);
-
-            await forgotPassword(email);
-
-            console.log("After forgotPassword API success");
-            setIsForgotPasswordOpen(false);
-            setIsResetSent(true);
-          }}
+          onProceed={handleForgotPassword}
         />
       )}
     </>

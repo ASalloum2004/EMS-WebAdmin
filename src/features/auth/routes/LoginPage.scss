@@ -34,12 +34,11 @@
 }
 
 .auth-layout-overlay--brand {
-  background:
-    linear-gradient(
-      122deg,
-      var(--ems-color-overlay-start) 0%,
-      var(--ems-color-overlay-end) 100%
-    );
+  background: linear-gradient(
+    122deg,
+    var(--ems-color-overlay-start) 0%,
+    var(--ems-color-overlay-end) 100%
+  );
   mix-blend-mode: multiply;
 }
 
@@ -509,3 +508,18 @@
     }
   }
 }
+.reset-password-back-link {
+  margin-top: 32px;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.reset-password-back-link span:first-child {
+  font-size: 20px;
+  position: relative;
+  line-height: 1;
+  top: -2px;
+  line-height: 1;
+}
+

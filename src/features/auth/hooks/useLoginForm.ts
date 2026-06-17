@@ -27,8 +27,7 @@ export function useLoginForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.location.href = "/reset-password";
-    return;
+    
 
     if (isBlank(credentials.email) || isBlank(credentials.password)) {
       setError("Please enter your email and password.");

@@ -1,14 +1,13 @@
 import { useState } from "react";
-import loginHeroImage from "../../../../assets/auth/hero-login.png";
-import successHeroImage from "../../../../assets/auth/hero-success.png";
-import { AuthLayout } from "../../../../layouts";
+import loginHeroImage from "../../../assets/auth/hero-login.png";
+import successHeroImage from "../../../assets/auth/hero-success.png";
+import { AuthLayout } from "../../../layouts";
 import {
   ForgotPasswordModal,
   LoginForm,
   PasswordResetSuccess,
-} from "../../components";
-import { forgotPassword } from "../../api/forgetpasswordApi";
-import "./LoginPage.scss";
+} from "../components";
+import { forgotPassword } from "../api/forgetpasswordApi";
 
 export function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);

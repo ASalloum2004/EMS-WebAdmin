@@ -1,13 +1,12 @@
 import { useState } from "react";
-import successHeroImage from "../../../../assets/auth/hero-success.png";
-import { AuthLayout } from "../../../../layouts";
-import { FormField } from "../../../../components";
-import lockIcon from "../../../../assets/auth/lock.svg";
-import eyeIcon from "../../../../assets/auth/eye.svg";
-import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
-import arrowRightIcon from "../../../../assets/auth/arrow-right.svg";
-import { useResetPasswordForm } from "../../hooks";
-import "./ResetPasswordPage.scss";
+import successHeroImage from "../../../assets/auth/hero-success.png";
+import { AuthLayout } from "../../../layouts";
+import { FormField } from "../../../components";
+import lockIcon from "../../../assets/auth/lock.svg";
+import eyeIcon from "../../../assets/auth/eye.svg";
+import eyeOpenIcon from "../../../assets/auth/eye-open.svg";
+import arrowRightIcon from "../../../assets/auth/arrow-right.svg";
+import { useResetPasswordForm } from "../hooks";
 
 export function ResetPasswordPage() {
   const {

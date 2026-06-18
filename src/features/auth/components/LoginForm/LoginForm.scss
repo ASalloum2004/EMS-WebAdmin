@@ -1,0 +1,157 @@
+@use "../../../../assets/styles/design-tokens";
+
+.login-card {
+  width: min(100%, var(--ems-auth-card-width));
+  background-color: var(--ems-color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: var(--ems-auth-card-padding);
+}
+
+.login-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.login-card-header h2 {
+  margin: 0;
+  font-family: var(--ems-font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+  color: var(--ems-color-text);
+}
+
+.login-card-header p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--ems-color-muted);
+}
+
+.auth-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 8px;
+  padding-bottom: 16px;
+}
+
+.remember-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ems-color-muted);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.remember-control input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ems-color-primary);
+  cursor: pointer;
+}
+
+.forgot-password-button {
+  padding: 0;
+  background: transparent;
+  color: var(--ems-color-link);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+}
+
+.login-submit-button {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-primary-dark);
+  box-shadow: var(--ems-shadow-button);
+  color: var(--ems-color-white);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+}
+
+.login-submit-button img {
+  width: 12px;
+  height: 12px;
+}
+
+.login-submit-button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.secure-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 16px;
+  color: var(--ems-color-muted-light);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 15px;
+  letter-spacing: 0.5px;
+}
+
+.secure-notice img {
+  width: 10px;
+  height: 12px;
+}
+
+.login-error {
+  margin: 0;
+  color: var(--ems-color-danger);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+@media (max-width: 560px) {
+  .login-card {
+    padding: var(--ems-auth-mobile-card-padding);
+  }
+
+  .login-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.login-card {
+  input[type="password"] {
+    &::-ms-reveal,
+    &::-ms-clear {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+}

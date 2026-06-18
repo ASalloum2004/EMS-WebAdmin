@@ -1,3 +1,5 @@
+export * from "./LoginPage";
+export * from "./ResetPasswordPage";
+export * from "./LoginForm";
 export * from "./ForgotPasswordModal";
-export { default as LoginForm } from "./LoginForm";
 export * from "./PasswordResetSuccess";

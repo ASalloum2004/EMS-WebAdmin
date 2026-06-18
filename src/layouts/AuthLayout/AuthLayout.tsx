@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import brandMark from "../assets/auth/brand-mark.svg";
+import brandMark from "../../assets/auth/brand-mark.svg";
+import "./AuthLayout.scss";
 
 type HeroOverlayVariant = "brand" | "dim";
 

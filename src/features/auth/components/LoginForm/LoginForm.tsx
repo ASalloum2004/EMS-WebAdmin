@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { FormField } from "../../../components";
-import arrowRightIcon from "../../../assets/auth/arrow-right.svg";
-import eyeIcon from "../../../assets/auth/eye.svg";
-import eyeOpenIcon from "../../../assets/auth/eye-open.svg";
-import lockIcon from "../../../assets/auth/lock.svg";
-import mailIcon from "../../../assets/auth/mail.svg";
-import shieldIcon from "../../../assets/auth/shield.svg";
-import { useLoginForm } from "../hooks";
+import { FormField } from "../../../../components";
+import arrowRightIcon from "../../../../assets/auth/arrow-right.svg";
+import eyeIcon from "../../../../assets/auth/eye.svg";
+import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
+import lockIcon from "../../../../assets/auth/lock.svg";
+import mailIcon from "../../../../assets/auth/mail.svg";
+import shieldIcon from "../../../../assets/auth/shield.svg";
+import { useLoginForm } from "../../hooks";
+import "./LoginForm.scss";
 
 interface LoginFormProps {
   onForgotPassword: () => void;
 }
 
-
-export default function LoginForm({ onForgotPassword }: LoginFormProps) {
+export function LoginForm({ onForgotPassword }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const {
     credentials,

@@ -1,5 +1,6 @@
-import arrowLeftIcon from "../../../assets/auth/arrow-left.svg";
-import resetSuccessIcon from "../../../assets/auth/reset-success.svg";
+import arrowLeftIcon from "../../../../assets/auth/arrow-left.svg";
+import resetSuccessIcon from "../../../../assets/auth/reset-success.svg";
+import "./PasswordResetSuccess.scss";
 
 interface PasswordResetSuccessProps {
   onBackToLogin: () => void;

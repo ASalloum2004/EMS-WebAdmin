@@ -1,0 +1,65 @@
+@use "../../assets/styles/design-tokens";
+
+.form-field {
+  position: relative;
+  width: 100%;
+}
+
+.form-field input {
+  width: 100%;
+  min-height: var(--ems-auth-field-height);
+  border: 1px solid var(--ems-color-border);
+  border-radius: var(--ems-radius-sm);
+  padding: 14px 41px 15px;
+  box-shadow: var(--ems-shadow-field);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--ems-color-text);
+  background-color: var(--ems-color-white);
+  outline: none;
+}
+
+.form-field input::placeholder {
+  color: var(--ems-color-muted-light);
+  opacity: 1;
+}
+
+.form-field input:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow:
+    0 0 0 3px var(--ems-color-focus-ring),
+    var(--ems-shadow-field);
+}
+
+.form-field-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 17px;
+  max-height: 18px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.form-field-action {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.password-visibility-button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.password-visibility-button img {
+  width: 18px;
+  height: 17px;
+}

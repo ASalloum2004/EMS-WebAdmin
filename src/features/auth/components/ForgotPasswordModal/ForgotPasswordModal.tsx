@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { FormField } from "../../../components";
-import mailIcon from "../../../assets/auth/mail.svg";
-import { isBlank } from "../../../utils";
+import { FormField } from "../../../../components";
+import mailIcon from "../../../../assets/auth/mail.svg";
+import { isBlank } from "../../../../utils";
+import "./ForgotPasswordModal.scss";
 
 interface ForgotPasswordModalProps {
   onCancel: () => void;

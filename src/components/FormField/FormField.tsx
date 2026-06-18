@@ -1,4 +1,5 @@
 import type { HTMLInputTypeAttribute, ReactNode } from "react";
+import "./FormField.scss";
 
 interface FormFieldProps {
   autoComplete?: string;

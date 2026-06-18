@@ -1,5 +1,5 @@
-import LoginPage from "../features/pages/LoginPage";
-import ResetPasswordPage from "../features/pages/ResetPassword";
+import LoginPage from "../features/auth/routes/LoginPage";
+import ResetPasswordPage from "../features/auth/routes/ResetPasswordPage";
 
 export function AppRouter() {
   const path = window.location.pathname;

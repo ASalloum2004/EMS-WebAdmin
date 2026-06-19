@@ -1,0 +1,8 @@
+export { default as announcementsIcon } from "./announcements.svg";
+export { default as companiesIcon } from "./companies.svg";
+export { default as managementsIcon } from "./managements.svg";
+export { default as notificationIcon } from "./notification.svg";
+export { default as ordersServicesIcon } from "./orders-services.svg";
+export { default as profileIcon } from "./profile.svg";
+export { default as reportsIcon } from "./reports.svg";
+export { default as visitorsIcon } from "./visitors.svg";

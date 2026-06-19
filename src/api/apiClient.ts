@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  "https://contractors-spring-herbal-displaying.trycloudflare.com/api/v1/admin/";
+  "https://quilt-trusts-facing-operates.trycloudflare.com/api/v1/admin/";
 
 function buildApiUrl(path: string) {
   const baseUrl = API_BASE_URL.replace(/\/+$/, "");

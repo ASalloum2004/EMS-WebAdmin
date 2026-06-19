@@ -66,9 +66,10 @@ function isActivePath(href: string) {
 
 function createIconStyle(icon: string) {
   return {
-    "--icon-url": `url(${icon})`,
+    "--icon-url": `url("${icon}")`,
   } as CSSProperties;
 }
+
 
 export function AdminSidebar() {
   return (

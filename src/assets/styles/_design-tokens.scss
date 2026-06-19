@@ -54,4 +54,18 @@
   --ems-shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.08);
 
   --ems-blur-modal-backdrop: blur(14px) saturate(0.9);
+  //SideBar
+  --ems-color-admin-primary: #117f83;
+  --ems-color-admin-primary-70: rgba(17, 127, 131, 0.7);
+  --ems-color-admin-primary-80: rgba(17, 127, 131, 0.8);
+  --ems-color-admin-hover: rgba(17, 127, 131, 0.08);
+
+  --ems-color-admin-sidebar-bg: #ffffff;
+  --ems-color-admin-sidebar-border: rgba(0, 0, 0, 0.15);
+  --ems-color-admin-text: #111111;
+  //AppBar
+  --ems-color-admin-appbar-bg: #ffffff;
+  --ems-color-admin-heading: #0f172a;
+  --ems-color-admin-appbar-border: #e2e8f0;
+  --ems-shadow-admin-appbar: 0 1px 11.9px rgba(15, 23, 42, 0.06);
 }

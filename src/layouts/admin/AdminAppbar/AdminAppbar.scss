@@ -1,0 +1,46 @@
+.admin-appbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  background-color: var(--ems-color-admin-appbar-bg);
+  border-bottom: 1px solid var(--ems-color-admin-appbar-border);
+  box-shadow: var(--ems-shadow-admin-appbar);
+}
+
+.admin-appbar__title {
+  margin: 0;
+  color: var(--ems-color-admin-heading);
+  font-family: var(--ems-font-body);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: -0.6px;
+}
+
+.admin-appbar__avatar-button {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.admin-appbar__avatar {
+  width: 36px;
+  height: 36px;
+  display: block;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  background: linear-gradient(
+    135deg,
+    var(--ems-color-primary-dark),
+    var(--ems-color-primary)
+  );
+}

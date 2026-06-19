@@ -3,8 +3,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f8fafb;
-  border-right: 1px solid rgba(0, 0, 0, 0.15);
+  background-color: var(--ems-color-admin-sidebar-bg);
+  border-right: 1px solid var(--ems-color-admin-sidebar-border);
 }
 
 .admin-sidebar__brand {
@@ -13,7 +13,8 @@
 
 .admin-sidebar__brand h2 {
   margin: 0;
-  color: #117f83;
+  color: var(--ems-color-admin-primary);
+  font-family: var(--ems-font-body);
   font-size: 24px;
   font-weight: 700;
   line-height: 32px;
@@ -22,7 +23,8 @@
 
 .admin-sidebar__brand p {
   margin: 4px 0 0;
-  color: rgba(17, 127, 131, 0.7);
+  color: var(--ems-color-admin-primary-70);
+  font-family: var(--ems-font-body);
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -44,8 +46,9 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
-  color: rgba(17, 127, 131, 0.8);
+  border-radius: var(--ems-radius-sm);
+  color: var(--ems-color-admin-primary-80);
+  font-family: var(--ems-font-body);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -55,22 +58,32 @@
     color 160ms ease;
 }
 
-.admin-sidebar__link:hover {
-  background-color: rgba(17, 127, 131, 0.08);
+.admin-sidebar__link:not(.admin-sidebar__link--active):hover {
+  background-color: var(--ems-color-admin-hover);
 }
 
-.admin-sidebar__link--active {
-  background-color: rgba(17, 127, 131, 0.8);
-  color: #ffffff;
+.admin-sidebar__link--active,
+.admin-sidebar__link--active:hover {
+  background-color: var(--ems-color-admin-primary-80);
+  color: var(--ems-color-white);
 }
 
 .admin-sidebar__icon {
   width: 20px;
   height: 20px;
-  flex: 0 0 auto;
+  flex: 0 0 20px;
+  display: inline-block;
   background-color: currentColor;
-  mask: var(--icon-url) center / contain no-repeat;
-  -webkit-mask: var(--icon-url) center / contain no-repeat;
+
+  mask-image: var(--icon-url);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  -webkit-mask-image: var(--icon-url);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
 }
 
 .admin-sidebar__user {
@@ -79,7 +92,8 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  color: #111111;
+  color: var(--ems-color-admin-text);
+  font-family: var(--ems-font-body);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -88,8 +102,17 @@
 .admin-sidebar__user-icon {
   width: 16px;
   height: 16px;
-  flex: 0 0 auto;
+  flex: 0 0 16px;
+  display: inline-block;
   background-color: currentColor;
-  mask: var(--icon-url) center / contain no-repeat;
-  -webkit-mask: var(--icon-url) center / contain no-repeat;
+
+  mask-image: var(--icon-url);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  -webkit-mask-image: var(--icon-url);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
 }

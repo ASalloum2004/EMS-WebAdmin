@@ -4,6 +4,7 @@ import {
   ChangePasswordCard,
   LanguageSettingsCard,
   ProfileIdentityCard,
+  ThemeSettingsCard,
 } from "../components";
 
 export function ProfilePage() {
@@ -18,7 +19,11 @@ export function ProfilePage() {
 
       <div className="profile-layout__settings-grid">
         <LanguageSettingsCard />
-        <ChangePasswordCard />
+
+        <div className="profile-layout__settings-column">
+          <ChangePasswordCard />
+          <ThemeSettingsCard />
+        </div>
       </div>
     </ProfileLayout>
   );

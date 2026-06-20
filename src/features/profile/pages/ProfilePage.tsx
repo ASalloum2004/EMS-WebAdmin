@@ -1,6 +1,10 @@
 import adminAvatar from "../../../assets/AdminAppbar/admin-avatar.svg";
 import { ProfileLayout } from "../../../layouts";
-import { LanguageSettingsCard, ProfileIdentityCard } from "../components";
+import {
+  ChangePasswordCard,
+  LanguageSettingsCard,
+  ProfileIdentityCard,
+} from "../components";
 
 export function ProfilePage() {
   return (
@@ -14,6 +18,7 @@ export function ProfilePage() {
 
       <div className="profile-layout__settings-grid">
         <LanguageSettingsCard />
+        <ChangePasswordCard />
       </div>
     </ProfileLayout>
   );

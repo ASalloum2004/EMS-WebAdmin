@@ -30,6 +30,7 @@
   border-radius: 9999px;
   background-color: transparent;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .admin-appbar__avatar {
@@ -38,9 +39,5 @@
   display: block;
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
-  background: linear-gradient(
-    135deg,
-    var(--ems-color-primary-dark),
-    var(--ems-color-primary)
-  );
+  object-fit: cover;
 }

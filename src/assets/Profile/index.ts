@@ -1,0 +1,1 @@
+export { default as languageIcon } from "./Language.svg";

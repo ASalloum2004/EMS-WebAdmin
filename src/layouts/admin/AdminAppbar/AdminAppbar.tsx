@@ -1,4 +1,4 @@
-import adminAvatar from "../../../assets/AdminAppbar/admin-avatar.png";
+import adminAvatar from "../../../assets/AdminAppbar/Admin-avatar.svg";
 import "./AdminAppbar.scss";
 
 export function AdminAppbar() {

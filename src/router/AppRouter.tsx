@@ -4,7 +4,7 @@ import { ProfilePage } from "../features/profile/routes";
 export function AppRouter() {
   const path = window.location.pathname;
 
-  if (path === "/profile") {
+ if (path === "/profile") {
     return <ProfilePage />;
   }
 

@@ -1,0 +1,102 @@
+.profile-identity-card {
+  width: 100%;
+  min-height: 542px;
+  padding: 44px 56px 40px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 16px;
+  background-color: var(--ems-color-white);
+  box-shadow: var(--ems-shadow-profile-card);
+}
+
+.profile-identity-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.profile-identity-card__avatar {
+  width: 120px;
+  height: 120px;
+  flex: 0 0 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  border-radius: 9999px;
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-white);
+  font-family: var(--ems-font-body);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+  box-shadow: var(--ems-shadow-profile-avatar);
+}
+
+.profile-identity-card__avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-identity-card__header h2 {
+  margin: 0;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 36px;
+  letter-spacing: -0.6px;
+}
+
+.profile-identity-card__header p {
+  margin: 4px 0 0;
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.profile-identity-card__fields {
+  width: 100%;
+  max-width: 570px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0 auto;
+}
+
+.profile-identity-card__field {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 10px;
+  background-color: var(--ems-color-surface);
+}
+
+.profile-identity-card__label {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.profile-identity-card__value {
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+}

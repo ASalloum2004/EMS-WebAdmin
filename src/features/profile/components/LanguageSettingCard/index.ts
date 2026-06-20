@@ -1,0 +1,1 @@
+export { LanguageSettingsCard } from "./LanguageSettingsCard";

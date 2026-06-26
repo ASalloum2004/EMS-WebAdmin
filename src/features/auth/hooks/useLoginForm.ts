@@ -38,7 +38,8 @@ export function useLoginForm() {
     setIsSubmitting(true);
 
     try {
-      await signIn(credentials);
+      await signIn(credentials, rememberMe);
+      window.location.replace("/profile");
     } catch {
       setError("password or email inncorect.");
     } finally {

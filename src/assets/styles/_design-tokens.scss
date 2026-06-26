@@ -25,6 +25,12 @@
   --ems-color-purple: #5d2a8a;
   --ems-color-purple-bright: #7946a7;
   --ems-color-danger: #b42318;
+  --ems-color-signout-border: #f3f4f6;
+  --ems-color-signout-icon-bg: #fef2f2;
+  --ems-color-signout-icon: #ef4444;
+  --ems-color-signout-heading: #111827;
+  --ems-color-signout-text: #b91c1c;
+  --ems-color-signout-button-border: #fecaca;
 
   --ems-color-overlay-start: rgba(0, 83, 91, 0.9);
   --ems-color-overlay-end: rgba(145, 82, 57, 0.8);
@@ -50,6 +56,7 @@
 
   --ems-shadow-field: 0 1px 2px rgba(0, 0, 0, 0.05);
   --ems-shadow-button: 0 1px 1px rgba(0, 0, 0, 0.05);
+  --ems-shadow-signout-card: 0 1px 2px rgba(0, 0, 0, 0.05);
   --ems-shadow-success-card: 0 4px 10px rgba(0, 0, 0, 0.05);
   --ems-shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.08);
 

@@ -1,7 +1,18 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { resetPassword } from "../api";
 
-export function useResetPasswordForm() {
+interface UseResetPasswordFormParams {
+  token: string | null;
+  email: string | null;
+  onSuccess?: () => void;
+}
+
+export function useResetPasswordForm({
+  token,
+  email,
+  onSuccess,
+}: UseResetPasswordFormParams) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -28,8 +39,18 @@ export function useResetPasswordForm() {
 
     setError("");
 
+    if (!token || !email) {
+      setError("Invalid reset password link.");
+      return;
+    }
+
     if (!password.trim()) {
       setError("Please enter your new password.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
 
@@ -46,10 +67,21 @@ export function useResetPasswordForm() {
     try {
       setIsSubmitting(true);
 
-      console.log("Password reset UI is working");
-      console.log("New password:", password);
+      await resetPassword({
+        token,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+      });
 
-      // لاحقاً هون بنستدعي resetPassword API
+      onSuccess?.();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to reset password. Please try again.";
+
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }

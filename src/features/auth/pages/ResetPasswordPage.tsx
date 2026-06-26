@@ -9,6 +9,13 @@ import arrowRightIcon from "../../../assets/auth/arrow-right.svg";
 import { useResetPasswordForm } from "../hooks";
 
 export function ResetPasswordPage() {
+  const searchParams = new URLSearchParams(window.location.search);
+
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
+
+  const hasValidResetLink = Boolean(token && email);
+
   const {
     password,
     confirmPassword,
@@ -17,10 +24,49 @@ export function ResetPasswordPage() {
     handleSubmit,
     updatePassword,
     updateConfirmPassword,
-  } = useResetPasswordForm();
+  } = useResetPasswordForm({
+    token,
+    email,
+    onSuccess: () => {
+      window.location.href = "/";
+    },
+  });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  if (!hasValidResetLink) {
+    return (
+      <AuthLayout
+        brandName="Damascus Fair"
+        description="The comprehensive suite for organizers, providing real-time analytics, seamless exhibitor onboarding, and total control."
+        heroImageSrc={successHeroImage}
+        overlayVariant="brand"
+        title="Elevate your exhibition management."
+      >
+        <div className="login-card">
+          <div className="login-card-header">
+            <h2>Invalid reset link</h2>
+            <p>
+              This reset password link is missing required information. Please
+              request a new password reset link.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="back-to-login-button reset-password-back-link"
+            onClick={() => {
+              window.location.href = "/";
+            }}
+          >
+            <span aria-hidden="true">←</span>
+            <span>Back to Login</span>
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout

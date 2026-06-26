@@ -2,17 +2,23 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 import type { ReactNode } from "react";
 import { login } from "../features/auth/api";
 import type { AuthSession, AuthUser, LoginCredentials } from "../types";
+import {
+  clearAuthSession,
+  getAuthSession,
+  setAuthSession,
+} from "../features/auth/utils/authStorage";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   session: AuthSession | null;
-  signIn: (credentials: LoginCredentials) => Promise<void>;
+  signIn: (credentials: LoginCredentials, rememberMe?: boolean) => Promise<void>;
   signOut: () => void;
   user: AuthUser | null;
 }
@@ -20,16 +26,27 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<AuthSession | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(getAuthSession);
 
-  const signIn = useCallback(async (credentials: LoginCredentials) => {
+  const signIn = useCallback(async (credentials: LoginCredentials, rememberMe: boolean = false) => {
     const nextSession = await login(credentials);
+    setAuthSession(nextSession, rememberMe);
     setSession(nextSession);
   }, []);
 
   const signOut = useCallback(() => {
+    clearAuthSession();
     setSession(null);
+    if (window.location.pathname !== "/") {
+      window.location.replace("/");
+    }
   }, []);
+
+  useEffect(() => {
+    const handleLogout = () => signOut();
+    window.addEventListener("auth:logout", handleLogout);
+    return () => window.removeEventListener("auth:logout", handleLogout);
+  }, [signOut]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

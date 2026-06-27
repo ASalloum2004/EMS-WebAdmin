@@ -1,3 +1,4 @@
+import { Card } from "../../../../components";
 import "./ProfileIdentityCard.scss";
 
 interface ProfileIdentityCardProps {
@@ -23,7 +24,7 @@ export function ProfileIdentityCard({
   avatarUrl,
 }: ProfileIdentityCardProps) {
   return (
-    <section className="profile-identity-card">
+    <Card className="profile-identity-card">
       <div className="profile-identity-card__header">
         <div className="profile-identity-card__avatar">
           {avatarUrl ? (
@@ -50,6 +51,6 @@ export function ProfileIdentityCard({
           <span className="profile-identity-card__value">{email}</span>
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

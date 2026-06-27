@@ -1,25 +1,6 @@
 .theme-settings-card {
-  width: 100%;
-  min-height: 188px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 32px;
-  direction: ltr;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: 16px;
-  background-color: var(--ems-color-white);
-  box-shadow: var(--ems-shadow-profile-card);
-}
-
-.theme-settings-card__title {
-  margin: 0 0 24px;
-  color: var(--ems-color-heading);
-  font-family: var(--ems-font-display);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 28px;
-  text-align: center;
+  --ems-card-min-height: 188px;
+  --ems-card-header-margin: 24px;
 }
 
 .theme-settings-card__toggle {

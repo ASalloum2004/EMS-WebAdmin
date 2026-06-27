@@ -1,0 +1,78 @@
+.card {
+  width: 100%;
+  min-height: var(--ems-card-min-height, 320px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--ems-card-padding, 32px);
+  direction: ltr;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 16px;
+  background-color: var(--ems-color-white);
+  box-shadow: var(--ems-shadow-profile-card);
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: var(--ems-card-header-margin, 36px);
+}
+
+.card__heading {
+  min-width: 0;
+}
+
+.card__title {
+  margin: 0;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.4px;
+}
+
+.card__subtitle {
+  margin: 8px 0 0;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.card__header-meta {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.card__icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background-color: var(
+    --ems-card-icon-background,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-card-icon-color, var(--ems-color-primary));
+}
+
+.card__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.card__footer {
+  margin-top: auto;
+}

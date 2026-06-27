@@ -1,11 +1,14 @@
+import { Card } from "../../../../components";
 import "./ThemeSettingsCard.scss";
 
 export function ThemeSettingsCard() {
   return (
-    <section className="theme-settings-card">
-      <h2 className="theme-settings-card__title">Choose Theme</h2>
-
-      <div className="theme-settings-card__toggle" role="group" aria-label="Choose theme">
+    <Card className="theme-settings-card" title="Choose Theme">
+      <div
+        className="theme-settings-card__toggle"
+        role="group"
+        aria-label="Choose theme"
+      >
         <button
           type="button"
           className="theme-settings-card__option theme-settings-card__option--active"
@@ -27,6 +30,6 @@ export function ThemeSettingsCard() {
       <button type="button" className="theme-settings-card__button">
         Save Theme
       </button>
-    </section>
+    </Card>
   );
 }

@@ -1,11 +1,6 @@
 .profile-identity-card {
-  width: 100%;
-  min-height: 542px;
-  padding: 44px 56px 40px;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: 16px;
-  background-color: var(--ems-color-white);
-  box-shadow: var(--ems-shadow-profile-card);
+  --ems-card-min-height: 542px;
+  --ems-card-padding: 44px 56px 40px;
 }
 
 .profile-identity-card__header {

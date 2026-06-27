@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  background-color: var(--ems-color-admin-appbar-bg);
+  background-color: var(--ems-color-white);
   border-bottom: 1px solid var(--ems-color-admin-appbar-border);
   box-shadow: var(--ems-shadow-admin-appbar);
 }
@@ -41,7 +41,7 @@
   width: 36px;
   height: 36px;
   display: block;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid var(--ems-color-white-20);
   border-radius: 9999px;
   object-fit: cover;
 }

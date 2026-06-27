@@ -1,11 +1,15 @@
 .sign-out-card {
+  --sign-out-card-icon-bg: #fef2f2;
+  --sign-out-card-icon: #ef4444;
+  --sign-out-card-text: #b91c1c;
+  --sign-out-card-button-border: #fecaca;
   --ems-card-min-height: 188px;
-  --ems-card-icon-background: var(--ems-color-signout-icon-bg);
-  --ems-card-icon-color: var(--ems-color-signout-icon);
+  --ems-card-icon-background: var(--sign-out-card-icon-bg);
+  --ems-card-icon-color: var(--sign-out-card-icon);
 }
 
 .sign-out-card__icon {
-  color: var(--ems-color-signout-icon);
+  color: var(--sign-out-card-icon);
 }
 
 .sign-out-card__icon-image {
@@ -28,11 +32,11 @@
   align-items: center;
   justify-content: center;
   padding: 10px 32px;
-  border: 1px solid var(--ems-color-signout-button-border);
+  border: 1px solid var(--sign-out-card-button-border);
   border-radius: var(--ems-radius-sm);
   background-color: var(--ems-color-white);
-  box-shadow: var(--ems-shadow-signout-card);
-  color: var(--ems-color-signout-text);
+  box-shadow: var(--ems-shadow-field);
+  color: var(--sign-out-card-text);
   font-family: var(--ems-font-body);
   font-size: 14px;
   font-weight: 600;

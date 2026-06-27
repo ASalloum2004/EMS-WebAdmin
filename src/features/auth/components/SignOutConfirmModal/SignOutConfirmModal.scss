@@ -1,4 +1,5 @@
 .sign-out-confirm-modal {
+  --sign-out-confirm-modal-danger: #b91c1c;
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -84,8 +85,8 @@
 }
 
 .sign-out-confirm-modal__button--confirm {
-  border: 1px solid var(--ems-color-signout-text);
-  background-color: var(--ems-color-signout-text);
+  border: 1px solid var(--sign-out-confirm-modal-danger);
+  background-color: var(--sign-out-confirm-modal-danger);
   color: var(--ems-color-white);
 }
 

@@ -2,7 +2,7 @@
   height: 100vh;
   display: flex;
   overflow: hidden;
-  background-color: #f3f4f5;
+  background-color: var(--ems-color-admin-background);
 }
 
 .admin-layout__body {

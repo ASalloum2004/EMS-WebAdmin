@@ -1,0 +1,217 @@
+﻿[
+    {
+        "Name":  "--ems-color-border-soft",
+        "Count":  6,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-white",
+        "Count":  17,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutCard\\SignOutCard.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss, C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss, C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-heading",
+        "Count":  5,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss"
+    },
+    {
+        "Name":  "--ems-color-muted",
+        "Count":  7,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-success-surface",
+        "Count":  3,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-primary",
+        "Count":  11,
+        "Files":  "C:\\Project\\project\\src\\components\\Card\\Card.scss, C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\profile\\components\\ChangePasswordCard\\ChangePasswordCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-border",
+        "Count":  3,
+        "Files":  "C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-text",
+        "Count":  5,
+        "Files":  "C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss, C:\\Project\\project\\src\\styles\\index.scss"
+    },
+    {
+        "Name":  "--ems-color-muted-light",
+        "Count":  6,
+        "Files":  "C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss"
+    },
+    {
+        "Name":  "--ems-color-focus-ring",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\components\\FormField\\FormField.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-modal-backdrop",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss"
+    },
+    {
+        "Name":  "--ems-color-modal-border",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss"
+    },
+    {
+        "Name":  "--ems-color-muted-alt",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss"
+    },
+    {
+        "Name":  "--ems-color-purple",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss"
+    },
+    {
+        "Name":  "--ems-color-danger",
+        "Count":  4,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\ForgotPasswordModal\\ForgotPasswordModal.scss, C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss"
+    },
+    {
+        "Name":  "--ems-color-surface",
+        "Count":  6,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss, C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ProfileIdentityCard\\ProfileIdentityCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-link",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\LoginForm\\LoginForm.scss"
+    },
+    {
+        "Name":  "--ems-color-purple-bright",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\PasswordResetSuccess\\PasswordResetSuccess.scss"
+    },
+    {
+        "Name":  "--ems-color-signout-icon-bg",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\SignOutCard\\SignOutCard.scss"
+    },
+    {
+        "Name":  "--ems-color-signout-icon",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\SignOutCard\\SignOutCard.scss"
+    },
+    {
+        "Name":  "--ems-color-signout-button-border",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\SignOutCard\\SignOutCard.scss"
+    },
+    {
+        "Name":  "--ems-color-signout-text",
+        "Count":  3,
+        "Files":  "C:\\Project\\project\\src\\features\\auth\\components\\SignOutCard\\SignOutCard.scss, C:\\Project\\project\\src\\features\\auth\\components\\SignOutConfirmModal\\SignOutConfirmModal.scss"
+    },
+    {
+        "Name":  "--ems-color-danger-surface",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\features\\profile\\components\\ChangePasswordCard\\ChangePasswordCard.scss"
+    },
+    {
+        "Name":  "--ems-color-primary-text",
+        "Count":  3,
+        "Files":  "C:\\Project\\project\\src\\features\\profile\\components\\ChangePasswordCard\\ChangePasswordCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-primary-dark",
+        "Count":  4,
+        "Files":  "C:\\Project\\project\\src\\features\\profile\\components\\ChangePasswordCard\\ChangePasswordCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\LanguageSettingCard\\LanguageSettingsCard.scss, C:\\Project\\project\\src\\features\\profile\\components\\ThemeSettingsCard\\ThemeSettingsCard.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-appbar-bg",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminAppbar\\AdminAppbar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-appbar-border",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminAppbar\\AdminAppbar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-heading",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminAppbar\\AdminAppbar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-sidebar-bg",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-sidebar-border",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-primary",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-primary-70",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-primary-80",
+        "Count":  2,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-hover",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-text",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\admin\\AdminSidebar\\AdminSidebar.scss"
+    },
+    {
+        "Name":  "--ems-color-page",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-brand",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-overlay-start",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-overlay-end",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-hero-dim",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-white-80",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\AuthLayout\\AuthLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-admin-page-bg",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\layouts\\ProfileLayout\\ProfileLayout.scss"
+    },
+    {
+        "Name":  "--ems-color-background",
+        "Count":  1,
+        "Files":  "C:\\Project\\project\\src\\styles\\index.scss"
+    }
+]

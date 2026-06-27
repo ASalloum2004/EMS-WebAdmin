@@ -4,6 +4,7 @@
   display: flex;
   width: min(100%, 436px);
   min-height: 182px;
+  box-sizing: border-box;
   flex-direction: column;
   justify-content: flex-start;
   gap: 26px;
@@ -68,12 +69,4 @@
 .sign-out-card__button:disabled {
   cursor: wait;
   opacity: 0.7;
-}
-
-.sign-out-card__error {
-  margin: 0;
-  color: var(--ems-color-danger);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
 }

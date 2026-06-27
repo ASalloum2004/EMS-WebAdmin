@@ -1,0 +1,95 @@
+.sign-out-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.sign-out-confirm-modal__dialog {
+  width: min(100%, 420px);
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: 16px;
+  background-color: var(--ems-color-white);
+  box-shadow: var(--ems-shadow-modal);
+}
+
+.sign-out-confirm-modal__header {
+  margin-bottom: 28px;
+}
+
+.sign-out-confirm-modal__header h2 {
+  margin: 0 0 10px;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.sign-out-confirm-modal__header p {
+  margin: 0;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.sign-out-confirm-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.sign-out-confirm-modal__button {
+  min-width: 112px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.sign-out-confirm-modal__button:active {
+  transform: scale(0.98);
+}
+
+.sign-out-confirm-modal__button--cancel {
+  border: 1px solid var(--ems-color-border-soft);
+  background-color: var(--ems-color-white);
+  color: var(--ems-color-muted);
+}
+
+.sign-out-confirm-modal__button--cancel:hover {
+  border-color: var(--ems-color-border);
+  background-color: var(--ems-color-surface);
+}
+
+.sign-out-confirm-modal__button--confirm {
+  border: 1px solid var(--ems-color-signout-text);
+  background-color: var(--ems-color-signout-text);
+  color: var(--ems-color-white);
+}
+
+.sign-out-confirm-modal__button--confirm:hover {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-danger);
+}

@@ -1,4 +1,5 @@
 import { Card } from "../../../../components";
+import { darkModeIcon, lightModeIcon } from "../../../../assets/Profile";
 import "./ThemeSettingsCard.scss";
 
 export function ThemeSettingsCard() {
@@ -13,16 +14,22 @@ export function ThemeSettingsCard() {
           type="button"
           className="theme-settings-card__option theme-settings-card__option--active"
         >
-          <span className="theme-settings-card__option-icon" aria-hidden="true">
-            ☼
-          </span>
+          <img
+            className="theme-settings-card__option-icon"
+            src={lightModeIcon}
+            alt=""
+            aria-hidden="true"
+          />
           <span>Light</span>
         </button>
 
         <button type="button" className="theme-settings-card__option">
-          <span className="theme-settings-card__option-icon" aria-hidden="true">
-            ◑
-          </span>
+          <img
+            className="theme-settings-card__option-icon"
+            src={darkModeIcon}
+            alt=""
+            aria-hidden="true"
+          />
           <span>Dark</span>
         </button>
       </div>

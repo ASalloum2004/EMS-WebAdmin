@@ -8,6 +8,13 @@
   color: var(--ems-color-signout-icon);
 }
 
+.sign-out-card__icon-image {
+  width: 16px;
+  height: 14px;
+  display: block;
+  object-fit: contain;
+}
+
 .sign-out-card__actions {
   display: flex;
   flex-direction: column;

@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import { login } from "../features/auth/api";
-import type { AuthSession, AuthUser, LoginCredentials } from "../types";
+import type { AuthSession, AuthUser, LoginCredentials } from "../features/auth/types";
 import {
   clearAuthSession,
   getAuthSession,

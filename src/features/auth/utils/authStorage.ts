@@ -1,4 +1,4 @@
-import type { AuthSession } from "../../../types";
+import type { AuthSession } from "../types";
 
 const AUTH_STORAGE_KEY = "auth_session";
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "../../../context";
-import type { LoginCredentials } from "../../../types";
 import { isBlank } from "../../../utils";
+import type { LoginCredentials } from "../types";
 
 export function useLoginForm() {
   const { signIn } = useAuth();

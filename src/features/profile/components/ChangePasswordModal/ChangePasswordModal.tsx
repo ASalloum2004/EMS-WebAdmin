@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import eyeIcon from "../../../../assets/auth/eye.svg";
 import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
 import { resetPasswordIcon } from "../../../../assets/Profile";
 import { useChangePassword } from "../../hooks";
 import "./ChangePasswordModal.scss";
+
+function createIconStyle(icon: string) {
+  return {
+    "--icon-url": `url("${icon}")`,
+  } as CSSProperties;
+}
 
 interface ChangePasswordModalProps {
   onClose: () => void;
@@ -162,11 +168,9 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
 
         <div className="change-password-modal__header">
           <span className="change-password-modal__icon-container">
-            <img
+            <span
               className="change-password-modal__icon"
-              src={resetPasswordIcon}
-              alt=""
-              aria-hidden="true"
+              style={createIconStyle(resetPasswordIcon)}
             />
           </span>
 

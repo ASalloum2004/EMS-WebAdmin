@@ -32,3 +32,21 @@ export type AdminProfileUpdateResponse = {
   message: string;
   data: AdminProfileApiData;
 };
+
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirmation: string;
+};
+
+export type ChangePasswordApiPayload = {
+  current_password: string;
+  new_password: string;
+  new_password_confirmation: string;
+};
+
+export type ChangePasswordResponse = {
+  status: boolean;
+  message: string;
+  data: null;
+};

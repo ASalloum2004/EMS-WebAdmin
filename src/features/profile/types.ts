@@ -21,3 +21,14 @@ export type AdminProfileResponse = {
   message: string;
   data: AdminProfileApiData;
 };
+
+export type AdminProfileUpdatePayload = {
+  name?: string;
+  avatar?: File | null;
+};
+
+export type AdminProfileUpdateResponse = {
+  status: boolean;
+  message: string;
+  data: AdminProfileApiData;
+};

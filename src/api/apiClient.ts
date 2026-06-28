@@ -5,6 +5,7 @@ export const API_BASE_URL =
 
 type ApiErrorBody = {
   error?: string;
+  errors?: Record<string, unknown>;
   message?: string;
 };
 
@@ -15,11 +16,17 @@ type ApiRequestOptions = RequestInit & {
 type JsonRecord = Record<string, unknown>;
 
 export class ApiRequestError extends Error {
+  errors?: Record<string, unknown>;
   status: number;
 
-  constructor(message: string, status: number) {
+  constructor(
+    message: string,
+    status: number,
+    errors?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = "ApiRequestError";
+    this.errors = errors;
     this.status = status;
   }
 }
@@ -61,10 +68,11 @@ function getAuthTokenFromSession(session: unknown): string | null {
 function buildRequestHeaders(
   headers: HeadersInit | undefined,
   requiresAuth: boolean,
+  hasFormDataBody: boolean,
 ) {
   const requestHeaders = new Headers(headers);
 
-  if (!requestHeaders.has("Content-Type")) {
+  if (!hasFormDataBody && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json");
   }
 
@@ -79,6 +87,10 @@ function buildRequestHeaders(
   }
 
   return requestHeaders;
+}
+
+function isFormDataBody(body: BodyInit | null | undefined): body is FormData {
+  return typeof FormData !== "undefined" && body instanceof FormData;
 }
 
 async function readJsonResponse<TResponse>(
@@ -97,24 +109,28 @@ export async function apiRequest<TResponse>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<TResponse> {
-  const { requiresAuth = false, headers, ...requestOptions } = options;
+  const { requiresAuth = false, headers, body, ...requestOptions } = options;
+  const hasFormDataBody = isFormDataBody(body);
 
   const response = await fetch(buildApiUrl(path), {
     ...requestOptions,
-    headers: buildRequestHeaders(headers, requiresAuth),
+    body,
+    headers: buildRequestHeaders(headers, requiresAuth, hasFormDataBody),
   });
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
+    let errors: Record<string, unknown> | undefined;
 
     try {
       const errorBody = await readJsonResponse<ApiErrorBody>(response);
       message = errorBody.message ?? errorBody.error ?? message;
+      errors = isJsonRecord(errorBody.errors) ? errorBody.errors : undefined;
     } catch {
       // Keep the fallback message when the API does not return JSON.
     }
 
-    throw new ApiRequestError(message, response.status);
+    throw new ApiRequestError(message, response.status, errors);
   }
 
   return readJsonResponse<TResponse>(response);

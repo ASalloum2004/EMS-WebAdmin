@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Card } from "../../../../components";
 import { cameraIcon, pencilIcon } from "../../../../assets/Profile";
+import { Card } from "../../../../components";
 import "./ProfileIdentityCard.scss";
 
 const AVATAR_ACCEPTED_TYPES = "image/jpeg,image/png,image/jpg,image/webp";

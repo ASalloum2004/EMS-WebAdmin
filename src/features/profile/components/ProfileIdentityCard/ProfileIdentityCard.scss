@@ -12,6 +12,13 @@
   text-align: center;
 }
 
+.profile-identity-card__avatar-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 28px;
+}
+
 .profile-identity-card__avatar {
   width: 120px;
   height: 120px;
@@ -19,7 +26,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 28px;
   border-radius: 9999px;
   background-color: var(--ems-color-primary);
   color: var(--ems-color-white);
@@ -36,6 +42,27 @@
   height: 100%;
   display: block;
   object-fit: cover;
+}
+
+.profile-identity-card__avatar-action {
+  position: absolute;
+  right: -10px;
+  bottom: -8px;
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  cursor: default;
+}
+
+.profile-identity-card__avatar-action img {
+  width: 50px;
+  height: 50px;
+  display: block;
 }
 
 .profile-identity-card__header h2 {
@@ -67,6 +94,7 @@
 }
 
 .profile-identity-card__field {
+  position: relative;
   min-height: 80px;
   display: flex;
   flex-direction: column;
@@ -76,6 +104,10 @@
   border: 1px solid var(--ems-color-border-soft);
   border-radius: 10px;
   background-color: var(--ems-color-surface);
+}
+
+.profile-identity-card__field--editable {
+  padding-right: 56px;
 }
 
 .profile-identity-card__label {
@@ -94,4 +126,26 @@
   font-size: 18px;
   font-weight: 500;
   line-height: 28px;
+}
+
+.profile-identity-card__field-edit-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background-color: transparent;
+  cursor: default;
+}
+
+.profile-identity-card__field-edit-button img {
+  width: 16px;
+  height: 16px;
+  display: block;
 }

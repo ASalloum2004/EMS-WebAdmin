@@ -1,4 +1,5 @@
 import { Card } from "../../../../components";
+import { cameraIcon, pencilIcon } from "../../../../assets/Profile";
 import "./ProfileIdentityCard.scss";
 
 interface ProfileIdentityCardProps {
@@ -26,12 +27,22 @@ export function ProfileIdentityCard({
   return (
     <Card className="profile-identity-card">
       <div className="profile-identity-card__header">
-        <div className="profile-identity-card__avatar">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={`${name} profile`} />
-          ) : (
-            <span>{getInitials(name)}</span>
-          )}
+        <div className="profile-identity-card__avatar-wrapper">
+          <div className="profile-identity-card__avatar">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={`${name} profile`} />
+            ) : (
+              <span>{getInitials(name)}</span>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="profile-identity-card__avatar-action"
+            aria-label="Change profile photo"
+          >
+            <img src={cameraIcon} alt="" aria-hidden="true" />
+          </button>
         </div>
 
         <div>
@@ -41,9 +52,17 @@ export function ProfileIdentityCard({
       </div>
 
       <div className="profile-identity-card__fields">
-        <div className="profile-identity-card__field">
+        <div className="profile-identity-card__field profile-identity-card__field--editable">
           <span className="profile-identity-card__label">Name</span>
           <span className="profile-identity-card__value">{name}</span>
+
+          <button
+            type="button"
+            className="profile-identity-card__field-edit-button"
+            aria-label="Edit profile name"
+          >
+            <img src={pencilIcon} alt="" aria-hidden="true" />
+          </button>
         </div>
 
         <div className="profile-identity-card__field">

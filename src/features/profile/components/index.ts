@@ -3,6 +3,7 @@ export * from "./ProfileIdentityCard";
 export * from "./LanguageSettingCard";
 export * from "./ProfileIdentityCard";
 export * from "./ChangePasswordCard";
+export * from "./ChangePasswordModal";
 export * from "./ProfileIdentityCard";
 export * from "./ChangePasswordCard";
 export * from "./ThemeSettingsCard";

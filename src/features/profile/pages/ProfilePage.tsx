@@ -29,8 +29,11 @@ export function ProfilePage() {
     updateProfile,
   } = useProfile();
   const hasRequestedProfile = useRef(false);
+  const avatarPreviewUrlRef = useRef("");
+  const avatarUploadIdRef = useRef(0);
   const [draftName, setDraftName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
   const [profileActionError, setProfileActionError] = useState("");
 
   useEffect(() => {
@@ -47,13 +50,49 @@ export function ProfilePage() {
     profile?.type ?? user?.role ?? (isLoading ? "Loading" : "Admin");
   const displayEmail = profile?.email ?? user?.email ?? "";
   const displayAvatarUrl = profile?.avatar ? profile.avatar : undefined;
+  const visibleAvatarUrl = avatarPreviewUrl || displayAvatarUrl;
   const feedbackMessage = profileActionError || updateError;
+
+  function clearAvatarPreview() {
+    if (avatarPreviewUrlRef.current) {
+      URL.revokeObjectURL(avatarPreviewUrlRef.current);
+      avatarPreviewUrlRef.current = "";
+    }
+
+    setAvatarPreviewUrl("");
+  }
+
+  function setNextAvatarPreview(previewUrl: string) {
+    clearAvatarPreview();
+    avatarPreviewUrlRef.current = previewUrl;
+    setAvatarPreviewUrl(previewUrl);
+  }
+
+  function canLoadAvatarUrl(avatarUrl: string) {
+    return new Promise<boolean>((resolve) => {
+      const image = new Image();
+
+      image.onload = () => resolve(true);
+      image.onerror = () => resolve(false);
+      image.src = avatarUrl;
+    });
+  }
 
   useEffect(() => {
     if (!isEditingName) {
       setDraftName(displayName);
     }
   }, [displayName, isEditingName]);
+
+  useEffect(
+    () => () => {
+      if (avatarPreviewUrlRef.current) {
+        URL.revokeObjectURL(avatarPreviewUrlRef.current);
+        avatarPreviewUrlRef.current = "";
+      }
+    },
+    [],
+  );
 
   function handleEditName() {
     setDraftName(displayName);
@@ -98,11 +137,47 @@ export function ProfilePage() {
     }
 
     setProfileActionError("");
+    const currentUploadId = avatarUploadIdRef.current + 1;
+    avatarUploadIdRef.current = currentUploadId;
 
-    await updateProfile({
+    const nextAvatarPreviewUrl = URL.createObjectURL(file);
+    setNextAvatarPreview(nextAvatarPreviewUrl);
+
+    const updatedProfile = await updateProfile({
       name: displayName,
       avatar: file,
     });
+
+    if (avatarUploadIdRef.current !== currentUploadId) {
+      return;
+    }
+
+    if (!updatedProfile) {
+      clearAvatarPreview();
+      return;
+    }
+
+    if (!updatedProfile.avatar) {
+      setProfileActionError(
+        "Profile photo was uploaded, but the server did not return a displayable image URL. Showing your selected photo for this session.",
+      );
+      return;
+    }
+
+    const canLoadBackendAvatar = await canLoadAvatarUrl(updatedProfile.avatar);
+
+    if (avatarUploadIdRef.current !== currentUploadId) {
+      return;
+    }
+
+    if (canLoadBackendAvatar) {
+      clearAvatarPreview();
+      return;
+    }
+
+    setProfileActionError(
+      "Profile photo was uploaded, but the saved image URL could not be loaded. Showing your selected photo for this session.",
+    );
   }
 
   return (
@@ -111,7 +186,7 @@ export function ProfilePage() {
         name={displayName}
         role={displayRole}
         email={displayEmail}
-        avatarUrl={displayAvatarUrl}
+        avatarUrl={visibleAvatarUrl}
         feedbackMessage={feedbackMessage}
         isEditingName={isEditingName}
         isUpdating={isUpdating}

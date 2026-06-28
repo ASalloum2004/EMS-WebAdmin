@@ -12,7 +12,7 @@ export type AdminProfileApiData = {
   name: string;
   email: string;
   type: string;
-  avatar: string;
+  avatar: string | null;
   is_verified: boolean;
 };
 

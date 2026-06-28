@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Card } from "../../../../components";
 import { cameraIcon, pencilIcon } from "../../../../assets/Profile";
 import "./ProfileIdentityCard.scss";
@@ -46,9 +46,15 @@ export function ProfileIdentityCard({
   onSaveName,
 }: ProfileIdentityCardProps) {
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
+  const shouldShowAvatarImage = Boolean(avatarUrl && !hasAvatarLoadError);
   const nameFieldClassName = `profile-identity-card__field profile-identity-card__field--editable${
     isEditingName ? " profile-identity-card__field--editing" : ""
   }`;
+
+  useEffect(() => {
+    setHasAvatarLoadError(false);
+  }, [avatarUrl]);
 
   function handleAvatarActionClick() {
     avatarInputRef.current?.click();
@@ -66,8 +72,13 @@ export function ProfileIdentityCard({
       <div className="profile-identity-card__header">
         <div className="profile-identity-card__avatar-wrapper">
           <div className="profile-identity-card__avatar">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={`${name} profile`} />
+            {shouldShowAvatarImage ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                aria-hidden="true"
+                onError={() => setHasAvatarLoadError(true)}
+              />
             ) : (
               <span>{getInitials(name)}</span>
             )}

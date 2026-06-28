@@ -49,14 +49,6 @@ export function ThemeSettingsCard() {
           <span>Dark</span>
         </button>
       </div>
-
-      <button
-        type="button"
-        className="theme-settings-card__button"
-        onClick={() => setTheme(theme)}
-      >
-        Save Theme
-      </button>
     </Card>
   );
 }

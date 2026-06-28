@@ -55,32 +55,3 @@
   object-fit: contain;
 }
 
-.theme-settings-card__button {
-  width: 100%;
-  height: 48px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 24px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 12px;
-  background-color: var(--ems-color-primary);
-  color: var(--ems-color-primary-text);
-  font-family: var(--ems-font-body);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
-  cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    transform 120ms ease;
-}
-
-.theme-settings-card__button:hover {
-  background-color: var(--ems-color-primary-dark);
-}
-
-.theme-settings-card__button:active {
-  transform: scale(0.98);
-}

@@ -72,6 +72,10 @@ function buildRequestHeaders(
 ) {
   const requestHeaders = new Headers(headers);
 
+  if (!requestHeaders.has("Accept")) {
+    requestHeaders.set("Accept", "application/json");
+  }
+
   if (!hasFormDataBody && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json");
   }

@@ -1,4 +1,13 @@
+/*
+Dark Theme Palette
+These variables override the default light tokens only when:
+
+  <html data-theme="dark">
+
+All color values in this file come from the approved dark dashboard palette.
+*/
 [data-theme="dark"] {
+  /* Brand and primary accents: buttons, links, active controls, and brand text. */
   --ems-color-primary: #17BAC0;
   --ems-color-primary-hover: #5DE6E4;
   --ems-color-primary-dark: #5DE6E4;
@@ -6,17 +15,23 @@
   --ems-color-brand-muted: rgba(23, 186, 192, 0.7);
   --ems-color-primary-soft: rgba(56, 202, 200, 0.2);
 
+  /* Page and layout backgrounds: app canvas, auth panel, profile page, and admin shell. */
   --ems-color-page: #151C23;
   --ems-color-page-background: #151C23;
   --ems-color-app-background: #151C23;
   --ems-color-admin-background: #151C23;
+
+  /* Surfaces and cards: sidebar, topbar, cards, and deeper grouped areas. */
   --ems-color-sidebar-background: #0C141A;
   --ems-color-topbar-background: #0C141A;
   --ems-color-card-background: #0C141A;
   --ems-color-surface: #0C141A;
   --ems-color-surface-strong: #070F15;
+
+  /* Inputs and controls: text fields, selects, and editable form surfaces. */
   --ems-color-input-background: #192027;
 
+  /* Text colors: primary copy, headings, and subdued supporting text. */
   --ems-color-primary-text: #FFFFFF;
   --ems-color-text: #FFFFFF;
   --ems-color-heading: #FFFFFF;
@@ -25,12 +40,14 @@
   --ems-color-muted-light: rgba(255, 255, 255, 0.7);
   --ems-color-link: #5DE6E4;
 
+  /* Borders and dividers: field borders, card outlines, and soft separators. */
   --ems-color-border: #3C4949;
   --ems-color-border-soft: #3C4949;
   --ems-color-modal-border: #3C4949;
   --ems-color-divider: rgba(60, 73, 73, 0.5);
   --ems-color-subtle-border: rgba(255, 255, 255, 0.1);
 
+  /* Status colors: danger, success, and stable/purple states. */
   --ems-color-danger: #FFB4AB;
   --ems-color-danger-surface: rgba(147, 0, 10, 0.2);
   --ems-color-danger-soft: rgba(147, 0, 10, 0.2);
@@ -42,6 +59,7 @@
   --ems-color-modal-backdrop: rgba(60, 73, 73, 0.5);
   --ems-color-focus-ring: rgba(56, 202, 200, 0.2);
 
+  /* Admin/Profile/Login shared tokens: keep existing components on the same palette. */
   --ems-color-admin-primary: #17BAC0;
   --ems-color-admin-primary-70: rgba(23, 186, 192, 0.7);
   --ems-color-admin-primary-80: #17BAC0;
@@ -51,10 +69,12 @@
   --ems-color-admin-heading: #FFFFFF;
   --ems-color-admin-appbar-border: #3C4949;
 
+  /* Shadows: dark dashboard surfaces stay flat and avoid extra dark colors. */
   --ems-shadow-field: none;
   --ems-shadow-button: none;
   --ems-shadow-card: none;
   --ems-shadow-modal: none;
   --ems-shadow-admin-appbar: none;
   --ems-shadow-profile-avatar: none;
+  --ems-shadow-success-card: none;
 }

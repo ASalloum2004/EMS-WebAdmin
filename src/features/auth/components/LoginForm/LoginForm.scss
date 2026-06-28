@@ -2,12 +2,16 @@
 
 .login-card {
   width: min(100%, var(--ems-auth-card-width));
-  background-color: var(--ems-color-surface);
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 16px;
   padding: var(--ems-auth-card-padding);
+  background-color: var(--ems-color-card-background, var(--ems-color-surface));
+}
+
+[data-theme="dark"] .login-card {
+  border: 1px solid var(--ems-color-subtle-border);
 }
 
 .login-card-header {
@@ -34,10 +38,62 @@
   color: var(--ems-color-muted);
 }
 
+[data-theme="dark"] .login-card-header p {
+  color: var(--ems-color-muted-light);
+}
+
 .auth-form-fields {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.login-card .form-field-icon,
+.login-card .form-field-action {
+  z-index: 1;
+}
+
+[data-theme="dark"] .login-card .form-field input,
+[data-theme="dark"] .login-card .form-field input:hover,
+[data-theme="dark"] .login-card .form-field input:not(:placeholder-shown) {
+  border-color: var(--ems-color-border);
+  background-color: var(--ems-color-input-background);
+  color: var(--ems-color-text);
+  caret-color: var(--ems-color-primary);
+}
+
+[data-theme="dark"] .login-card .form-field input:focus {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-input-background);
+  color: var(--ems-color-text);
+  caret-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 1px var(--ems-color-primary);
+}
+
+[data-theme="dark"] .login-card .form-field input:-webkit-autofill,
+[data-theme="dark"] .login-card .form-field input:-webkit-autofill:hover,
+[data-theme="dark"] .login-card .form-field input:-webkit-autofill:active {
+  border-color: var(--ems-color-border);
+  background-color: var(--ems-color-input-background);
+  caret-color: var(--ems-color-primary);
+  -webkit-text-fill-color: var(--ems-color-text);
+  box-shadow: 0 0 0 1000px var(--ems-color-input-background) inset;
+  -webkit-box-shadow: 0 0 0 1000px var(--ems-color-input-background) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+[data-theme="dark"] .login-card .form-field input:-webkit-autofill:focus {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-input-background);
+  caret-color: var(--ems-color-primary);
+  -webkit-text-fill-color: var(--ems-color-text);
+  box-shadow:
+    0 0 0 1000px var(--ems-color-input-background) inset,
+    0 0 0 1px var(--ems-color-primary);
+  -webkit-box-shadow:
+    0 0 0 1000px var(--ems-color-input-background) inset,
+    0 0 0 1px var(--ems-color-primary);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .login-actions {
@@ -59,12 +115,43 @@
   cursor: pointer;
 }
 
+[data-theme="dark"] .remember-control {
+  color: var(--ems-color-muted-light);
+}
+
 .remember-control input {
   width: 16px;
   height: 16px;
   margin: 0;
   accent-color: var(--ems-color-primary);
   cursor: pointer;
+}
+
+[data-theme="dark"] .remember-control input {
+  display: grid;
+  place-content: center;
+  appearance: none;
+  border: 1px solid var(--ems-color-border);
+  border-radius: var(--ems-radius-xs);
+  background-color: var(--ems-color-input-background);
+}
+
+[data-theme="dark"] .remember-control input::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%);
+  background-color: var(--ems-color-primary-text);
+  transform: scale(0);
+}
+
+[data-theme="dark"] .remember-control input:checked {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+}
+
+[data-theme="dark"] .remember-control input:checked::before {
+  transform: scale(1);
 }
 
 .forgot-password-button {
@@ -95,6 +182,11 @@
   line-height: 16px;
   letter-spacing: 0.6px;
   cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.login-submit-button:hover:not(:disabled) {
+  background-color: var(--ems-color-primary-hover, var(--ems-color-primary-dark));
 }
 
 .login-submit-button img {
@@ -123,6 +215,13 @@
 .secure-notice img {
   width: 10px;
   height: 12px;
+}
+
+[data-theme="dark"] .login-card .form-field-icon,
+[data-theme="dark"] .login-card .password-visibility-button img,
+[data-theme="dark"] .secure-notice img {
+  filter: brightness(0) invert(1);
+  opacity: 0.7;
 }
 
 .login-error {

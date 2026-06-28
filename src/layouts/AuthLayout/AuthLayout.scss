@@ -13,6 +13,14 @@
   background-color: var(--ems-color-page);
 }
 
+[data-theme="dark"] .auth-layout {
+  --auth-color-overlay-start: var(--ems-color-brand-muted);
+  --auth-color-overlay-end: var(--ems-color-divider);
+  --auth-color-hero-dim: var(--ems-color-divider);
+  --auth-hero-secondary-text: var(--ems-color-muted-light);
+  --auth-color-purple-bright: var(--ems-color-purple);
+}
+
 .auth-layout-intro {
   min-height: 100vh;
   position: relative;
@@ -107,7 +115,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--ems-auth-panel-padding);
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-page-background, var(--ems-color-white));
 }
 
 @media (max-width: 900px) {

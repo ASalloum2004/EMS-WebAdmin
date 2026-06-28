@@ -1,0 +1,60 @@
+[data-theme="dark"] {
+  --ems-color-primary: #17BAC0;
+  --ems-color-primary-hover: #5DE6E4;
+  --ems-color-primary-dark: #5DE6E4;
+  --ems-color-brand: rgba(23, 186, 192, 0.7);
+  --ems-color-brand-muted: rgba(23, 186, 192, 0.7);
+  --ems-color-primary-soft: rgba(56, 202, 200, 0.2);
+
+  --ems-color-page: #151C23;
+  --ems-color-page-background: #151C23;
+  --ems-color-app-background: #151C23;
+  --ems-color-admin-background: #151C23;
+  --ems-color-sidebar-background: #0C141A;
+  --ems-color-topbar-background: #0C141A;
+  --ems-color-card-background: #0C141A;
+  --ems-color-surface: #0C141A;
+  --ems-color-surface-strong: #070F15;
+  --ems-color-input-background: #192027;
+
+  --ems-color-primary-text: #FFFFFF;
+  --ems-color-text: #FFFFFF;
+  --ems-color-heading: #FFFFFF;
+  --ems-color-muted: #FFFFFF;
+  --ems-color-muted-alt: #FFFFFF;
+  --ems-color-muted-light: rgba(255, 255, 255, 0.7);
+  --ems-color-link: #5DE6E4;
+
+  --ems-color-border: #3C4949;
+  --ems-color-border-soft: #3C4949;
+  --ems-color-modal-border: #3C4949;
+  --ems-color-divider: rgba(60, 73, 73, 0.5);
+  --ems-color-subtle-border: rgba(255, 255, 255, 0.1);
+
+  --ems-color-danger: #FFB4AB;
+  --ems-color-danger-surface: rgba(147, 0, 10, 0.2);
+  --ems-color-danger-soft: rgba(147, 0, 10, 0.2);
+  --ems-color-success: #38CAC8;
+  --ems-color-success-surface: rgba(56, 202, 200, 0.2);
+  --ems-color-success-soft: rgba(56, 202, 200, 0.2);
+  --ems-color-purple: #D3CDFF;
+  --ems-color-purple-soft: rgba(183, 176, 236, 0.2);
+  --ems-color-modal-backdrop: rgba(60, 73, 73, 0.5);
+  --ems-color-focus-ring: rgba(56, 202, 200, 0.2);
+
+  --ems-color-admin-primary: #17BAC0;
+  --ems-color-admin-primary-70: rgba(23, 186, 192, 0.7);
+  --ems-color-admin-primary-80: #17BAC0;
+  --ems-color-admin-hover: rgba(56, 202, 200, 0.2);
+  --ems-color-admin-sidebar-border: #3C4949;
+  --ems-color-admin-text: #FFFFFF;
+  --ems-color-admin-heading: #FFFFFF;
+  --ems-color-admin-appbar-border: #3C4949;
+
+  --ems-shadow-field: none;
+  --ems-shadow-button: none;
+  --ems-shadow-card: none;
+  --ems-shadow-modal: none;
+  --ems-shadow-admin-appbar: none;
+  --ems-shadow-profile-avatar: none;
+}

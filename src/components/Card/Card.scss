@@ -8,7 +8,7 @@
   direction: ltr;
   border: 1px solid var(--ems-color-border-soft);
   border-radius: 16px;
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
   box-shadow: var(--ems-shadow-card);
 }
 

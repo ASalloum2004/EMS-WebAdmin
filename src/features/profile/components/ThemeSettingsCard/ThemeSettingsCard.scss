@@ -11,7 +11,7 @@
   padding: 4px;
   border: 1px solid var(--ems-color-border-soft);
   border-radius: 10px;
-  background-color: var(--ems-color-surface);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
 }
 
 .theme-settings-card__option {
@@ -28,11 +28,22 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.theme-settings-card__option:hover {
+  background-color: var(--ems-color-primary-soft, transparent);
+  color: var(--ems-color-primary-hover, var(--ems-color-primary));
 }
 
 .theme-settings-card__option--active {
-  background-color: var(--ems-color-white);
-  color: var(--ems-color-primary);
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-card-background, var(--ems-color-white))
+  );
+  color: var(--ems-color-primary-hover, var(--ems-color-primary));
   box-shadow: var(--ems-shadow-button);
 }
 

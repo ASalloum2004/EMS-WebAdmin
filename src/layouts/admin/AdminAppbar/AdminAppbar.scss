@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-topbar-background, var(--ems-color-white));
   border-bottom: 1px solid var(--ems-color-admin-appbar-border);
   box-shadow: var(--ems-shadow-admin-appbar);
 }

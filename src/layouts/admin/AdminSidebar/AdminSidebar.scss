@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-sidebar-background, var(--ems-color-white));
   border-right: 1px solid var(--ems-color-admin-sidebar-border);
 }
 

@@ -1,8 +1,17 @@
 import { Card } from "../../../../components";
+import { useTheme } from "../../../../context";
 import { darkModeIcon, lightModeIcon } from "../../../../assets/Profile";
 import "./ThemeSettingsCard.scss";
 
+function getOptionClassName(isActive: boolean) {
+  return isActive
+    ? "theme-settings-card__option theme-settings-card__option--active"
+    : "theme-settings-card__option";
+}
+
 export function ThemeSettingsCard() {
+  const { isDarkMode, setTheme, theme } = useTheme();
+
   return (
     <Card className="theme-settings-card" title="Choose Theme">
       <div
@@ -12,7 +21,9 @@ export function ThemeSettingsCard() {
       >
         <button
           type="button"
-          className="theme-settings-card__option theme-settings-card__option--active"
+          className={getOptionClassName(theme === "light")}
+          aria-pressed={theme === "light"}
+          onClick={() => setTheme("light")}
         >
           <img
             className="theme-settings-card__option-icon"
@@ -23,7 +34,12 @@ export function ThemeSettingsCard() {
           <span>Light</span>
         </button>
 
-        <button type="button" className="theme-settings-card__option">
+        <button
+          type="button"
+          className={getOptionClassName(isDarkMode)}
+          aria-pressed={isDarkMode}
+          onClick={() => setTheme("dark")}
+        >
           <img
             className="theme-settings-card__option-icon"
             src={darkModeIcon}
@@ -34,7 +50,11 @@ export function ThemeSettingsCard() {
         </button>
       </div>
 
-      <button type="button" className="theme-settings-card__button">
+      <button
+        type="button"
+        className="theme-settings-card__button"
+        onClick={() => setTheme(theme)}
+      >
         Save Theme
       </button>
     </Card>

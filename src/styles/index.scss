@@ -1,4 +1,5 @@
 @use "../assets/styles/design-tokens";
+@use "../assets/styles/dark-theme";
 
 * {
   box-sizing: border-box;
@@ -13,7 +14,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   font-family: var(--ems-font-body);
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-app-background, var(--ems-color-white));
   color: var(--ems-color-text);
 }
 

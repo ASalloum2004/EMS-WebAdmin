@@ -63,7 +63,7 @@
   padding: 0 54px 0 22px;
   border: 1px solid var(--ems-color-border-soft);
   border-radius: 12px;
-  background-color: var(--ems-color-surface);
+  background-color: var(--ems-color-input-background, var(--ems-color-surface));
   color: var(--ems-color-text);
   font-family: var(--ems-font-body);
   font-size: 18px;
@@ -85,7 +85,7 @@
 
 .language-settings-card__select:focus {
   border-color: var(--ems-color-primary);
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-input-background, var(--ems-color-white));
   box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
 }
 

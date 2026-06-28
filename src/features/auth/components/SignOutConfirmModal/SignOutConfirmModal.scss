@@ -1,5 +1,5 @@
 .sign-out-confirm-modal {
-  --sign-out-confirm-modal-danger: #b91c1c;
+  --sign-out-confirm-modal-danger: var(--ems-color-danger);
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -17,7 +17,7 @@
   padding: 32px;
   border: 1px solid var(--ems-color-modal-border);
   border-radius: 16px;
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
   box-shadow: var(--ems-shadow-modal);
 }
 
@@ -75,7 +75,7 @@
 
 .sign-out-confirm-modal__button--cancel {
   border: 1px solid var(--ems-color-border-soft);
-  background-color: var(--ems-color-white);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
   color: var(--ems-color-muted);
 }
 

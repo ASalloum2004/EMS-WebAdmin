@@ -2,10 +2,13 @@ import { MangementList } from "../components/MangementList";
 import { MangementSearchBar } from "../components/MangementSearchBar";
 import { MangementHeader } from "../components/MangementHeader";
 import { MangementTabs } from "../components/MangementTabs";
-import { mockHalls } from "../data/mockHalls";
+import { useHalls } from "../hooks";
 import "./MangementPage.scss";
 
 export function MangementPage() {
+  const { error, halls, isLoading, refetch } = useHalls();
+  const hasHalls = halls.length > 0;
+
   return (
     <div className="mangement-page">
       <MangementHeader
@@ -27,7 +30,26 @@ export function MangementPage() {
 
         <div className="mangement-page__divider" />
 
-        <MangementList halls={mockHalls} />
+        {isLoading ? (
+          <p className="mangement-page__state">Loading halls...</p>
+        ) : null}
+
+        {!isLoading && error ? (
+          <div className="mangement-page__state" role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={() => void refetch()}>
+              Try again
+            </button>
+          </div>
+        ) : null}
+
+        {!isLoading && !error && !hasHalls ? (
+          <p className="mangement-page__state">No halls found.</p>
+        ) : null}
+
+        {!isLoading && !error && hasHalls ? (
+          <MangementList halls={halls} />
+        ) : null}
       </section>
     </div>
   );

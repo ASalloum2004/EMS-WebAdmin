@@ -1,4 +1,6 @@
 .mangement-table-row {
+  --mangement-hall-row-bg: #fdfdfd;
+
   min-height: 96px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px 120px;
@@ -7,7 +9,7 @@
   padding: 18px 20px;
   border: 1px solid var(--ems-color-border-soft);
   border-radius: var(--ems-radius-sm);
-  background-color: transparent;
+  background-color: var(--mangement-hall-row-bg);
 }
 
 .mangement-table-row__main {

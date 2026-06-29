@@ -34,8 +34,11 @@ export class ApiRequestError extends Error {
 function buildApiUrl(path: string) {
   const baseUrl = API_BASE_URL.replace(/\/+$/, "");
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const requestBaseUrl = cleanPath.startsWith("/shared/")
+    ? baseUrl.replace(/\/admin$/, "")
+    : baseUrl;
 
-  return `${baseUrl}${cleanPath}`;
+  return `${requestBaseUrl}${cleanPath}`;
 }
 
 function isJsonRecord(value: unknown): value is JsonRecord {

@@ -5,3 +5,9 @@ export type HallApiData = {
   type: string;
   svg_id: string;
 };
+
+export type HallsResponse = {
+  status: boolean;
+  message: string;
+  data: HallApiData[];
+};

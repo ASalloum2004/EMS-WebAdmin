@@ -17,10 +17,13 @@
 
 .mangement-page__controls {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mangement-page__filters,
+.mangement-page__search {
+  width: 100%;
 }
 
 .mangement-page__divider {

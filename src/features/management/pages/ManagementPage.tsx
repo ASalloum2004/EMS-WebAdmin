@@ -132,7 +132,7 @@ export function ManagementPage() {
     <div className="management-page">
       <ManagementHeader
         title="Halls & Booth Management"
-        description="Descripton"
+        description="View and manage exhibition halls, booth areas, and space allocation details"
         actionLabel="Services"
       />
 

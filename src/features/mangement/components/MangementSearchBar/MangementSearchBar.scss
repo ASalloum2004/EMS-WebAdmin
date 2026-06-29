@@ -4,9 +4,15 @@
     var(--ems-color-surface)
   );
 
+  position: relative;
   width: 100%;
+  height: 40px;
+  border: 1px solid var(--ems-color-border-soft);
   border-radius: var(--ems-radius-sm);
   background-color: var(--mangement-search-background);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .mangement-search-bar__label {
@@ -23,11 +29,11 @@
 
 .mangement-search-bar__input {
   width: 100%;
-  height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: var(--ems-radius-sm);
-  background-color: var(--mangement-search-background);
+  height: 100%;
+  padding: 0 112px 0 42px;
+  border: 0;
+  border-radius: inherit;
+  background-color: transparent;
   color: var(--ems-color-text);
   font-family: var(--ems-font-body);
   font-size: 14px;
@@ -35,16 +41,65 @@
   line-height: 20px;
   letter-spacing: 0;
   outline: none;
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
 }
 
 .mangement-search-bar__input::placeholder {
   color: var(--ems-color-muted-light);
 }
 
-.mangement-search-bar__input:focus {
+.mangement-search-bar:focus-within {
   border-color: var(--ems-color-primary);
   box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
+}
+
+.mangement-search-bar__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ems-color-muted-light);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.mangement-search-bar__search-icon svg,
+.mangement-search-bar__filter-button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: currentColor;
+}
+
+.mangement-search-bar__filter-button {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  min-width: 88px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 9999px;
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0;
+  box-shadow: var(--ems-shadow-button);
+  cursor: default;
+  transform: translateY(-50%);
+}
+
+.mangement-search-bar__filter-button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
 }

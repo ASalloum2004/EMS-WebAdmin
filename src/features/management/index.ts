@@ -1,4 +1,5 @@
 export * from "./api";
+export { ManagementFiltersPanel } from "./components/ManagementFiltersPanel";
 export { ManagementList } from "./components/ManagementList";
 export { ManagementSearchBar } from "./components/ManagementSearchBar";
 export { ManagementTableRow } from "./components/ManagementTableRow";

@@ -2,11 +2,13 @@ import { SearchFilterBar } from "../../../../components";
 
 interface ManagementSearchBarProps {
   onChange: (value: string) => void;
+  onFilterClick?: () => void;
   value: string;
 }
 
 export function ManagementSearchBar({
   onChange,
+  onFilterClick,
   value,
 }: ManagementSearchBarProps) {
   return (
@@ -17,6 +19,7 @@ export function ManagementSearchBar({
       filterLabel="Filter"
       inputAriaLabel="Search halls"
       filterAriaLabel="Open filters"
+      onFilterClick={onFilterClick}
     />
   );
 }

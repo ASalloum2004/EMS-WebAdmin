@@ -26,6 +26,12 @@
   width: 100%;
 }
 
+.management-page__search {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .management-page__divider {
   width: 100%;
   height: 1px;

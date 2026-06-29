@@ -17,6 +17,39 @@ function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
+export type ClientFilterPredicate<T> = (item: T) => boolean;
+
+export function filterBySearchQuery<T>(
+  items: T[],
+  query: string,
+  getSearchableValues: (item: T) => Array<string | number | null | undefined>,
+): T[] {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return items;
+  }
+
+  return items.filter((item) =>
+    getSearchableValues(item).some((value) =>
+      String(value ?? "")
+        .toLowerCase()
+        .includes(normalizedQuery),
+    ),
+  );
+}
+
+export function filterByClientFilters<T>(
+  items: T[],
+  filters: Array<ClientFilterPredicate<T>>,
+): T[] {
+  if (!filters.length) {
+    return items;
+  }
+
+  return items.filter((item) => filters.every((filter) => filter(item)));
+}
+
 export function SearchFilterBar({
   className,
   filterAriaLabel = "Open filters",

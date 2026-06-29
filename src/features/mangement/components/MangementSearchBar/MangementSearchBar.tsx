@@ -1,9 +1,19 @@
 import { SearchFilterBar } from "../../../../components";
 
-export function MangementSearchBar() {
+interface MangementSearchBarProps {
+  onChange: (value: string) => void;
+  value: string;
+}
+
+export function MangementSearchBar({
+  onChange,
+  value,
+}: MangementSearchBarProps) {
   return (
     <SearchFilterBar
-      placeholder="Search halls..."
+      value={value}
+      onChange={onChange}
+      placeholder="Search by id, number, or type..."
       filterLabel="Filter"
       inputAriaLabel="Search halls"
       filterAriaLabel="Open filters"

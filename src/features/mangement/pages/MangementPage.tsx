@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { MangementList } from "../components/MangementList";
 import { MangementSearchBar } from "../components/MangementSearchBar";
 import { MangementHeader } from "../components/MangementHeader";
@@ -7,7 +8,23 @@ import "./MangementPage.scss";
 
 export function MangementPage() {
   const { error, halls, isLoading, refetch } = useHalls();
-  const hasHalls = halls.length > 0;
+  const [searchValue, setSearchValue] = useState("");
+  const filteredHalls = useMemo(() => {
+    const normalizedSearch = searchValue.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return halls;
+    }
+
+    return halls.filter((hall) => {
+      return (
+        String(hall.id).includes(normalizedSearch) ||
+        hall.number.toLowerCase().includes(normalizedSearch) ||
+        hall.type.toLowerCase().includes(normalizedSearch)
+      );
+    });
+  }, [halls, searchValue]);
+  const hasHalls = filteredHalls.length > 0;
 
   return (
     <div className="mangement-page">
@@ -24,7 +41,10 @@ export function MangementPage() {
           </div>
 
           <div className="mangement-page__search">
-            <MangementSearchBar />
+            <MangementSearchBar
+              value={searchValue}
+              onChange={setSearchValue}
+            />
           </div>
         </div>
 
@@ -48,7 +68,7 @@ export function MangementPage() {
         ) : null}
 
         {!isLoading && !error && hasHalls ? (
-          <MangementList halls={halls} />
+          <MangementList halls={filteredHalls} />
         ) : null}
       </section>
     </div>

@@ -1,36 +1,30 @@
-.mangement-search-bar {
-  --mangement-search-background: var(
+.search-filter-bar {
+  --search-filter-bar-background: var(
     --ems-color-surface-strong,
     var(--ems-color-surface)
   );
+  --search-filter-bar-end-padding: 112px;
 
   position: relative;
   width: 100%;
   height: 40px;
   border: 1px solid var(--ems-color-border-soft);
   border-radius: var(--ems-radius-sm);
-  background-color: var(--mangement-search-background);
+  background-color: var(--search-filter-bar-background);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
 }
 
-.mangement-search-bar__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.search-filter-bar:focus-within {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
 }
 
-.mangement-search-bar__input {
+.search-filter-bar__input {
   width: 100%;
   height: 100%;
-  padding: 0 112px 0 42px;
+  padding: 0 var(--search-filter-bar-end-padding) 0 42px;
   border: 0;
   border-radius: inherit;
   background-color: transparent;
@@ -43,16 +37,11 @@
   outline: none;
 }
 
-.mangement-search-bar__input::placeholder {
+.search-filter-bar__input::placeholder {
   color: var(--ems-color-muted-light);
 }
 
-.mangement-search-bar:focus-within {
-  border-color: var(--ems-color-primary);
-  box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
-}
-
-.mangement-search-bar__search-icon {
+.search-filter-bar__search-icon {
   position: absolute;
   top: 50%;
   left: 14px;
@@ -66,15 +55,15 @@
   transform: translateY(-50%);
 }
 
-.mangement-search-bar__search-icon svg,
-.mangement-search-bar__filter-button svg {
+.search-filter-bar__search-icon svg,
+.search-filter-bar__filter-button svg {
   width: 16px;
   height: 16px;
   display: block;
   fill: currentColor;
 }
 
-.mangement-search-bar__filter-button {
+.search-filter-bar__filter-button {
   position: absolute;
   top: 50%;
   right: 6px;
@@ -99,7 +88,11 @@
   transform: translateY(-50%);
 }
 
-.mangement-search-bar__filter-button:focus-visible {
+.search-filter-bar__filter-button:focus-visible {
   outline: 2px solid var(--ems-color-primary);
   outline-offset: 2px;
+}
+
+.search-filter-bar--without-filter {
+  --search-filter-bar-end-padding: 14px;
 }

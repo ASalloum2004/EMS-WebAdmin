@@ -16,6 +16,7 @@ export function MangementList({ items }: MangementListProps) {
           isHighlighted={index === 0}
         />
       ))}
+      
     </section>
   );
 }

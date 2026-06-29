@@ -1,0 +1,173 @@
+.management-booth-modal {
+  --management-booth-modal-bg: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  --management-booth-modal-field-bg: var(
+    --ems-color-input-background,
+    var(--ems-color-surface)
+  );
+  --management-booth-modal-text: var(--ems-color-text);
+  --management-booth-modal-label: var(--ems-color-muted);
+  --management-booth-modal-message: var(--ems-color-danger);
+
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.management-booth-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.management-booth-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--management-booth-modal-bg);
+  box-shadow: var(--ems-shadow-modal);
+}
+
+.management-booth-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.management-booth-modal__header h2,
+.management-booth-modal__header p {
+  margin: 0;
+  font-family: var(--ems-font-body);
+  letter-spacing: 0;
+}
+
+.management-booth-modal__header h2 {
+  color: var(--ems-color-heading);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.management-booth-modal__header p {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 9999px;
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.management-booth-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.management-booth-modal__field span {
+  color: var(--management-booth-modal-label);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.management-booth-modal__field input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--management-booth-modal-field-bg);
+  color: var(--management-booth-modal-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  outline: none;
+}
+
+.management-booth-modal__field input:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+}
+
+.management-booth-modal__message {
+  margin: 0;
+  color: var(--management-booth-modal-message);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.management-booth-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.management-booth-modal__button {
+  min-height: 38px;
+  padding: 8px 16px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.management-booth-modal__button--secondary {
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
+.management-booth-modal__button--primary {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+.management-booth-modal__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 520px) {
+  .management-booth-modal {
+    padding: 16px;
+  }
+
+  .management-booth-modal__panel {
+    padding: 20px;
+  }
+
+  .management-booth-modal__actions {
+    flex-direction: column-reverse;
+  }
+}

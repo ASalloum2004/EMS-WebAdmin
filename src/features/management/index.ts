@@ -1,4 +1,7 @@
 export * from "./api";
+export { ManagementBoothEditModal } from "./components/ManagementBoothEditModal";
+export { ManagementBoothList } from "./components/ManagementBoothList";
+export { ManagementBoothRow } from "./components/ManagementBoothRow";
 export { ManagementFiltersPanel } from "./components/ManagementFiltersPanel";
 export { ManagementList } from "./components/ManagementList";
 export { ManagementSearchBar } from "./components/ManagementSearchBar";

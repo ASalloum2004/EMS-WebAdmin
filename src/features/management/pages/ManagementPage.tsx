@@ -4,6 +4,8 @@ import {
   filterBySearchQuery,
   type ClientFilterPredicate,
 } from "../../../components";
+import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
+import { ManagementBoothList } from "../components/ManagementBoothList";
 import {
   ManagementFiltersPanel,
   type HallClientFilters,
@@ -11,9 +13,9 @@ import {
 import { ManagementList } from "../components/ManagementList";
 import { ManagementSearchBar } from "../components/ManagementSearchBar";
 import { ManagementHeader } from "../components/ManagementHeader";
-import { ManagementTabs } from "../components/ManagementTabs";
-import { useHalls } from "../hooks";
-import type { HallApiData } from "../types";
+import { ManagementTabs, type ManagementTab } from "../components/ManagementTabs";
+import { useBooths, useHalls } from "../hooks";
+import type { BoothApiData, HallApiData, UpdateBoothPayload } from "../types";
 import "./ManagementPage.scss";
 
 function createEmptyHallFilters(): HallClientFilters {
@@ -46,7 +48,26 @@ function getAreaValidationMessage(filters: HallClientFilters) {
 }
 
 export function ManagementPage() {
-  const { error, halls, isLoading, refetch } = useHalls();
+  const [activeTab, setActiveTab] = useState<ManagementTab>("Hall");
+  const isHallTab = activeTab === "Hall";
+  const isBoothTab = activeTab === "Booth";
+  const isAllTab = activeTab === "All";
+  const {
+    error: hallsError,
+    halls,
+    isLoading: isHallsLoading,
+    refetch: refetchHalls,
+  } = useHalls();
+  const {
+    booths,
+    clearUpdateError,
+    error: boothsError,
+    isLoading: isBoothsLoading,
+    isUpdating: isUpdatingBooth,
+    refetch: refetchBooths,
+    updateBoothById,
+    updateError: boothUpdateError,
+  } = useBooths({ enabled: isBoothTab });
   const [filters, setFilters] = useState<HallClientFilters>(
     createEmptyHallFilters,
   );
@@ -54,6 +75,7 @@ export function ManagementPage() {
     createEmptyHallFilters,
   );
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [selectedBooth, setSelectedBooth] = useState<BoothApiData | null>(null);
   const [searchValue, setSearchValue] = useState("");
 
   const typeOptions = useMemo(() => {
@@ -102,7 +124,32 @@ export function ManagementPage() {
       hall.type,
     ]);
   }, [filteredByFilters, searchValue]);
+  const visibleBooths = useMemo(() => {
+    return filterBySearchQuery(booths, searchValue, (booth) => [
+      booth.id,
+      booth.number,
+      booth.area,
+      booth.price,
+    ]);
+  }, [booths, searchValue]);
   const hasHalls = visibleHalls.length > 0;
+  const hasBooths = visibleBooths.length > 0;
+
+  const searchPlaceholder = isBoothTab
+    ? "Search by id, number, area, or price..."
+    : isHallTab
+      ? "Search by id, number, or type..."
+      : "Search management...";
+  const searchAriaLabel = isBoothTab
+    ? "Search booths"
+    : isHallTab
+      ? "Search halls"
+      : "Search management";
+
+  function handleTabChange(tab: ManagementTab) {
+    setActiveTab(tab);
+    setIsFilterPanelOpen(false);
+  }
 
   function handleFilterToggle() {
     if (!isFilterPanelOpen) {
@@ -128,6 +175,28 @@ export function ManagementPage() {
     setFilters(emptyFilters);
   }
 
+  function handleEditBooth(booth: BoothApiData) {
+    clearUpdateError();
+    setSelectedBooth(booth);
+  }
+
+  function handleCancelBoothEdit() {
+    clearUpdateError();
+    setSelectedBooth(null);
+  }
+
+  async function handleSaveBooth(payload: UpdateBoothPayload) {
+    if (!selectedBooth) {
+      return;
+    }
+
+    const updatedBooth = await updateBoothById(selectedBooth.id, payload);
+
+    if (updatedBooth) {
+      setSelectedBooth(null);
+    }
+  }
+
   return (
     <div className="management-page">
       <ManagementHeader
@@ -139,17 +208,23 @@ export function ManagementPage() {
       <section className="management-page__panel" aria-label="Management list">
         <div className="management-page__controls">
           <div className="management-page__filters">
-            <ManagementTabs />
+            <ManagementTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
           </div>
 
           <div className="management-page__search">
             <ManagementSearchBar
               value={searchValue}
               onChange={setSearchValue}
-              onFilterClick={handleFilterToggle}
+              inputAriaLabel={searchAriaLabel}
+              onFilterClick={isHallTab ? handleFilterToggle : undefined}
+              placeholder={searchPlaceholder}
+              showFilterButton={isHallTab}
             />
 
-            {isFilterPanelOpen ? (
+            {isHallTab && isFilterPanelOpen ? (
               <ManagementFiltersPanel
                 filters={draftFilters}
                 onApply={handleApplyFilters}
@@ -164,27 +239,67 @@ export function ManagementPage() {
 
         <div className="management-page__divider" />
 
-        {isLoading ? (
+        {isHallTab && isHallsLoading ? (
           <p className="management-page__state">Loading halls...</p>
         ) : null}
 
-        {!isLoading && error ? (
+        {isHallTab && !isHallsLoading && hallsError ? (
           <div className="management-page__state" role="alert">
-            <p>{error}</p>
-            <button type="button" onClick={() => void refetch()}>
+            <p>{hallsError}</p>
+            <button type="button" onClick={() => void refetchHalls()}>
               Try again
             </button>
           </div>
         ) : null}
 
-        {!isLoading && !error && !hasHalls ? (
+        {isHallTab && !isHallsLoading && !hallsError && !hasHalls ? (
           <p className="management-page__state">No halls found.</p>
         ) : null}
 
-        {!isLoading && !error && hasHalls ? (
+        {isHallTab && !isHallsLoading && !hallsError && hasHalls ? (
           <ManagementList halls={visibleHalls} />
         ) : null}
+
+        {isBoothTab && isBoothsLoading ? (
+          <p className="management-page__state">Loading booths...</p>
+        ) : null}
+
+        {isBoothTab && !isBoothsLoading && boothsError ? (
+          <div className="management-page__state" role="alert">
+            <p>{boothsError}</p>
+            <button type="button" onClick={() => void refetchBooths()}>
+              Try again
+            </button>
+          </div>
+        ) : null}
+
+        {isBoothTab && !isBoothsLoading && !boothsError && !hasBooths ? (
+          <p className="management-page__state">No booths found.</p>
+        ) : null}
+
+        {isBoothTab && !isBoothsLoading && !boothsError && hasBooths ? (
+          <ManagementBoothList
+            booths={visibleBooths}
+            onEditBooth={handleEditBooth}
+          />
+        ) : null}
+
+        {isAllTab ? (
+          <p className="management-page__state">
+            All management items will appear here.
+          </p>
+        ) : null}
       </section>
+
+      {selectedBooth ? (
+        <ManagementBoothEditModal
+          booth={selectedBooth}
+          error={boothUpdateError}
+          isSubmitting={isUpdatingBooth}
+          onCancel={handleCancelBoothEdit}
+          onSave={handleSaveBooth}
+        />
+      ) : null}
     </div>
   );
 }

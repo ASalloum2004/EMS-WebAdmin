@@ -1,10 +1,10 @@
-import "./MangementTabs.scss";
+import "./ManagementTabs.scss";
 
 const tabs = ["Hall", "Booth", "All"] as const;
 
-export function MangementTabs() {
+export function ManagementTabs() {
   return (
-    <div className="mangement-tabs" role="tablist" aria-label="Mangement view">
+    <div className="management-tabs" role="tablist" aria-label="Management view">
       {tabs.map((tab) => {
         const isActive = tab === "Hall";
 
@@ -14,8 +14,8 @@ export function MangementTabs() {
             type="button"
             className={
               isActive
-                ? "mangement-tabs__tab mangement-tabs__tab--active"
-                : "mangement-tabs__tab"
+                ? "management-tabs__tab management-tabs__tab--active"
+                : "management-tabs__tab"
             }
             role="tab"
             aria-selected={isActive}

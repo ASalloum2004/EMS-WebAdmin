@@ -1,1 +1,0 @@
-export { MangementList } from "./MangementList";

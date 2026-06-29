@@ -1,1 +1,0 @@
-export { MangementHeader } from "./MangementHeader";

@@ -1,5 +1,5 @@
 export * from "./AuthLayout";
-export * from "./MangementLayout";
+export * from "./ManagementLayout";
 export * from "./ProfileLayout";
 export * from "./admin/AdminLayout";
 export * from "./admin/AdminSidebar";

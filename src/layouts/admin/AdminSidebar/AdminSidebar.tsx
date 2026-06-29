@@ -50,7 +50,7 @@ const sidebarItems: AdminSidebarItem[] = [
   },
   {
     label: "Management",
-    href: "/mangement",
+    href: "/management",
     icon: managementsIcon,
   },
   {

@@ -1,4 +1,4 @@
-.mangement-tabs {
+.management-tabs {
   width: min(100%, 252px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -9,7 +9,7 @@
   background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
 }
 
-.mangement-tabs__tab {
+.management-tabs__tab {
   min-width: 0;
   height: 34px;
   display: inline-flex;
@@ -30,20 +30,20 @@
     color 160ms ease;
 }
 
-.mangement-tabs__tab:hover {
+.management-tabs__tab:hover {
   background-color: var(--ems-color-admin-hover);
   color: var(--ems-color-primary);
 }
 
-.mangement-tabs__tab--active,
-.mangement-tabs__tab--active:hover {
+.management-tabs__tab--active,
+.management-tabs__tab--active:hover {
   background-color: var(--ems-color-card-background, var(--ems-color-white));
   color: var(--ems-color-primary);
   box-shadow: var(--ems-shadow-button);
 }
 
 @media (max-width: 640px) {
-  .mangement-tabs {
+  .management-tabs {
     width: 100%;
   }
 }

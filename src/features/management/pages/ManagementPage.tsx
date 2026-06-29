@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { MangementList } from "../components/MangementList";
-import { MangementSearchBar } from "../components/MangementSearchBar";
-import { MangementHeader } from "../components/MangementHeader";
-import { MangementTabs } from "../components/MangementTabs";
+import { ManagementList } from "../components/ManagementList";
+import { ManagementSearchBar } from "../components/ManagementSearchBar";
+import { ManagementHeader } from "../components/ManagementHeader";
+import { ManagementTabs } from "../components/ManagementTabs";
 import { useHalls } from "../hooks";
-import "./MangementPage.scss";
+import "./ManagementPage.scss";
 
-export function MangementPage() {
+export function ManagementPage() {
   const { error, halls, isLoading, refetch } = useHalls();
   const [searchValue, setSearchValue] = useState("");
   const filteredHalls = useMemo(() => {
@@ -27,35 +27,35 @@ export function MangementPage() {
   const hasHalls = filteredHalls.length > 0;
 
   return (
-    <div className="mangement-page">
-      <MangementHeader
-        title="Halls & Booth Mangements"
+    <div className="management-page">
+      <ManagementHeader
+        title="Halls & Booth Management"
         description="Descripton"
         actionLabel="Services"
       />
 
-      <section className="mangement-page__panel" aria-label="Mangement list">
-        <div className="mangement-page__controls">
-          <div className="mangement-page__filters">
-            <MangementTabs />
+      <section className="management-page__panel" aria-label="Management list">
+        <div className="management-page__controls">
+          <div className="management-page__filters">
+            <ManagementTabs />
           </div>
 
-          <div className="mangement-page__search">
-            <MangementSearchBar
+          <div className="management-page__search">
+            <ManagementSearchBar
               value={searchValue}
               onChange={setSearchValue}
             />
           </div>
         </div>
 
-        <div className="mangement-page__divider" />
+        <div className="management-page__divider" />
 
         {isLoading ? (
-          <p className="mangement-page__state">Loading halls...</p>
+          <p className="management-page__state">Loading halls...</p>
         ) : null}
 
         {!isLoading && error ? (
-          <div className="mangement-page__state" role="alert">
+          <div className="management-page__state" role="alert">
             <p>{error}</p>
             <button type="button" onClick={() => void refetch()}>
               Try again
@@ -64,11 +64,11 @@ export function MangementPage() {
         ) : null}
 
         {!isLoading && !error && !hasHalls ? (
-          <p className="mangement-page__state">No halls found.</p>
+          <p className="management-page__state">No halls found.</p>
         ) : null}
 
         {!isLoading && !error && hasHalls ? (
-          <MangementList halls={filteredHalls} />
+          <ManagementList halls={filteredHalls} />
         ) : null}
       </section>
     </div>

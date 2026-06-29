@@ -1,4 +1,4 @@
-.mangement-layout {
+.management-layout {
   min-height: calc(100vh - 56px);
   padding: 32px;
   background-color: var(
@@ -7,7 +7,7 @@
   );
 }
 
-.mangement-layout__container {
+.management-layout__container {
   width: 100%;
   max-width: 1120px;
   display: flex;
@@ -17,7 +17,7 @@
 }
 
 @media (max-width: 768px) {
-  .mangement-layout {
+  .management-layout {
     padding: 24px 16px;
   }
 }

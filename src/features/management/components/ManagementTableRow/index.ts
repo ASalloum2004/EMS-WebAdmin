@@ -1,0 +1,1 @@
+export { ManagementTableRow } from "./ManagementTableRow";

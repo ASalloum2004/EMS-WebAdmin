@@ -1,14 +1,14 @@
 import { SearchFilterBar } from "../../../../components";
 
-interface MangementSearchBarProps {
+interface ManagementSearchBarProps {
   onChange: (value: string) => void;
   value: string;
 }
 
-export function MangementSearchBar({
+export function ManagementSearchBar({
   onChange,
   value,
-}: MangementSearchBarProps) {
+}: ManagementSearchBarProps) {
   return (
     <SearchFilterBar
       value={value}

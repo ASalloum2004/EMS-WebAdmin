@@ -1,0 +1,1 @@
+export { MangementLayout } from "./MangementLayout";

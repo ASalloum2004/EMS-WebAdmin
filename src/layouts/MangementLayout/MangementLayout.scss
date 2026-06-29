@@ -1,0 +1,23 @@
+.mangement-layout {
+  min-height: calc(100vh - 56px);
+  padding: 32px;
+  background-color: var(
+    --ems-color-page-background,
+    var(--ems-color-admin-background)
+  );
+}
+
+.mangement-layout__container {
+  width: 100%;
+  max-width: 1120px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .mangement-layout {
+    padding: 24px 16px;
+  }
+}

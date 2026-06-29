@@ -49,8 +49,8 @@ const sidebarItems: AdminSidebarItem[] = [
     icon: reportsIcon,
   },
   {
-    label: "Mangments",
-    href: "/managements",
+    label: "Management",
+    href: "/mangement",
     icon: managementsIcon,
   },
   {

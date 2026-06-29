@@ -1,0 +1,1 @@
+export { MangementPagination } from "./MangementPagination";

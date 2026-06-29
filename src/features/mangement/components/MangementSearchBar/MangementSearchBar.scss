@@ -1,0 +1,52 @@
+.mangement-search-bar {
+  width: min(100%, 360px);
+}
+
+.mangement-search-bar__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mangement-search-bar__input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-input-background,
+    var(--ems-color-card-background, var(--ems-color-white))
+  );
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.mangement-search-bar__input::placeholder {
+  color: var(--ems-color-muted-light);
+}
+
+.mangement-search-bar__input:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
+}
+
+@media (max-width: 640px) {
+  .mangement-search-bar {
+    width: 100%;
+  }
+}

@@ -1,61 +1,29 @@
-import type { MangementItem, MangementItemStatus } from "../../types";
+import type { HallApiData } from "../../types";
 import "./MangementTableRow.scss";
 
 interface MangementTableRowProps {
-  item: MangementItem;
-  isHighlighted?: boolean;
+  hall: HallApiData;
 }
 
-function getStatusClass(status: MangementItemStatus) {
-  return status === "Available"
-    ? "mangement-table-row__status--available"
-    : "mangement-table-row__status--booked";
-}
-
-export function MangementTableRow({
-  isHighlighted = false,
-  item,
-}: MangementTableRowProps) {
+export function MangementTableRow({ hall }: MangementTableRowProps) {
   return (
     <article
-      className={
-        isHighlighted
-          ? "mangement-table-row mangement-table-row--highlighted"
-          : "mangement-table-row"
-      }
-      aria-labelledby={`${item.id}-title`}
+      className="mangement-table-row"
+      aria-labelledby={`hall-${hall.id}-title`}
     >
       <div className="mangement-table-row__main">
-        <h2 id={`${item.id}-title`}>{item.title}</h2>
-        <p>{item.description}</p>
+        <h2 id={`hall-${hall.id}-title`}>{hall.type}</h2>
+        <p>{hall.number}</p>
       </div>
 
-      <div className="mangement-table-row__capacity">
-        <span className="mangement-table-row__capacity-label">
-          {item.capacityLabel}
-        </span>
-        <span className="mangement-table-row__capacity-value">
-          {item.capacity}
+      <div className="mangement-table-row__metric">
+        <span className="mangement-table-row__metric-label">AREA</span>
+        <span className="mangement-table-row__metric-value">
+          {hall.area}
         </span>
       </div>
 
-      <span
-        className={`mangement-table-row__status ${getStatusClass(
-          item.status,
-        )}`}
-      >
-        {item.status}
-      </span>
-
-      <button
-        className="mangement-table-row__menu-button"
-        type="button"
-        aria-label={`More actions for ${item.title}`}
-      >
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
-        <span aria-hidden="true" />
-      </button>
+      <span className="mangement-table-row__id">#{hall.id}</span>
     </article>
   );
 }

@@ -1,22 +1,17 @@
-import type { MangementItem } from "../../types";
+import type { HallApiData } from "../../types";
 import { MangementTableRow } from "../MangementTableRow";
 import "./MangementList.scss";
 
 interface MangementListProps {
-  items: MangementItem[];
+  halls: HallApiData[];
 }
 
-export function MangementList({ items }: MangementListProps) {
+export function MangementList({ halls }: MangementListProps) {
   return (
     <section className="mangement-list" aria-label="Halls and booths">
-      {items.map((item, index) => (
-        <MangementTableRow
-          key={item.id}
-          item={item}
-          isHighlighted={index === 0}
-        />
+      {halls.map((hall) => (
+        <MangementTableRow key={hall.id} hall={hall} />
       ))}
-      
     </section>
   );
 }

@@ -2,7 +2,7 @@ import { MangementList } from "../components/MangementList";
 import { MangementSearchBar } from "../components/MangementSearchBar";
 import { MangementHeader } from "../components/MangementHeader";
 import { MangementTabs } from "../components/MangementTabs";
-import { mockMangementItems } from "../data/mockMangementItems";
+import { mockHalls } from "../data/mockHalls";
 import "./MangementPage.scss";
 
 export function MangementPage() {
@@ -27,7 +27,7 @@ export function MangementPage() {
 
         <div className="mangement-page__divider" />
 
-        <MangementList items={mockMangementItems} />
+        <MangementList halls={mockHalls} />
       </section>
     </div>
   );

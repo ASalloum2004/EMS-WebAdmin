@@ -1,21 +1,12 @@
 .mangement-table-row {
-  --mangement-status-booked-background: var(--ems-color-danger-surface);
-  --mangement-status-booked-text: var(--ems-color-danger);
-
   min-height: 96px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px 130px 32px;
+  grid-template-columns: minmax(0, 1fr) 220px 120px;
   align-items: center;
   gap: 24px;
   padding: 18px 20px;
-  border-left: 4px solid transparent;
   border-radius: var(--ems-radius-sm);
   background-color: transparent;
-}
-
-.mangement-table-row--highlighted {
-  border-left-color: var(--ems-color-primary);
-  background-color: var(--ems-color-admin-hover);
 }
 
 .mangement-table-row__main {
@@ -41,7 +32,7 @@
   line-height: 20px;
 }
 
-.mangement-table-row__capacity {
+.mangement-table-row__metric {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -49,7 +40,7 @@
   justify-self: start;
 }
 
-.mangement-table-row__capacity-label {
+.mangement-table-row__metric-label {
   color: var(--ems-color-muted-light);
   font-family: var(--ems-font-body);
   font-size: 11px;
@@ -58,7 +49,7 @@
   letter-spacing: 0;
 }
 
-.mangement-table-row__capacity-value {
+.mangement-table-row__metric-value {
   color: var(--ems-color-text);
   font-family: var(--ems-font-body);
   font-size: 14px;
@@ -67,14 +58,17 @@
   letter-spacing: 0;
 }
 
-.mangement-table-row__status {
+.mangement-table-row__id {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  justify-self: start;
+  justify-self: end;
   padding: 4px 12px;
+  border: 1px solid var(--ems-color-border-soft);
   border-radius: 9999px;
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
   font-family: var(--ems-font-body);
   font-size: 12px;
   font-weight: 700;
@@ -83,44 +77,12 @@
   white-space: nowrap;
 }
 
-.mangement-table-row__status--available {
-  background-color: var(--ems-color-success-surface);
-  color: var(--ems-color-success, var(--ems-color-primary));
-}
-
-.mangement-table-row__status--booked {
-  background-color: var(--mangement-status-booked-background);
-  color: var(--mangement-status-booked-text);
-}
-
-.mangement-table-row__menu-button {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 0;
-  border-radius: 9999px;
-  background-color: transparent;
-  color: var(--ems-color-muted-light);
-  cursor: default;
-  justify-self: end;
-}
-
-.mangement-table-row__menu-button span {
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background-color: currentColor;
-}
-
 @media (max-width: 900px) {
   .mangement-table-row {
-    grid-template-columns: minmax(0, 1fr) auto 32px;
+    grid-template-columns: minmax(0, 1fr) 96px;
   }
 
-  .mangement-table-row__capacity {
+  .mangement-table-row__metric {
     grid-column: 1 / -1;
     grid-row: 2;
   }
@@ -128,17 +90,12 @@
 
 @media (max-width: 640px) {
   .mangement-table-row {
-    grid-template-columns: minmax(0, 1fr) 32px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 14px;
     padding: 16px;
   }
 
-  .mangement-table-row__capacity,
-  .mangement-table-row__status {
+  .mangement-table-row__metric {
     grid-column: 1 / -1;
-  }
-
-  .mangement-table-row__status {
-    justify-self: flex-start;
   }
 }

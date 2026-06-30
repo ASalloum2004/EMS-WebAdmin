@@ -1,7 +1,6 @@
-import LoginPage from "../features/auth/routes/LoginPage";
+import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { ManagementPage } from "../features/management";
-import ResetPasswordPage from "../features/auth/routes/ResetPasswordPage";
-import ProfilePage from "../features/profile/routes/ProfilePage";
+import { ProfilePage } from "../features/profile/pages";
 import { ManagementLayout } from "../layouts";
 import { AuthGuard } from "./AuthGuard";
 

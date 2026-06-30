@@ -1,7 +1,6 @@
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { ManagementPage } from "../features/management";
 import { ProfilePage } from "../features/profile/pages";
-import { ManagementLayout } from "../layouts";
 import { AuthGuard } from "./AuthGuard";
 
 export function AppRouter() {
@@ -22,9 +21,7 @@ export function AppRouter() {
   if (path === "/management") {
     return (
       <AuthGuard>
-        <ManagementLayout>
-          <ManagementPage />
-        </ManagementLayout>
+        <ManagementPage />
       </AuthGuard>
     );
   }

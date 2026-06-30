@@ -1,1 +1,0 @@
-export { ManagementBoothList } from "./ManagementBoothList";

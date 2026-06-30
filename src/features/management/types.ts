@@ -23,6 +23,21 @@ export type BoothApiData = {
   is_booked?: boolean;
 };
 
+export type BoothBookedFilter = "" | "booked" | "available";
+
+export type BoothClientFilters = {
+  booked: BoothBookedFilter;
+  maxArea: string;
+  maxPrice: string;
+  minArea: string;
+  minPrice: string;
+  number: string;
+};
+
+export type GetBoothsParams = {
+  booked?: boolean | "";
+};
+
 export type BoothsResponse = {
   status: boolean;
   message: string;

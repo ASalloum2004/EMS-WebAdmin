@@ -1,51 +1,26 @@
 import { useMemo, useState } from "react";
-import {
-  filterByClientFilters,
-  filterBySearchQuery,
-  type ClientFilterPredicate,
-} from "../../../components";
+import { DataTable, SearchFilterBar } from "../../../components";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
-import { ManagementBoothList } from "../components/ManagementBoothList";
-import {
-  ManagementFiltersPanel,
-  type HallClientFilters,
-} from "../components/ManagementFiltersPanel";
-import { ManagementList } from "../components/ManagementList";
-import { ManagementSearchBar } from "../components/ManagementSearchBar";
+import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
+import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
 import { ManagementHeader } from "../components/ManagementHeader";
-import { ManagementTabs, type ManagementTab } from "../components/ManagementTabs";
-import { useBooths, useHalls } from "../hooks";
-import type { BoothApiData, HallApiData, UpdateBoothPayload } from "../types";
+import {
+  ManagementTabs,
+  type ManagementTab,
+} from "../components/ManagementTabs";
+import {
+  useBoothEditing,
+  useBoothFiltering,
+  useBooths,
+  useHallFiltering,
+  useHalls,
+} from "../hooks";
+import {
+  boothColumns,
+  getBoothActions,
+  hallColumns,
+} from "../components/tableColumns";
 import "./ManagementPage.scss";
-
-function createEmptyHallFilters(): HallClientFilters {
-  return {
-    maxArea: "",
-    minArea: "",
-    type: "",
-  };
-}
-
-function getAreaValidationMessage(filters: HallClientFilters) {
-  const hasMinArea = filters.minArea.trim() !== "";
-  const hasMaxArea = filters.maxArea.trim() !== "";
-  const minArea = Number(filters.minArea);
-  const maxArea = Number(filters.maxArea);
-
-  if (hasMinArea && !Number.isFinite(minArea)) {
-    return "Enter a valid minimum area.";
-  }
-
-  if (hasMaxArea && !Number.isFinite(maxArea)) {
-    return "Enter a valid maximum area.";
-  }
-
-  if (hasMinArea && hasMaxArea && minArea > maxArea) {
-    return "Minimum area cannot be greater than maximum area.";
-  }
-
-  return "";
-}
 
 export function ManagementPage() {
   const [activeTab, setActiveTab] = useState<ManagementTab>("Hall");
@@ -68,70 +43,22 @@ export function ManagementPage() {
     updateBoothById,
     updateError: boothUpdateError,
   } = useBooths({ enabled: isBoothTab });
-  const [filters, setFilters] = useState<HallClientFilters>(
-    createEmptyHallFilters,
-  );
-  const [draftFilters, setDraftFilters] = useState<HallClientFilters>(
-    createEmptyHallFilters,
-  );
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [selectedBooth, setSelectedBooth] = useState<BoothApiData | null>(null);
   const [searchValue, setSearchValue] = useState("");
-
-  const typeOptions = useMemo(() => {
-    const uniqueTypes = new Set(
-      halls.map((hall) => hall.type).filter((type) => type.trim() !== ""),
-    );
-
-    return Array.from(uniqueTypes).sort((firstType, secondType) =>
-      firstType.localeCompare(secondType),
-    );
-  }, [halls]);
-
-  const filterValidationMessage = useMemo(() => {
-    return getAreaValidationMessage(draftFilters);
-  }, [draftFilters]);
-
-  const activeFilters = useMemo(() => {
-    const nextFilters: Array<ClientFilterPredicate<HallApiData>> = [];
-    const selectedType = filters.type.trim().toLowerCase();
-    const minArea = Number(filters.minArea);
-    const maxArea = Number(filters.maxArea);
-
-    if (selectedType) {
-      nextFilters.push((hall) => hall.type.toLowerCase() === selectedType);
-    }
-
-    if (filters.minArea && Number.isFinite(minArea)) {
-      nextFilters.push((hall) => hall.area >= minArea);
-    }
-
-    if (filters.maxArea && Number.isFinite(maxArea)) {
-      nextFilters.push((hall) => hall.area <= maxArea);
-    }
-
-    return nextFilters;
-  }, [filters]);
-
-  const filteredByFilters = useMemo(() => {
-    return filterByClientFilters(halls, activeFilters);
-  }, [activeFilters, halls]);
-
-  const visibleHalls = useMemo(() => {
-    return filterBySearchQuery(filteredByFilters, searchValue, (hall) => [
-      hall.id,
-      hall.number,
-      hall.type,
-    ]);
-  }, [filteredByFilters, searchValue]);
-  const visibleBooths = useMemo(() => {
-    return filterBySearchQuery(booths, searchValue, (booth) => [
-      booth.id,
-      booth.number,
-    ]);
-  }, [booths, searchValue]);
-  const hasHalls = visibleHalls.length > 0;
-  const hasBooths = visibleBooths.length > 0;
+  const hallFiltering = useHallFiltering({ halls, searchValue });
+  const boothEditing = useBoothEditing({
+    clearUpdateError,
+    updateBoothById,
+  });
+  const boothFiltering = useBoothFiltering({
+    booths,
+    refetchBooths,
+    searchValue,
+  });
+  const boothActions = useMemo(() => {
+    return getBoothActions(boothEditing.openEditModal);
+  }, [boothEditing.openEditModal]);
+  const hasHalls = hallFiltering.visibleHalls.length > 0;
+  const hasBooths = boothFiltering.visibleBooths.length > 0;
 
   const searchPlaceholder = isBoothTab
     ? "Search by id or number..."
@@ -146,53 +73,8 @@ export function ManagementPage() {
 
   function handleTabChange(tab: ManagementTab) {
     setActiveTab(tab);
-    setIsFilterPanelOpen(false);
-  }
-
-  function handleFilterToggle() {
-    if (!isFilterPanelOpen) {
-      setDraftFilters(filters);
-    }
-
-    setIsFilterPanelOpen((isOpen) => !isOpen);
-  }
-
-  function handleApplyFilters() {
-    if (filterValidationMessage) {
-      return;
-    }
-
-    setFilters(draftFilters);
-    setIsFilterPanelOpen(false);
-  }
-
-  function handleClearFilters() {
-    const emptyFilters = createEmptyHallFilters();
-
-    setDraftFilters(emptyFilters);
-    setFilters(emptyFilters);
-  }
-
-  function handleEditBooth(booth: BoothApiData) {
-    clearUpdateError();
-    setSelectedBooth(booth);
-  }
-
-  function handleCancelBoothEdit() {
-    clearUpdateError();
-    setSelectedBooth(null);
-  }
-
-  async function handleSaveBooth(payload: UpdateBoothPayload) {
-    if (!selectedBooth) {
-      return;
-    }
-
-    const updatedBooth = await updateBoothById(selectedBooth.id, payload);
-
-    if (updatedBooth) {
-      setSelectedBooth(null);
-    }
+    hallFiltering.closeFilterPanel();
+    boothFiltering.closeFilterPanel();
   }
 
   return (
@@ -213,23 +95,39 @@ export function ManagementPage() {
           </div>
 
           <div className="management-page__search">
-            <ManagementSearchBar
+            <SearchFilterBar
               value={searchValue}
               onChange={setSearchValue}
               inputAriaLabel={searchAriaLabel}
-              onFilterClick={isHallTab ? handleFilterToggle : undefined}
+              onFilterClick={
+                isHallTab
+                  ? hallFiltering.toggleFilterPanel
+                  : isBoothTab
+                    ? boothFiltering.toggleFilterPanel
+                    : undefined
+              }
               placeholder={searchPlaceholder}
               showFilterButton={isHallTab || isBoothTab}
             />
 
-            {isHallTab && isFilterPanelOpen ? (
+            {isHallTab && hallFiltering.isFilterPanelOpen ? (
               <ManagementFiltersPanel
-                filters={draftFilters}
-                onApply={handleApplyFilters}
-                onChange={setDraftFilters}
-                onClear={handleClearFilters}
-                typeOptions={typeOptions}
-                validationMessage={filterValidationMessage}
+                filters={hallFiltering.draftFilters}
+                onApply={hallFiltering.applyFilters}
+                onChange={hallFiltering.setDraftFilters}
+                onClear={hallFiltering.clearFilters}
+                typeOptions={hallFiltering.typeOptions}
+                validationMessage={hallFiltering.validationMessage}
+              />
+            ) : null}
+
+            {isBoothTab && boothFiltering.isFilterPanelOpen ? (
+              <ManagementBoothFiltersPanel
+                filters={boothFiltering.draftFilters}
+                onApply={boothFiltering.applyFilters}
+                onChange={boothFiltering.setDraftFilters}
+                onClear={boothFiltering.clearFilters}
+                validationMessage={boothFiltering.validationMessage}
               />
             ) : null}
           </div>
@@ -255,7 +153,12 @@ export function ManagementPage() {
         ) : null}
 
         {isHallTab && !isHallsLoading && !hallsError && hasHalls ? (
-          <ManagementList halls={visibleHalls} />
+          <DataTable
+            ariaLabel="Halls and booths"
+            columns={hallColumns}
+            getItemKey={(hall) => hall.id}
+            items={hallFiltering.visibleHalls}
+          />
         ) : null}
 
         {isBoothTab && isBoothsLoading ? (
@@ -265,7 +168,10 @@ export function ManagementPage() {
         {isBoothTab && !isBoothsLoading && boothsError ? (
           <div className="management-page__state" role="alert">
             <p>{boothsError}</p>
-            <button type="button" onClick={() => void refetchBooths()}>
+            <button
+              type="button"
+              onClick={() => void boothFiltering.refetchFilteredBooths()}
+            >
               Try again
             </button>
           </div>
@@ -276,9 +182,12 @@ export function ManagementPage() {
         ) : null}
 
         {isBoothTab && !isBoothsLoading && !boothsError && hasBooths ? (
-          <ManagementBoothList
-            booths={visibleBooths}
-            onEditBooth={handleEditBooth}
+          <DataTable
+            actions={boothActions}
+            ariaLabel="Booths"
+            columns={boothColumns}
+            getItemKey={(booth) => booth.id}
+            items={boothFiltering.visibleBooths}
           />
         ) : null}
 
@@ -289,13 +198,13 @@ export function ManagementPage() {
         ) : null}
       </section>
 
-      {selectedBooth ? (
+      {boothEditing.selectedBooth ? (
         <ManagementBoothEditModal
-          booth={selectedBooth}
+          booth={boothEditing.selectedBooth}
           error={boothUpdateError}
           isSubmitting={isUpdatingBooth}
-          onCancel={handleCancelBoothEdit}
-          onSave={handleSaveBooth}
+          onCancel={boothEditing.closeEditModal}
+          onSave={boothEditing.saveBooth}
         />
       ) : null}
     </div>

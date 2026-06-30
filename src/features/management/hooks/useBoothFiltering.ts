@@ -1,0 +1,242 @@
+import { useMemo, useState } from "react";
+import { filterBySearchQuery } from "../../../components";
+import type {
+  BoothApiData,
+  BoothBookedFilter,
+  BoothClientFilters,
+  GetBoothsParams,
+} from "../types";
+
+type UseBoothFilteringOptions = {
+  booths: BoothApiData[];
+  refetchBooths: (params?: GetBoothsParams) => Promise<BoothApiData[]>;
+  searchValue: string;
+};
+
+function createEmptyBoothFilters(): BoothClientFilters {
+  return {
+    booked: "",
+    maxArea: "",
+    maxPrice: "",
+    minArea: "",
+    minPrice: "",
+    number: "",
+  };
+}
+
+function getOptionalNumber(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const numericValue = Number(trimmedValue);
+
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
+
+function getInvalidNumberMessage(value: string, label: string) {
+  if (!value.trim()) {
+    return "";
+  }
+
+  return Number.isFinite(Number(value)) ? "" : `Enter a valid ${label}.`;
+}
+
+function getBoothValidationMessage(filters: BoothClientFilters) {
+  const invalidMinArea = getInvalidNumberMessage(
+    filters.minArea,
+    "minimum area",
+  );
+  const invalidMaxArea = getInvalidNumberMessage(
+    filters.maxArea,
+    "maximum area",
+  );
+  const invalidMinPrice = getInvalidNumberMessage(
+    filters.minPrice,
+    "minimum price",
+  );
+  const invalidMaxPrice = getInvalidNumberMessage(
+    filters.maxPrice,
+    "maximum price",
+  );
+
+  if (invalidMinArea) {
+    return invalidMinArea;
+  }
+
+  if (invalidMaxArea) {
+    return invalidMaxArea;
+  }
+
+  if (invalidMinPrice) {
+    return invalidMinPrice;
+  }
+
+  if (invalidMaxPrice) {
+    return invalidMaxPrice;
+  }
+
+  const minArea = getOptionalNumber(filters.minArea);
+  const maxArea = getOptionalNumber(filters.maxArea);
+  const minPrice = getOptionalNumber(filters.minPrice);
+  const maxPrice = getOptionalNumber(filters.maxPrice);
+
+  if (minArea !== null && maxArea !== null && minArea > maxArea) {
+    return "Minimum area cannot be greater than maximum area.";
+  }
+
+  if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
+    return "Minimum price cannot be greater than maximum price.";
+  }
+
+  return "";
+}
+
+function getBookedParam(booked: BoothBookedFilter): GetBoothsParams {
+  if (booked === "booked") {
+    return { booked: true };
+  }
+
+  if (booked === "available") {
+    return { booked: false };
+  }
+
+  return {};
+}
+
+function filterBoothsLocally(
+  booths: BoothApiData[],
+  filters: BoothClientFilters,
+) {
+  const boothNumber = filters.number.trim().toLowerCase();
+  const minArea = getOptionalNumber(filters.minArea);
+  const maxArea = getOptionalNumber(filters.maxArea);
+  const minPrice = getOptionalNumber(filters.minPrice);
+  const maxPrice = getOptionalNumber(filters.maxPrice);
+
+  return booths.filter((booth) => {
+    const boothPrice = Number(booth.price);
+
+    if (
+      boothNumber &&
+      !booth.number.toLowerCase().includes(boothNumber)
+    ) {
+      return false;
+    }
+
+    if (minArea !== null && booth.area < minArea) {
+      return false;
+    }
+
+    if (maxArea !== null && booth.area > maxArea) {
+      return false;
+    }
+
+    if (minPrice !== null && !Number.isFinite(boothPrice)) {
+      return false;
+    }
+
+    if (maxPrice !== null && !Number.isFinite(boothPrice)) {
+      return false;
+    }
+
+    if (minPrice !== null && boothPrice < minPrice) {
+      return false;
+    }
+
+    if (maxPrice !== null && boothPrice > maxPrice) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+export function useBoothFiltering({
+  booths,
+  refetchBooths,
+  searchValue,
+}: UseBoothFilteringOptions) {
+  const [filters, setFilters] = useState<BoothClientFilters>(
+    createEmptyBoothFilters,
+  );
+  const [draftFilters, setDraftFilters] = useState<BoothClientFilters>(
+    createEmptyBoothFilters,
+  );
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+
+  const validationMessage = useMemo(() => {
+    return getBoothValidationMessage(draftFilters);
+  }, [draftFilters]);
+
+  const locallyFilteredBooths = useMemo(() => {
+    return filterBoothsLocally(booths, filters);
+  }, [booths, filters]);
+
+  const visibleBooths = useMemo(() => {
+    return filterBySearchQuery(locallyFilteredBooths, searchValue, (booth) => [
+      booth.id,
+      booth.number,
+    ]);
+  }, [locallyFilteredBooths, searchValue]);
+
+  function toggleFilterPanel() {
+    if (!isFilterPanelOpen) {
+      setDraftFilters(filters);
+    }
+
+    setIsFilterPanelOpen((isOpen) => !isOpen);
+  }
+
+  function closeFilterPanel() {
+    setIsFilterPanelOpen(false);
+  }
+
+  function applyFilters() {
+    if (validationMessage) {
+      return;
+    }
+
+    const nextFilters = draftFilters;
+    const shouldRefetchBooths = nextFilters.booked !== filters.booked;
+
+    setFilters(nextFilters);
+    setIsFilterPanelOpen(false);
+
+    if (shouldRefetchBooths) {
+      void refetchBooths(getBookedParam(nextFilters.booked));
+    }
+  }
+
+  function clearFilters() {
+    const emptyFilters = createEmptyBoothFilters();
+    const shouldRefetchBooths = filters.booked !== "";
+
+    setDraftFilters(emptyFilters);
+    setFilters(emptyFilters);
+
+    if (shouldRefetchBooths) {
+      void refetchBooths();
+    }
+  }
+
+  function refetchFilteredBooths() {
+    return refetchBooths(getBookedParam(filters.booked));
+  }
+
+  return {
+    applyFilters,
+    clearFilters,
+    closeFilterPanel,
+    draftFilters,
+    filters,
+    isFilterPanelOpen,
+    refetchFilteredBooths,
+    setDraftFilters,
+    toggleFilterPanel,
+    validationMessage,
+    visibleBooths,
+  };
+}

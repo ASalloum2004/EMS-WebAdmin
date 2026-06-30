@@ -1,1 +1,0 @@
-export { ManagementSearchBar } from "./ManagementSearchBar";

@@ -1,6 +1,11 @@
 .management-layout {
-  min-height: calc(100vh - 56px);
+  width: 100%;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
   padding: 32px;
+  box-sizing: border-box;
   background-color: var(
     --ems-color-page-background,
     var(--ems-color-admin-background)
@@ -10,6 +15,8 @@
 .management-layout__container {
   width: 100%;
   max-width: 1120px;
+  min-height: auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 32px;

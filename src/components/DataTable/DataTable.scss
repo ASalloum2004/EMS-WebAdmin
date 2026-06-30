@@ -13,6 +13,8 @@
   --data-table-badge-text: var(--ems-color-muted);
 
   max-height: 520px;
+  min-height: 0;
+  flex: 0 1 auto;
   display: flex;
   flex-direction: column;
   gap: 4px;

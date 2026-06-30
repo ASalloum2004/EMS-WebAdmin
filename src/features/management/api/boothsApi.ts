@@ -3,8 +3,6 @@ import type {
   BoothApiData,
   BoothsResponse,
   GetBoothsParams,
-  UpdateBoothPayload,
-  UpdateBoothResponse,
 } from "../types";
 
 type NestedBoothsResponse = Omit<BoothsResponse, "data"> & {
@@ -55,21 +53,4 @@ export async function getBooths(
   }
 
   throw new Error("Unexpected booths response format.");
-}
-
-export async function updateBooth(
-  boothId: number,
-  payload: UpdateBoothPayload,
-): Promise<BoothApiData> {
-  const response = await apiRequest<UpdateBoothResponse>(`booths/${boothId}`, {
-    method: "PATCH",
-    requiresAuth: true,
-    body: JSON.stringify({
-      number: payload.number,
-      area: payload.area,
-      price: payload.price,
-    }),
-  });
-
-  return response.data;
 }

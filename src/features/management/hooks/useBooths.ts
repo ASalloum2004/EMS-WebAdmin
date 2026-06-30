@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getBooths, updateBooth } from "../api";
+import { getBooths } from "../api/boothsApi";
+import { updateBooth } from "../api/updateBoothApi";
 import type {
   BoothApiData,
   GetBoothsParams,

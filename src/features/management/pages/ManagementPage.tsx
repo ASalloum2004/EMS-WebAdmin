@@ -128,15 +128,13 @@ export function ManagementPage() {
     return filterBySearchQuery(booths, searchValue, (booth) => [
       booth.id,
       booth.number,
-      booth.area,
-      booth.price,
     ]);
   }, [booths, searchValue]);
   const hasHalls = visibleHalls.length > 0;
   const hasBooths = visibleBooths.length > 0;
 
   const searchPlaceholder = isBoothTab
-    ? "Search by id, number, area, or price..."
+    ? "Search by id or number..."
     : isHallTab
       ? "Search by id, number, or type..."
       : "Search management...";
@@ -221,7 +219,7 @@ export function ManagementPage() {
               inputAriaLabel={searchAriaLabel}
               onFilterClick={isHallTab ? handleFilterToggle : undefined}
               placeholder={searchPlaceholder}
-              showFilterButton={isHallTab}
+              showFilterButton={isHallTab || isBoothTab}
             />
 
             {isHallTab && isFilterPanelOpen ? (

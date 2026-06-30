@@ -1,17 +1,39 @@
+import { DataTable, type DataTableColumn } from "../../../../components";
 import type { HallApiData } from "../../types";
-import { ManagementTableRow } from "../ManagementTableRow";
-import "./ManagementList.scss";
 
 interface ManagementListProps {
   halls: HallApiData[];
 }
 
+const hallColumns: Array<DataTableColumn<HallApiData>> = [
+  {
+    key: "type",
+    label: "Type",
+    render: (hall) => hall.type,
+    supportingText: (hall) => hall.number,
+    variant: "primary",
+  },
+  {
+    key: "area",
+    label: "Area",
+    render: (hall) => hall.area,
+    variant: "metric",
+  },
+  {
+    key: "id",
+    label: "ID",
+    render: (hall) => `#${hall.id}`,
+    variant: "badge",
+  },
+];
+
 export function ManagementList({ halls }: ManagementListProps) {
   return (
-    <section className="management-list" aria-label="Halls and booths">
-      {halls.map((hall) => (
-        <ManagementTableRow key={hall.id} hall={hall} />
-      ))}
-    </section>
+    <DataTable
+      ariaLabel="Halls and booths"
+      columns={hallColumns}
+      getItemKey={(hall) => hall.id}
+      items={halls}
+    />
   );
 }

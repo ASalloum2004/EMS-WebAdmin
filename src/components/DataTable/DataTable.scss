@@ -1,0 +1,207 @@
+.data-table {
+  --data-table-row-bg: #fdfdfd;
+  --data-table-row-border: var(--ems-color-border-soft);
+  --data-table-title: var(--ems-color-heading);
+  --data-table-text: var(--ems-color-muted);
+  --data-table-label: var(--ems-color-muted-light);
+  --data-table-value: var(--ems-color-text);
+  --data-table-badge-bg: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  --data-table-badge-border: var(--ems-color-border-soft);
+  --data-table-badge-text: var(--ems-color-muted);
+
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+[data-theme="dark"] .data-table {
+  --data-table-row-bg: #0c141a;
+  --data-table-row-border: #3c4949;
+  --data-table-title: #ffffff;
+  --data-table-text: rgba(255, 255, 255, 0.7);
+  --data-table-label: rgba(255, 255, 255, 0.7);
+  --data-table-value: #ffffff;
+  --data-table-badge-bg: #070f15;
+  --data-table-badge-border: #3c4949;
+  --data-table-badge-text: #17bac0;
+}
+
+.data-table__row {
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--data-table-row-border);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--data-table-row-bg);
+}
+
+.data-table__cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.data-table__cell--primary {
+  flex: 1 1 240px;
+}
+
+.data-table__cell--metric {
+  flex: 0 1 150px;
+}
+
+.data-table__cell--badge {
+  flex: 0 0 auto;
+  align-items: flex-end;
+}
+
+.data-table__primary-value {
+  margin: 0;
+  color: var(--data-table-title);
+  font-family: var(--ems-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+.data-table__supporting-text {
+  margin: 0;
+  color: var(--data-table-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.data-table__label {
+  color: var(--data-table-label);
+  font-family: var(--ems-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.data-table__value {
+  color: var(--data-table-value);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.data-table__cell--badge .data-table__label {
+  width: 1px;
+  height: 1px;
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.data-table__cell--badge .data-table__value {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid var(--data-table-badge-border);
+  border-radius: 9999px;
+  background-color: var(--data-table-badge-bg);
+  color: var(--data-table-badge-text);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.data-table__actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.data-table__action-button {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-primary);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.data-table__action-button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.data-table__empty {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+@media (max-width: 900px) {
+  .data-table__row {
+    flex-wrap: wrap;
+  }
+
+  .data-table__cell--primary {
+    flex-basis: calc(100% - 120px);
+  }
+}
+
+@media (max-width: 640px) {
+  .data-table__row {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .data-table__cell--primary,
+  .data-table__cell--metric {
+    flex: 1 1 100%;
+  }
+
+  .data-table__cell--badge {
+    align-items: flex-start;
+  }
+
+  .data-table__actions {
+    width: 100%;
+  }
+
+  .data-table__action-button {
+    width: 100%;
+  }
+}

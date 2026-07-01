@@ -21,6 +21,15 @@
   overflow-y: auto;
 }
 
+[dir="rtl"] .data-table {
+  direction: ltr;
+}
+
+[dir="rtl"] .data-table__row,
+[dir="rtl"] .data-table__empty {
+  direction: rtl;
+}
+
 [data-theme="dark"] .data-table {
   --data-table-row-bg: #0c141a;
   --data-table-row-border: #3c4949;

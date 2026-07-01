@@ -60,8 +60,8 @@
 
   /* Fonts */
   --ems-font-fallback: Arial, Helvetica, sans-serif;
-  --ems-font-body: "Cairo", var(--ems-font-fallback, sans-serif);
-  --ems-font-display: "Cairo", var(--ems-font-fallback, sans-serif);
+  --ems-font-body: Inter, var(--ems-font-fallback, sans-serif);
+  --ems-font-display: Inter, var(--ems-font-fallback, sans-serif);
 
   /* Radius */
   --ems-radius-xs: 4px;
@@ -88,4 +88,9 @@
 
   /* Blur / effects */
   --ems-blur-modal-backdrop: blur(14px) saturate(0.9);
+}
+
+html[lang="ar"] {
+  --ems-font-body: "Cairo", var(--ems-font-fallback, sans-serif);
+  --ems-font-display: "Cairo", var(--ems-font-fallback, sans-serif);
 }

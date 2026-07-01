@@ -8,7 +8,7 @@
   flex-direction: column;
   overflow-y: auto;
   background-color: var(--ems-color-sidebar-background, var(--ems-color-white));
-  border-right: 1px solid var(--ems-color-admin-sidebar-border);
+  border-inline-end: 1px solid var(--ems-color-admin-sidebar-border);
 }
 
 .admin-sidebar__brand {

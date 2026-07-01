@@ -11,6 +11,27 @@ type UseBoothFilteringOptions = {
   booths: BoothApiData[];
   refetchBooths: (params?: GetBoothsParams) => Promise<BoothApiData[]>;
   searchValue: string;
+  validationMessages?: BoothFilterValidationMessages;
+};
+
+type BoothFilterValidationMessages = {
+  invalidMaximumArea: string;
+  invalidMaximumPrice: string;
+  invalidMinimumArea: string;
+  invalidMinimumPrice: string;
+  minimumAreaGreaterThanMaximum: string;
+  minimumPriceGreaterThanMaximum: string;
+};
+
+const DEFAULT_BOOTH_FILTER_VALIDATION_MESSAGES: BoothFilterValidationMessages = {
+  invalidMaximumArea: "Enter a valid maximum area.",
+  invalidMaximumPrice: "Enter a valid maximum price.",
+  invalidMinimumArea: "Enter a valid minimum area.",
+  invalidMinimumPrice: "Enter a valid minimum price.",
+  minimumAreaGreaterThanMaximum:
+    "Minimum area cannot be greater than maximum area.",
+  minimumPriceGreaterThanMaximum:
+    "Minimum price cannot be greater than maximum price.",
 };
 
 function createEmptyBoothFilters(): BoothClientFilters {
@@ -36,30 +57,33 @@ function getOptionalNumber(value: string) {
   return Number.isFinite(numericValue) ? numericValue : null;
 }
 
-function getInvalidNumberMessage(value: string, label: string) {
+function getInvalidNumberMessage(value: string, message: string) {
   if (!value.trim()) {
     return "";
   }
 
-  return Number.isFinite(Number(value)) ? "" : `Enter a valid ${label}.`;
+  return Number.isFinite(Number(value)) ? "" : message;
 }
 
-function getBoothValidationMessage(filters: BoothClientFilters) {
+function getBoothValidationMessage(
+  filters: BoothClientFilters,
+  messages: BoothFilterValidationMessages,
+) {
   const invalidMinArea = getInvalidNumberMessage(
     filters.minArea,
-    "minimum area",
+    messages.invalidMinimumArea,
   );
   const invalidMaxArea = getInvalidNumberMessage(
     filters.maxArea,
-    "maximum area",
+    messages.invalidMaximumArea,
   );
   const invalidMinPrice = getInvalidNumberMessage(
     filters.minPrice,
-    "minimum price",
+    messages.invalidMinimumPrice,
   );
   const invalidMaxPrice = getInvalidNumberMessage(
     filters.maxPrice,
-    "maximum price",
+    messages.invalidMaximumPrice,
   );
 
   if (invalidMinArea) {
@@ -84,11 +108,11 @@ function getBoothValidationMessage(filters: BoothClientFilters) {
   const maxPrice = getOptionalNumber(filters.maxPrice);
 
   if (minArea !== null && maxArea !== null && minArea > maxArea) {
-    return "Minimum area cannot be greater than maximum area.";
+    return messages.minimumAreaGreaterThanMaximum;
   }
 
   if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
-    return "Minimum price cannot be greater than maximum price.";
+    return messages.minimumPriceGreaterThanMaximum;
   }
 
   return "";
@@ -158,6 +182,7 @@ export function useBoothFiltering({
   booths,
   refetchBooths,
   searchValue,
+  validationMessages = DEFAULT_BOOTH_FILTER_VALIDATION_MESSAGES,
 }: UseBoothFilteringOptions) {
   const [filters, setFilters] = useState<BoothClientFilters>(
     createEmptyBoothFilters,
@@ -168,8 +193,8 @@ export function useBoothFiltering({
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
   const validationMessage = useMemo(() => {
-    return getBoothValidationMessage(draftFilters);
-  }, [draftFilters]);
+    return getBoothValidationMessage(draftFilters, validationMessages);
+  }, [draftFilters, validationMessages]);
 
   const locallyFilteredBooths = useMemo(() => {
     return filterBoothsLocally(booths, filters);

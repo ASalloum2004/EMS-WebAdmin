@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useI18n } from "../../../../i18n";
 import "./SignOutConfirmModal.scss";
 
 interface SignOutConfirmModalProps {
@@ -10,6 +11,8 @@ export function SignOutConfirmModal({
   onCancel,
   onConfirm,
 }: SignOutConfirmModalProps) {
+  const { t } = useI18n();
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -31,9 +34,11 @@ export function SignOutConfirmModal({
         aria-describedby="sign-out-confirm-modal-message"
       >
         <div className="sign-out-confirm-modal__header">
-          <h2 id="sign-out-confirm-modal-title">Are you sure?</h2>
+          <h2 id="sign-out-confirm-modal-title">
+            {t.auth.signOutConfirmTitle}
+          </h2>
           <p id="sign-out-confirm-modal-message">
-            Are you sure you want to sign out?
+            {t.auth.signOutConfirmMessage}
           </p>
         </div>
 
@@ -43,14 +48,14 @@ export function SignOutConfirmModal({
             type="button"
             onClick={onCancel}
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             className="sign-out-confirm-modal__button sign-out-confirm-modal__button--confirm"
             type="button"
             onClick={onConfirm}
           >
-            Sign Out
+            {t.auth.signOut}
           </button>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { cameraIcon, pencilIcon } from "../../../../assets/Profile";
 import { Card } from "../../../../components";
+import { useI18n } from "../../../../i18n";
 import "./ProfileIdentityCard.scss";
 
 const AVATAR_ACCEPTED_TYPES = "image/jpeg,image/png,image/jpg,image/webp";
@@ -45,6 +46,7 @@ export function ProfileIdentityCard({
   onNameInputChange,
   onSaveName,
 }: ProfileIdentityCardProps) {
+  const { t } = useI18n();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
   const shouldShowAvatarImage = Boolean(avatarUrl && !hasAvatarLoadError);
@@ -87,7 +89,7 @@ export function ProfileIdentityCard({
           <button
             type="button"
             className="profile-identity-card__avatar-action"
-            aria-label="Change profile photo"
+            aria-label={t.profile.changeProfilePhotoAriaLabel}
             disabled={isUpdating}
             onClick={handleAvatarActionClick}
           >
@@ -111,7 +113,9 @@ export function ProfileIdentityCard({
 
       <div className="profile-identity-card__fields">
         <div className={nameFieldClassName}>
-          <span className="profile-identity-card__label">Name</span>
+          <span className="profile-identity-card__label">
+            {t.profile.name}
+          </span>
 
           {isEditingName ? (
             <>
@@ -119,7 +123,7 @@ export function ProfileIdentityCard({
                 className="profile-identity-card__name-input"
                 type="text"
                 value={nameInputValue}
-                aria-label="Profile name"
+                aria-label={t.profile.profileNameAriaLabel}
                 disabled={isUpdating}
                 onChange={(event) => onNameInputChange?.(event.target.value)}
               />
@@ -131,7 +135,7 @@ export function ProfileIdentityCard({
                   disabled={isUpdating}
                   onClick={onSaveName}
                 >
-                  {isUpdating ? "Saving" : "Save"}
+                  {isUpdating ? t.common.saving : t.common.save}
                 </button>
 
                 <button
@@ -140,7 +144,7 @@ export function ProfileIdentityCard({
                   disabled={isUpdating}
                   onClick={onCancelNameEdit}
                 >
-                  Cancel
+                  {t.common.cancel}
                 </button>
               </div>
             </>
@@ -151,7 +155,7 @@ export function ProfileIdentityCard({
               <button
                 type="button"
                 className="profile-identity-card__field-edit-button"
-                aria-label="Edit profile name"
+                aria-label={t.profile.editProfileNameAriaLabel}
                 disabled={isUpdating}
                 onClick={onEditName}
               >
@@ -162,7 +166,9 @@ export function ProfileIdentityCard({
         </div>
 
         <div className="profile-identity-card__field">
-          <span className="profile-identity-card__label">Email</span>
+          <span className="profile-identity-card__label">
+            {t.profile.email}
+          </span>
           <span className="profile-identity-card__value">{email}</span>
         </div>
       </div>

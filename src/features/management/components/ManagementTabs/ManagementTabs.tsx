@@ -1,3 +1,4 @@
+import { useI18n } from "../../../../i18n";
 import "./ManagementTabs.scss";
 
 const tabs = ["Hall", "Booth", "All"] as const;
@@ -13,8 +14,19 @@ export function ManagementTabs({
   activeTab,
   onTabChange,
 }: ManagementTabsProps) {
+  const { t } = useI18n();
+  const tabLabels: Record<ManagementTab, string> = {
+    Hall: t.management.tabs.hall,
+    Booth: t.management.tabs.booth,
+    All: t.management.tabs.all,
+  };
+
   return (
-    <div className="management-tabs" role="tablist" aria-label="Management view">
+    <div
+      className="management-tabs"
+      role="tablist"
+      aria-label={t.management.tabs.ariaLabel}
+    >
       {tabs.map((tab) => {
         const isActive = tab === activeTab;
 
@@ -31,7 +43,7 @@ export function ManagementTabs({
             role="tab"
             aria-selected={isActive}
           >
-            {tab}
+            {tabLabels[tab]}
           </button>
         );
       })}

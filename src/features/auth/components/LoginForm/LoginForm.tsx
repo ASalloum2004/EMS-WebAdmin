@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FormField } from "../../../../components";
+import { useI18n } from "../../../../i18n";
 import arrowRightIcon from "../../../../assets/auth/arrow-right.svg";
 import eyeIcon from "../../../../assets/auth/eye.svg";
 import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
@@ -14,6 +15,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onForgotPassword }: LoginFormProps) {
+  const { t } = useI18n();
   const [showPassword, setShowPassword] = useState(false);
   const {
     credentials,
@@ -28,8 +30,8 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
   return (
     <form className="login-card" onSubmit={handleSubmit}>
       <div className="login-card-header">
-        <h2>Admin Login</h2>
-        <p>Enter your credentials to access the management suite.</p>
+        <h2>{t.auth.adminLogin}</h2>
+        <p>{t.auth.loginDescription}</p>
       </div>
 
       {error && <p className="login-error">{error}</p>}
@@ -40,7 +42,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           iconSrc={mailIcon}
           name="email"
           onChange={(value) => updateField("email", value)}
-          placeholder="Email Address"
+          placeholder={t.auth.email}
           type="email"
           value={credentials.email}
         />
@@ -50,12 +52,13 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           iconSrc={lockIcon}
           name="password"
           onChange={(value) => updateField("password", value)}
-          placeholder="Password"
           rightElement={
             <button
               type="button"
               className="password-visibility-button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showPassword ? t.auth.hidePassword : t.auth.showPassword
+              }
               onClick={() => setShowPassword((currentValue) => !currentValue)}
             >
               <img
@@ -66,6 +69,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             </button>
           }
           type={showPassword ? "text" : "password"}
+          placeholder={t.auth.password}
           value={credentials.password}
         />
       </div>
@@ -77,7 +81,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
             onChange={toggleRememberMe}
             type="checkbox"
           />
-          <span>Remember me</span>
+          <span>{t.auth.rememberMe}</span>
         </label>
 
         <button
@@ -85,7 +89,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
           type="button"
           onClick={onForgotPassword}
         >
-          Forgot Password?
+          {t.auth.forgotPassword}
         </button>
       </div>
 
@@ -95,10 +99,10 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
         disabled={isSubmitting}
       >
         {isSubmitting ? (
-          "Logging in..."
+          t.auth.loggingIn
         ) : (
           <>
-            <span>Login</span>
+            <span>{t.auth.login}</span>
             <img src={arrowRightIcon} alt="" aria-hidden="true" />
           </>
         )}
@@ -106,7 +110,7 @@ export function LoginForm({ onForgotPassword }: LoginFormProps) {
 
       <div className="secure-notice">
         <img src={shieldIcon} alt="" aria-hidden="true" />
-        <span>SECURE AES-256 ENCRYPTION</span>
+        <span>{t.auth.secureNotice}</span>
       </div>
     </form>
   );

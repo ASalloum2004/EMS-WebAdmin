@@ -24,7 +24,7 @@
 }
 
 .language-settings-card__field {
-  margin-bottom: 32px;
+  margin-bottom: 0;
 }
 
 .language-settings-card__label {
@@ -55,6 +55,11 @@
   transform: translateY(-65%) rotate(45deg);
 }
 
+[dir="rtl"] .language-settings-card__select-wrapper::after {
+  right: auto;
+  left: 22px;
+}
+
 .language-settings-card__select {
   width: 100%;
   height: 62px;
@@ -77,6 +82,10 @@
     border-color 160ms ease,
     background-color 160ms ease,
     box-shadow 160ms ease;
+}
+
+[dir="rtl"] .language-settings-card__select {
+  padding: 0 22px 0 54px;
 }
 
 .language-settings-card__select:hover {

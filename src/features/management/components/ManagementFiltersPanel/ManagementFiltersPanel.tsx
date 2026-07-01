@@ -1,3 +1,4 @@
+import { useI18n } from "../../../../i18n";
 import "./ManagementFiltersPanel.scss";
 
 export type HallClientFilters = {
@@ -27,6 +28,8 @@ export function ManagementFiltersPanel({
   typeOptions,
   validationMessage = "",
 }: ManagementFiltersPanelProps) {
+  const { t } = useI18n();
+
   function updateFilter(field: keyof HallClientFilters, value: string) {
     onChange({
       ...filters,
@@ -38,16 +41,16 @@ export function ManagementFiltersPanel({
     <div
       className="management-filters-panel"
       role="dialog"
-      aria-label="Hall filters"
+      aria-label={t.management.filters.hallFiltersAriaLabel}
     >
       <div className="management-filters-panel__grid">
         <label className="management-filters-panel__field">
-          <span>Type</span>
+          <span>{t.management.filters.type}</span>
           <select
             value={filters.type}
             onChange={(event) => updateFilter("type", event.target.value)}
           >
-            <option value="">All types</option>
+            <option value="">{t.management.filters.allTypes}</option>
             {typeOptions.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -57,12 +60,12 @@ export function ManagementFiltersPanel({
         </label>
 
         <label className="management-filters-panel__field">
-          <span>Minimum area</span>
+          <span>{t.management.filters.minArea}</span>
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="Min"
+            placeholder={t.management.filters.min}
             value={filters.minArea}
             onChange={(event) =>
               updateFilter("minArea", normalizeAreaValue(event.target.value))
@@ -71,12 +74,12 @@ export function ManagementFiltersPanel({
         </label>
 
         <label className="management-filters-panel__field">
-          <span>Maximum area</span>
+          <span>{t.management.filters.maxArea}</span>
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="Max"
+            placeholder={t.management.filters.max}
             value={filters.maxArea}
             onChange={(event) =>
               updateFilter("maxArea", normalizeAreaValue(event.target.value))
@@ -97,7 +100,7 @@ export function ManagementFiltersPanel({
           type="button"
           onClick={onClear}
         >
-          Clear
+          {t.common.clear}
         </button>
         <button
           className="management-filters-panel__button management-filters-panel__button--primary"
@@ -105,7 +108,7 @@ export function ManagementFiltersPanel({
           onClick={onApply}
           disabled={Boolean(validationMessage)}
         >
-          Apply
+          {t.common.apply}
         </button>
       </div>
     </div>

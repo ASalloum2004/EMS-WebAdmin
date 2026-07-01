@@ -1,3 +1,4 @@
+import { useI18n } from "../../../../i18n";
 import type { BoothClientFilters } from "../../types";
 import "./ManagementBoothFiltersPanel.scss";
 
@@ -16,6 +17,8 @@ export function ManagementBoothFiltersPanel({
   onClear,
   validationMessage = "",
 }: ManagementBoothFiltersPanelProps) {
+  const { t } = useI18n();
+
   function updateFilter(field: keyof BoothClientFilters, value: string) {
     onChange({
       ...filters,
@@ -27,66 +30,66 @@ export function ManagementBoothFiltersPanel({
     <div
       className="management-booth-filters-panel"
       role="dialog"
-      aria-label="Booth filters"
+      aria-label={t.management.filters.boothFiltersAriaLabel}
     >
       <div className="management-booth-filters-panel__grid">
         <label className="management-booth-filters-panel__field">
-          <span>Booth Number</span>
+          <span>{t.management.filters.boothNumber}</span>
           <input
             type="text"
-            placeholder="Number"
+            placeholder={t.management.booths.number}
             value={filters.number}
             onChange={(event) => updateFilter("number", event.target.value)}
           />
         </label>
 
         <label className="management-booth-filters-panel__field">
-          <span>Booking Status</span>
+          <span>{t.management.filters.bookingStatus}</span>
           <select
             value={filters.booked}
             onChange={(event) => updateFilter("booked", event.target.value)}
           >
-            <option value="">All</option>
-            <option value="booked">Booked</option>
-            <option value="available">Available</option>
+            <option value="">{t.management.filters.all}</option>
+            <option value="booked">{t.management.filters.booked}</option>
+            <option value="available">{t.management.filters.available}</option>
           </select>
         </label>
 
         <label className="management-booth-filters-panel__field">
-          <span>Minimum Area</span>
+          <span>{t.management.filters.minArea}</span>
           <input
             type="number"
-            placeholder="Min"
+            placeholder={t.management.filters.min}
             value={filters.minArea}
             onChange={(event) => updateFilter("minArea", event.target.value)}
           />
         </label>
 
         <label className="management-booth-filters-panel__field">
-          <span>Maximum Area</span>
+          <span>{t.management.filters.maxArea}</span>
           <input
             type="number"
-            placeholder="Max"
+            placeholder={t.management.filters.max}
             value={filters.maxArea}
             onChange={(event) => updateFilter("maxArea", event.target.value)}
           />
         </label>
 
         <label className="management-booth-filters-panel__field">
-          <span>Minimum Price</span>
+          <span>{t.management.filters.minPrice}</span>
           <input
             type="number"
-            placeholder="Min"
+            placeholder={t.management.filters.min}
             value={filters.minPrice}
             onChange={(event) => updateFilter("minPrice", event.target.value)}
           />
         </label>
 
         <label className="management-booth-filters-panel__field">
-          <span>Maximum Price</span>
+          <span>{t.management.filters.maxPrice}</span>
           <input
             type="number"
-            placeholder="Max"
+            placeholder={t.management.filters.max}
             value={filters.maxPrice}
             onChange={(event) => updateFilter("maxPrice", event.target.value)}
           />
@@ -105,7 +108,7 @@ export function ManagementBoothFiltersPanel({
           type="button"
           onClick={onClear}
         >
-          Clear
+          {t.common.clear}
         </button>
         <button
           className="management-booth-filters-panel__button management-booth-filters-panel__button--primary"
@@ -113,7 +116,7 @@ export function ManagementBoothFiltersPanel({
           onClick={onApply}
           disabled={Boolean(validationMessage)}
         >
-          Apply
+          {t.common.apply}
         </button>
       </div>
     </div>

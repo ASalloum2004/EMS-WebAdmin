@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { FormField } from "../../../../components";
+import { useI18n } from "../../../../i18n";
 import mailIcon from "../../../../assets/auth/mail.svg";
 import { isBlank } from "../../../../utils";
 import "./ForgotPasswordModal.scss";
@@ -14,6 +15,7 @@ export function ForgotPasswordModal({
   onCancel,
   onProceed,
 }: ForgotPasswordModalProps) {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +24,7 @@ export function ForgotPasswordModal({
     event.preventDefault();
 
     if (isBlank(email)) {
-      setError("Please enter your email address.");
+      setError(t.auth.emailRequired);
       return;
     }
 
@@ -32,7 +34,7 @@ export function ForgotPasswordModal({
 
       await onProceed(email.trim());
     } catch {
-      setError("Unable to send reset request. Please try again.");
+      setError(t.auth.resetRequestError);
     } finally {
       setIsSubmitting(false);
     }
@@ -48,8 +50,8 @@ export function ForgotPasswordModal({
         aria-modal="true"
       >
         <div className="forgot-modal-header">
-          <h3 id="forgot-password-title">Forgot your password?</h3>
-          <p>Would you like to proceed with the password reset process?</p>
+          <h3 id="forgot-password-title">{t.auth.forgotTitle}</h3>
+          <p>{t.auth.forgotDescription}</p>
         </div>
 
         {error && <p className="login-error">{error}</p>}
@@ -62,7 +64,7 @@ export function ForgotPasswordModal({
             setEmail(value);
             if (error) setError("");
           }}
-          placeholder="type your email here to reset the password"
+          placeholder={t.auth.resetEmailPlaceholder}
           type="email"
           value={email}
         />
@@ -73,7 +75,7 @@ export function ForgotPasswordModal({
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Sending..." : "Yes, proceed"}
+            {isSubmitting ? t.auth.sending : t.auth.sendReset}
           </button>
 
           <button
@@ -82,7 +84,7 @@ export function ForgotPasswordModal({
             onClick={onCancel}
             disabled={isSubmitting}
           >
-            Cancel
+            {t.common.cancel}
           </button>
         </div>
       </form>

@@ -1,6 +1,7 @@
-import type { CSSProperties } from "react";
+import type { ChangeEvent, CSSProperties } from "react";
 import { Card } from "../../../../components";
 import { languageIcon } from "../../../../assets/Profile";
+import { useI18n } from "../../../../i18n";
 import "./LanguageSettingsCard.scss";
 
 function createIconStyle(icon: string) {
@@ -10,10 +11,20 @@ function createIconStyle(icon: string) {
 }
 
 export function LanguageSettingsCard() {
+  const { language, setLanguage, t } = useI18n();
+
+  function handleLanguageChange(event: ChangeEvent<HTMLSelectElement>) {
+    const nextLanguage = event.target.value;
+
+    if (nextLanguage === "en" || nextLanguage === "ar") {
+      setLanguage(nextLanguage);
+    }
+  }
+
   return (
     <Card
       className="language-settings-card"
-      title="Language Settings"
+      title={t.profile.language}
       icon={
         <span
           className="language-settings-card__icon"
@@ -24,21 +35,20 @@ export function LanguageSettingsCard() {
     >
       <div className="language-settings-card__field">
         <label className="language-settings-card__label" htmlFor="language">
-          Choose Preferred Language
+          {t.profile.preferredLanguage}
         </label>
 
         <div className="language-settings-card__select-wrapper">
-          <select id="language" className="language-settings-card__select">
-            <option value="ar">(Arabic) العربية</option>
-            <option value="en">(English) English</option>
+          <select
+            id="language"
+            className="language-settings-card__select"
+            value={language}
+            onChange={handleLanguageChange}
+          >
+            <option value="en">{t.profile.english}</option>
+            <option value="ar">{t.profile.arabic}</option>
           </select>
         </div>
-      </div>
-
-      <div className="language-settings-card__actions">
-        <button type="button" className="language-settings-card__button">
-          حفظ التغييرات
-        </button>
       </div>
     </Card>
   );

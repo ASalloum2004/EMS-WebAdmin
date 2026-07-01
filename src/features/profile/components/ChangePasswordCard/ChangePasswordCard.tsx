@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Card } from "../../../../components";
 import { resetPasswordIcon } from "../../../../assets/Profile";
+import { useI18n } from "../../../../i18n";
 import { ChangePasswordModal } from "../ChangePasswordModal";
 import "./ChangePasswordCard.scss";
 
 export function ChangePasswordCard() {
+  const { t } = useI18n();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
       <Card
         className="change-password-card"
-        title="Change Password"
+        title={t.profile.changePassword}
         icon={
           <img
             className="change-password-card__icon"
@@ -27,7 +29,7 @@ export function ChangePasswordCard() {
             className="change-password-card__button"
             onClick={() => setIsModalOpen(true)}
           >
-            Change Password
+            {t.profile.changePassword}
           </button>
         </div>
       </Card>

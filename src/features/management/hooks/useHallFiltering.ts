@@ -10,6 +10,20 @@ import type { HallApiData } from "../types";
 type UseHallFilteringOptions = {
   halls: HallApiData[];
   searchValue: string;
+  validationMessages?: HallFilterValidationMessages;
+};
+
+type HallFilterValidationMessages = {
+  invalidMaximumArea: string;
+  invalidMinimumArea: string;
+  minimumAreaGreaterThanMaximum: string;
+};
+
+const DEFAULT_HALL_FILTER_VALIDATION_MESSAGES: HallFilterValidationMessages = {
+  invalidMaximumArea: "Enter a valid maximum area.",
+  invalidMinimumArea: "Enter a valid minimum area.",
+  minimumAreaGreaterThanMaximum:
+    "Minimum area cannot be greater than maximum area.",
 };
 
 function createEmptyHallFilters(): HallClientFilters {
@@ -20,22 +34,25 @@ function createEmptyHallFilters(): HallClientFilters {
   };
 }
 
-function getAreaValidationMessage(filters: HallClientFilters) {
+function getAreaValidationMessage(
+  filters: HallClientFilters,
+  messages: HallFilterValidationMessages,
+) {
   const hasMinArea = filters.minArea.trim() !== "";
   const hasMaxArea = filters.maxArea.trim() !== "";
   const minArea = Number(filters.minArea);
   const maxArea = Number(filters.maxArea);
 
   if (hasMinArea && !Number.isFinite(minArea)) {
-    return "Enter a valid minimum area.";
+    return messages.invalidMinimumArea;
   }
 
   if (hasMaxArea && !Number.isFinite(maxArea)) {
-    return "Enter a valid maximum area.";
+    return messages.invalidMaximumArea;
   }
 
   if (hasMinArea && hasMaxArea && minArea > maxArea) {
-    return "Minimum area cannot be greater than maximum area.";
+    return messages.minimumAreaGreaterThanMaximum;
   }
 
   return "";
@@ -44,6 +61,7 @@ function getAreaValidationMessage(filters: HallClientFilters) {
 export function useHallFiltering({
   halls,
   searchValue,
+  validationMessages = DEFAULT_HALL_FILTER_VALIDATION_MESSAGES,
 }: UseHallFilteringOptions) {
   const [filters, setFilters] = useState<HallClientFilters>(
     createEmptyHallFilters,
@@ -64,8 +82,8 @@ export function useHallFiltering({
   }, [halls]);
 
   const validationMessage = useMemo(() => {
-    return getAreaValidationMessage(draftFilters);
-  }, [draftFilters]);
+    return getAreaValidationMessage(draftFilters, validationMessages);
+  }, [draftFilters, validationMessages]);
 
   const activeFilters = useMemo(() => {
     const nextFilters: Array<ClientFilterPredicate<HallApiData>> = [];

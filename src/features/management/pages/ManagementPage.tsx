@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { DataTable, SearchFilterBar } from "../../../components";
+import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
 import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
@@ -17,13 +18,14 @@ import {
   useHalls,
 } from "../hooks";
 import {
-  boothColumns,
+  getBoothColumns,
   getBoothActions,
-  hallColumns,
+  getHallColumns,
 } from "../components/tableColumns";
 import "./ManagementPage.scss";
 
 export function ManagementPage() {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ManagementTab>("Hall");
   const isHallTab = activeTab === "Hall";
   const isBoothTab = activeTab === "Booth";
@@ -45,7 +47,11 @@ export function ManagementPage() {
     updateError: boothUpdateError,
   } = useBooths({ enabled: isBoothTab });
   const [searchValue, setSearchValue] = useState("");
-  const hallFiltering = useHallFiltering({ halls, searchValue });
+  const hallFiltering = useHallFiltering({
+    halls,
+    searchValue,
+    validationMessages: t.management.validation,
+  });
   const boothEditing = useBoothEditing({
     clearUpdateError,
     updateBoothById,
@@ -54,23 +60,30 @@ export function ManagementPage() {
     booths,
     refetchBooths,
     searchValue,
+    validationMessages: t.management.validation,
   });
+  const hallColumns = useMemo(() => {
+    return getHallColumns(t);
+  }, [t]);
+  const boothColumns = useMemo(() => {
+    return getBoothColumns(t);
+  }, [t]);
   const boothActions = useMemo(() => {
-    return getBoothActions(boothEditing.openEditModal);
-  }, [boothEditing.openEditModal]);
+    return getBoothActions(boothEditing.openEditModal, t.common.edit);
+  }, [boothEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = boothFiltering.visibleBooths.length > 0;
 
   const searchPlaceholder = isBoothTab
-    ? "Search by id or number..."
+    ? t.management.search.boothsPlaceholder
     : isHallTab
-      ? "Search by id, number, or type..."
-      : "Search management...";
+      ? t.management.search.hallsPlaceholder
+      : t.management.search.managementPlaceholder;
   const searchAriaLabel = isBoothTab
-    ? "Search booths"
+    ? t.management.search.boothsAriaLabel
     : isHallTab
-      ? "Search halls"
-      : "Search management";
+      ? t.management.search.hallsAriaLabel
+      : t.management.search.managementAriaLabel;
 
   function handleTabChange(tab: ManagementTab) {
     setActiveTab(tab);
@@ -82,14 +95,14 @@ export function ManagementPage() {
     <ManagementLayout>
       <div className="management-page">
         <ManagementHeader
-          title="Halls & Booth Management"
-          description="View and manage exhibition halls, booth areas, and space allocation details"
-          actionLabel="Services"
+          title={t.management.title}
+          description={t.management.description}
+          actionLabel={t.management.services}
         />
 
         <section
           className="management-page__panel"
-          aria-label="Management list"
+          aria-label={t.management.search.managementAriaLabel}
         >
           <div className="management-page__controls">
             <div className="management-page__filters">
@@ -104,6 +117,8 @@ export function ManagementPage() {
                 value={searchValue}
                 onChange={setSearchValue}
                 inputAriaLabel={searchAriaLabel}
+                filterAriaLabel={t.common.openFilters}
+                filterLabel={t.common.filter}
                 onFilterClick={
                   isHallTab
                     ? hallFiltering.toggleFilterPanel
@@ -141,25 +156,27 @@ export function ManagementPage() {
           <div className="management-page__divider" />
 
           {isHallTab && isHallsLoading ? (
-            <p className="management-page__state">Loading halls...</p>
+            <p className="management-page__state">
+              {t.management.halls.loading}
+            </p>
           ) : null}
 
           {isHallTab && !isHallsLoading && hallsError ? (
             <div className="management-page__state" role="alert">
-              <p>{hallsError}</p>
+              <p>{hallsError || t.management.halls.errorFallback}</p>
               <button type="button" onClick={() => void refetchHalls()}>
-                Try again
+                {t.common.tryAgain}
               </button>
             </div>
           ) : null}
 
           {isHallTab && !isHallsLoading && !hallsError && !hasHalls ? (
-            <p className="management-page__state">No halls found.</p>
+            <p className="management-page__state">{t.management.halls.empty}</p>
           ) : null}
 
           {isHallTab && !isHallsLoading && !hallsError && hasHalls ? (
             <DataTable
-              ariaLabel="Halls and booths"
+              ariaLabel={t.management.halls.ariaLabel}
               columns={hallColumns}
               getItemKey={(hall) => hall.id}
               items={hallFiltering.visibleHalls}
@@ -167,29 +184,33 @@ export function ManagementPage() {
           ) : null}
 
           {isBoothTab && isBoothsLoading ? (
-            <p className="management-page__state">Loading booths...</p>
+            <p className="management-page__state">
+              {t.management.booths.loading}
+            </p>
           ) : null}
 
           {isBoothTab && !isBoothsLoading && boothsError ? (
             <div className="management-page__state" role="alert">
-              <p>{boothsError}</p>
+              <p>{boothsError || t.management.booths.errorFallback}</p>
               <button
                 type="button"
                 onClick={() => void boothFiltering.refetchFilteredBooths()}
               >
-                Try again
+                {t.common.tryAgain}
               </button>
             </div>
           ) : null}
 
           {isBoothTab && !isBoothsLoading && !boothsError && !hasBooths ? (
-            <p className="management-page__state">No booths found.</p>
+            <p className="management-page__state">
+              {t.management.booths.empty}
+            </p>
           ) : null}
 
           {isBoothTab && !isBoothsLoading && !boothsError && hasBooths ? (
             <DataTable
               actions={boothActions}
-              ariaLabel="Booths"
+              ariaLabel={t.management.booths.ariaLabel}
               columns={boothColumns}
               getItemKey={(booth) => booth.id}
               items={boothFiltering.visibleBooths}
@@ -198,7 +219,7 @@ export function ManagementPage() {
 
           {isAllTab ? (
             <p className="management-page__state">
-              All management items will appear here.
+              {t.management.allItemsPlaceholder}
             </p>
           ) : null}
         </section>

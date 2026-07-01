@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useI18n, type I18nDictionary } from "../../../../i18n";
 import type { BoothApiData, UpdateBoothPayload } from "../../types";
 import "./ManagementBoothEditModal.scss";
 
@@ -16,21 +17,24 @@ interface ManagementBoothEditModalProps {
   onSave: (payload: UpdateBoothPayload) => Promise<void>;
 }
 
-function getFormValidationMessage(formState: BoothEditFormState) {
+function getFormValidationMessage(
+  formState: BoothEditFormState,
+  t: I18nDictionary,
+) {
   const boothNumber = formState.number.trim();
   const area = Number(formState.area);
   const price = Number(formState.price);
 
   if (!boothNumber) {
-    return "Booth number is required.";
+    return t.management.validation.boothNumberRequired;
   }
 
   if (formState.area.trim() === "" || !Number.isFinite(area) || area < 0) {
-    return "Area must be a valid number greater than or equal to 0.";
+    return t.management.validation.invalidBoothArea;
   }
 
   if (formState.price.trim() === "" || !Number.isFinite(price) || price < 0) {
-    return "Price must be a valid number greater than or equal to 0.";
+    return t.management.validation.invalidBoothPrice;
   }
 
   return "";
@@ -43,6 +47,7 @@ export function ManagementBoothEditModal({
   onCancel,
   onSave,
 }: ManagementBoothEditModalProps) {
+  const { t } = useI18n();
   const [formState, setFormState] = useState<BoothEditFormState>({
     area: String(booth.area),
     number: booth.number,
@@ -58,8 +63,8 @@ export function ManagementBoothEditModal({
   }, [booth]);
 
   const validationMessage = useMemo(() => {
-    return getFormValidationMessage(formState);
-  }, [formState]);
+    return getFormValidationMessage(formState, t);
+  }, [formState, t]);
 
   function updateField(field: keyof BoothEditFormState, value: string) {
     setFormState((currentFormState) => ({
@@ -93,12 +98,12 @@ export function ManagementBoothEditModal({
         onSubmit={handleSubmit}
       >
         <div className="management-booth-modal__header">
-          <h2 id="booth-edit-title">Edit Booth</h2>
+          <h2 id="booth-edit-title">{t.management.booths.editTitle}</h2>
           <p>#{booth.id}</p>
         </div>
 
         <label className="management-booth-modal__field">
-          <span>Booth Number</span>
+          <span>{t.management.filters.boothNumber}</span>
           <input
             type="text"
             value={formState.number}
@@ -107,7 +112,7 @@ export function ManagementBoothEditModal({
         </label>
 
         <label className="management-booth-modal__field">
-          <span>Area</span>
+          <span>{t.management.booths.area}</span>
           <input
             type="number"
             min="0"
@@ -118,7 +123,7 @@ export function ManagementBoothEditModal({
         </label>
 
         <label className="management-booth-modal__field">
-          <span>Price</span>
+          <span>{t.management.booths.price}</span>
           <input
             type="number"
             min="0"
@@ -147,14 +152,14 @@ export function ManagementBoothEditModal({
             onClick={onCancel}
             disabled={isSubmitting}
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             className="management-booth-modal__button management-booth-modal__button--primary"
             type="submit"
             disabled={isSubmitting || Boolean(validationMessage)}
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? t.common.saving : t.common.save}
           </button>
         </div>
       </form>

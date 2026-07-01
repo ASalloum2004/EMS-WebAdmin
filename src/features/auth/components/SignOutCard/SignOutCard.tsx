@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Card } from "../../../../components";
 import { useAuth } from "../../../../context";
+import { useI18n } from "../../../../i18n";
 import signOutIcon from "../../../../assets/auth/signout.svg";
 import { SignOutConfirmModal } from "../SignOutConfirmModal";
 import "./SignOutCard.scss";
 
 export function SignOutCard() {
   const { signOut } = useAuth();
+  const { t } = useI18n();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   function handleConfirmSignOut() {
@@ -18,7 +20,7 @@ export function SignOutCard() {
     <>
       <Card
         className="sign-out-card"
-        title="Account Access"
+        title={t.profile.accountAccess}
         icon={
           <img
             className="sign-out-card__icon-image"
@@ -36,7 +38,7 @@ export function SignOutCard() {
             aria-haspopup="dialog"
             onClick={() => setIsConfirmOpen(true)}
           >
-            Sign Out
+            {t.auth.signOut}
           </button>
         </div>
       </Card>

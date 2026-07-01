@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import eyeIcon from "../../../../assets/auth/eye.svg";
 import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
 import { resetPasswordIcon } from "../../../../assets/Profile";
+import { useI18n } from "../../../../i18n";
 import { useChangePassword } from "../../hooks";
 import "./ChangePasswordModal.scss";
 
@@ -97,6 +98,7 @@ type PasswordVisibilityField =
   | "confirmNewPassword";
 
 export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
+  const { t } = useI18n();
   const [visiblePasswords, setVisiblePasswords] = useState<
     Record<PasswordVisibilityField, boolean>
   >({
@@ -160,7 +162,7 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
         <button
           type="button"
           className="change-password-modal__close"
-          aria-label="Close change password modal"
+          aria-label={t.profile.closeChangePasswordModal}
           onClick={onClose}
         >
           x
@@ -174,7 +176,7 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
             />
           </span>
 
-          <h2 id="change-password-modal-title">Change Password</h2>
+          <h2 id="change-password-modal-title">{t.profile.changePassword}</h2>
         </div>
 
         <div className="change-password-modal__fields">
@@ -184,15 +186,15 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
             error={fieldErrors.currentPassword}
             id="change-password-current-password"
             isVisible={visiblePasswords.currentPassword}
-            label="Current Password"
+            label={t.profile.currentPassword}
             name="currentPassword"
             value={currentPassword}
             onChange={updateCurrentPassword}
             onToggleVisibility={() => togglePasswordVisibility("currentPassword")}
             toggleAriaLabel={
               visiblePasswords.currentPassword
-                ? "Hide current password"
-                : "Show current password"
+                ? t.auth.hidePassword
+                : t.auth.showPassword
             }
           />
 
@@ -202,15 +204,15 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
             error={fieldErrors.newPassword}
             id="change-password-new-password"
             isVisible={visiblePasswords.newPassword}
-            label="New Password"
+            label={t.profile.newPassword}
             name="newPassword"
             value={newPassword}
             onChange={updateNewPassword}
             onToggleVisibility={() => togglePasswordVisibility("newPassword")}
             toggleAriaLabel={
               visiblePasswords.newPassword
-                ? "Hide new password"
-                : "Show new password"
+                ? t.auth.hidePassword
+                : t.auth.showPassword
             }
           />
 
@@ -220,7 +222,7 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
             error={fieldErrors.confirmNewPassword}
             id="change-password-confirm-new-password"
             isVisible={visiblePasswords.confirmNewPassword}
-            label="Confirm New Password"
+            label={t.profile.confirmNewPassword}
             name="confirmNewPassword"
             value={confirmNewPassword}
             onChange={updateConfirmNewPassword}
@@ -229,8 +231,8 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
             }
             toggleAriaLabel={
               visiblePasswords.confirmNewPassword
-                ? "Hide confirm password"
-                : "Show confirm password"
+                ? t.auth.hidePassword
+                : t.auth.showPassword
             }
           />
         </div>
@@ -250,7 +252,9 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
           className="change-password-modal__button"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Updating..." : "Update Password"}
+          {isSubmitting
+            ? t.profile.updatingPassword
+            : t.profile.updatePassword}
         </button>
       </form>
     </div>

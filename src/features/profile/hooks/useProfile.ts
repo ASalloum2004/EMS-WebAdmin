@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ApiRequestError } from "../../../api";
 import { useAuth } from "../../../context";
 import { getProfile, updateProfile as updateProfileRequest } from "../api";
 import type { AdminProfile, AdminProfileUpdatePayload } from "../types";
+import {
+  getProfileErrorMessage,
+  useOptionalProfileContext,
+} from "./ProfileContext";
 
 const ACCEPTED_AVATAR_TYPES = new Set([
   "image/jpeg",
@@ -13,37 +16,6 @@ const ACCEPTED_AVATAR_TYPES = new Set([
 
 interface UseProfileOptions {
   initialProfile?: AdminProfile | null;
-}
-
-function getErrorMessage(error: unknown, fallbackMessage: string) {
-  const validationMessage =
-    error instanceof ApiRequestError
-      ? getValidationErrorMessage(error.errors)
-      : "";
-
-  if (validationMessage) {
-    return validationMessage;
-  }
-
-  return error instanceof Error ? error.message : fallbackMessage;
-}
-
-function getValidationErrorMessage(errors: Record<string, unknown> = {}) {
-  return ["name", "avatar"]
-    .flatMap((field) => getFieldMessages(errors[field]))
-    .join(" ");
-}
-
-function getFieldMessages(value: unknown) {
-  if (Array.isArray(value)) {
-    return value.filter(isNonEmptyString);
-  }
-
-  return isNonEmptyString(value) ? [value] : [];
-}
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && Boolean(value.trim());
 }
 
 function canLoadAvatarUrl(avatarUrl: string) {
@@ -58,9 +30,11 @@ function canLoadAvatarUrl(avatarUrl: string) {
 
 export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<AdminProfile | null>(initialProfile);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const profileContext = useOptionalProfileContext();
+  const [localProfile, setLocalProfile] =
+    useState<AdminProfile | null>(initialProfile);
+  const [localError, setLocalError] = useState("");
+  const [localIsLoading, setLocalIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -71,30 +45,42 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const avatarPreviewUrlRef = useRef("");
   const avatarUploadIdRef = useRef(0);
 
-  const refreshProfile = useCallback(async () => {
-    setError("");
-    setIsLoading(true);
+  const refreshLocalProfile = useCallback(async () => {
+    setLocalError("");
+    setLocalIsLoading(true);
 
     try {
       const nextProfile = await getProfile();
-      setProfile(nextProfile);
+      setLocalProfile(nextProfile);
       return nextProfile;
     } catch (profileError) {
-      setError(getErrorMessage(profileError, "Unable to load profile."));
+      setLocalError(
+        getProfileErrorMessage(profileError, "Unable to load profile."),
+      );
       return null;
     } finally {
-      setIsLoading(false);
+      setLocalIsLoading(false);
     }
   }, []);
 
+  const error = profileContext?.error ?? localError;
+  const isLoading = profileContext?.isLoading ?? localIsLoading;
+  const profile = profileContext?.profile ?? localProfile;
+  const refreshProfile = profileContext?.refreshProfile ?? refreshLocalProfile;
+  const setProfile = profileContext?.setProfile ?? setLocalProfile;
+
   useEffect(() => {
+    if (profileContext) {
+      return;
+    }
+
     if (hasRequestedProfile.current) {
       return;
     }
 
     hasRequestedProfile.current = true;
     void refreshProfile();
-  }, [refreshProfile]);
+  }, [profileContext, refreshProfile]);
 
   const updateProfile = useCallback(
     async (payload: AdminProfileUpdatePayload) => {
@@ -107,14 +93,14 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
         return nextProfile;
       } catch (profileError) {
         setUpdateError(
-          getErrorMessage(profileError, "Unable to update profile."),
+          getProfileErrorMessage(profileError, "Unable to update profile."),
         );
         return null;
       } finally {
         setIsUpdating(false);
       }
     },
-    [],
+    [setProfile],
   );
 
   const displayName = profile?.name ?? user?.name ?? "Admin Profile";

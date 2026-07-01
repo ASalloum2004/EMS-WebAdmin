@@ -45,3 +45,20 @@
   border-radius: 9999px;
   object-fit: cover;
 }
+
+.admin-appbar__avatar-fallback {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ems-color-white-20);
+  border-radius: 9999px;
+  background-color: var(--ems-color-admin-primary-80);
+  color: var(--ems-color-white);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+}

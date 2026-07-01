@@ -9,6 +9,14 @@ import {
 import { useProfile } from "../hooks";
 
 export function ProfilePage() {
+  return (
+    <ProfileLayout>
+      <ProfilePageContent />
+    </ProfileLayout>
+  );
+}
+
+function ProfilePageContent() {
   const {
     avatarUrl,
     cancelNameEdit,
@@ -27,7 +35,7 @@ export function ProfilePage() {
   } = useProfile();
 
   return (
-    <ProfileLayout>
+    <>
       <ProfileIdentityCard
         name={name}
         role={role}
@@ -61,6 +69,6 @@ export function ProfilePage() {
           <ThemeSettingsCard />
         </div>
       </div>
-    </ProfileLayout>
+    </>
   );
 }

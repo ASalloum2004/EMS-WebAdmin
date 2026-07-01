@@ -18,6 +18,10 @@ type AdminSidebarItem = {
   labelKey: keyof I18nDictionary["layout"]["sidebar"];
 };
 
+interface AdminSidebarProps {
+  adminName: string;
+}
+
 const sidebarItems: AdminSidebarItem[] = [
   {
     href: "/orders",
@@ -71,7 +75,7 @@ function createIconStyle(icon: string) {
   } as CSSProperties;
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ adminName }: AdminSidebarProps) {
   const { t } = useI18n();
 
   return (
@@ -117,7 +121,7 @@ export function AdminSidebar() {
           aria-hidden="true"
         />
 
-        <span>Alex Mercer</span>
+        <span>{adminName}</span>
       </div>
     </aside>
   );

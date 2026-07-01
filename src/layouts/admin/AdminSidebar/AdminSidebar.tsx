@@ -9,54 +9,55 @@ import {
   reportsIcon,
   visitorsIcon,
 } from "../../../assets/AdminSideBar";
+import { useI18n, type I18nDictionary } from "../../../i18n";
 import "./AdminSidebar.scss";
 
 type AdminSidebarItem = {
-  label: string;
   href: string;
   icon: string;
+  labelKey: keyof I18nDictionary["layout"]["sidebar"];
 };
 
 const sidebarItems: AdminSidebarItem[] = [
   {
-    label: "Orders & Services",
     href: "/orders",
     icon: ordersServicesIcon,
+    labelKey: "ordersServices",
   },
   {
-    label: "Companies",
     href: "/companies",
     icon: companiesIcon,
+    labelKey: "companies",
   },
   {
-    label: "Visitors",
     href: "/visitors",
     icon: visitorsIcon,
+    labelKey: "visitors",
   },
   {
-    label: "Notification",
     href: "/notifications",
     icon: notificationIcon,
+    labelKey: "notification",
   },
   {
-    label: "Announcements",
     href: "/announcements",
     icon: announcementsIcon,
+    labelKey: "announcements",
   },
   {
-    label: "Reports",
     href: "/reports",
     icon: reportsIcon,
+    labelKey: "reports",
   },
   {
-    label: "Management",
     href: "/management",
     icon: managementsIcon,
+    labelKey: "management",
   },
   {
-    label: "Profile",
     href: "/profile",
     icon: profileIcon,
+    labelKey: "profile",
   },
 ];
 
@@ -70,16 +71,20 @@ function createIconStyle(icon: string) {
   } as CSSProperties;
 }
 
-
 export function AdminSidebar() {
+  const { t } = useI18n();
+
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar__brand">
-        <h2>Damascus Fair</h2>
-        <p>Admin portal</p>
+        <h2>{t.layout.sidebar.brandName}</h2>
+        <p>{t.layout.sidebar.brandSubtitle}</p>
       </div>
 
-      <nav className="admin-sidebar__nav" aria-label="Admin navigation">
+      <nav
+        className="admin-sidebar__nav"
+        aria-label={t.layout.sidebar.navigationAriaLabel}
+      >
         {sidebarItems.map((item) => {
           const isActive = isActivePath(item.href);
 
@@ -99,7 +104,7 @@ export function AdminSidebar() {
                 aria-hidden="true"
               />
 
-              <span>{item.label}</span>
+              <span>{t.layout.sidebar[item.labelKey]}</span>
             </a>
           );
         })}

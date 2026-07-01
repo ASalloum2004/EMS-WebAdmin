@@ -59,6 +59,26 @@ export const en = {
     updatingPassword: "Updating...",
     closeChangePasswordModal: "Close change password modal",
   },
+  layout: {
+    sidebar: {
+      brandName: "Damascus Fair",
+      brandSubtitle: "Admin portal",
+      navigationAriaLabel: "Admin navigation",
+      ordersServices: "Orders & Services",
+      companies: "Companies",
+      visitors: "Visitors",
+      notification: "Notification",
+      announcements: "Announcements",
+      reports: "Reports",
+      management: "Management",
+      profile: "Profile",
+    },
+    appbar: {
+      title: "Admin Dashboard",
+      openProfileMenu: "Open admin profile menu",
+      adminProfileAlt: "Admin profile",
+    },
+  },
   management: {
     title: "Halls & Booth Management",
     description:

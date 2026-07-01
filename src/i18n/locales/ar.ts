@@ -60,6 +60,26 @@ export const ar: I18nDictionary = {
     updatingPassword: "جار التحديث...",
     closeChangePasswordModal: "إغلاق نافذة تغيير كلمة المرور",
   },
+  layout: {
+    sidebar: {
+      brandName: "معرض دمشق",
+      brandSubtitle: "بوابة المسؤول",
+      navigationAriaLabel: "تنقل المسؤول",
+      ordersServices: "الطلبات والخدمات",
+      companies: "الشركات",
+      visitors: "الزوار",
+      notification: "الإشعارات",
+      announcements: "الإعلانات",
+      reports: "التقارير",
+      management: "الإدارة",
+      profile: "الملف الشخصي",
+    },
+    appbar: {
+      title: "لوحة التحكم",
+      openProfileMenu: "فتح قائمة ملف المسؤول",
+      adminProfileAlt: "ملف المسؤول",
+    },
+  },
   management: {
     title: "إدارة القاعات والأجنحة",
     description:

@@ -59,8 +59,9 @@
   --ems-color-admin-background: #f9fafb;
 
   /* Fonts */
-  --ems-font-body: Inter, Arial, Helvetica, sans-serif;
-  --ems-font-display: "Plus Jakarta Sans", Inter, Arial, Helvetica, sans-serif;
+  --ems-font-fallback: Arial, Helvetica, sans-serif;
+  --ems-font-body: "Cairo", var(--ems-font-fallback, sans-serif);
+  --ems-font-display: "Cairo", var(--ems-font-fallback, sans-serif);
 
   /* Radius */
   --ems-radius-xs: 4px;

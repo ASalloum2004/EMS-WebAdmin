@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getBooths } from "../api/boothsApi";
 import { updateBooth } from "../api/updateBoothApi";
-import type {
-  BoothApiData,
-  GetBoothsParams,
-  UpdateBoothPayload,
-} from "../types";
+import type { BoothApiData, UpdateBoothPayload } from "../types";
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error ? error.message : fallbackMessage;
@@ -23,12 +19,12 @@ export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
   const [isUpdating, setIsUpdating] = useState(false);
   const hasRequestedBooths = useRef(false);
 
-  const refetch = useCallback(async (params: GetBoothsParams = {}) => {
+  const refetch = useCallback(async () => {
     setError("");
     setIsLoading(true);
 
     try {
-      const nextBooths = await getBooths(params);
+      const nextBooths = await getBooths();
       setBooths(nextBooths);
       return nextBooths;
     } catch (boothsError) {

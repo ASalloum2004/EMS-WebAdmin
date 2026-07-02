@@ -113,6 +113,11 @@ export const ar: I18nDictionary = {
       number: "الرقم",
       area: "المساحة",
       price: "السعر",
+      status: {
+        label: "الحالة",
+        booked: "محجوز",
+        available: "متاح",
+      },
       ariaLabel: "الأجنحة",
     },
     filters: {

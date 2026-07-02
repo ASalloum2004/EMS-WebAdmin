@@ -2,6 +2,28 @@ import type { DataTableColumn } from "../../../components";
 import type { I18nDictionary } from "../../../i18n";
 import type { BoothApiData, HallApiData } from "../types";
 
+function getBoothBookingStatus(
+  booth: BoothApiData,
+  status: I18nDictionary["management"]["booths"]["status"],
+) {
+  return booth.is_booked ? status.booked : status.available;
+}
+
+function renderBoothBookingStatus(
+  booth: BoothApiData,
+  status: I18nDictionary["management"]["booths"]["status"],
+) {
+  const statusClassName = booth.is_booked
+    ? "management-booth-status management-booth-status--booked"
+    : "management-booth-status management-booth-status--available";
+
+  return (
+    <span className={statusClassName}>
+      {getBoothBookingStatus(booth, status)}
+    </span>
+  );
+}
+
 export function getHallColumns(
   t: I18nDictionary,
 ): Array<DataTableColumn<HallApiData>> {
@@ -40,14 +62,24 @@ export function getBoothColumns(
     },
     {
       key: "area",
+      className: "management-booth-table__cell--balanced",
       label: t.management.booths.area,
       render: (booth) => booth.area,
       variant: "metric",
     },
     {
       key: "price",
+      className: "management-booth-table__cell--balanced",
       label: t.management.booths.price,
       render: (booth) => booth.price,
+      variant: "metric",
+    },
+    {
+      key: "status",
+      className: "management-booth-table__cell--balanced",
+      label: t.management.booths.status.label,
+      render: (booth) =>
+        renderBoothBookingStatus(booth, t.management.booths.status),
       variant: "metric",
     },
     {

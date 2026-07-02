@@ -1,15 +1,10 @@
 import { useMemo, useState } from "react";
 import { filterBySearchQuery } from "../../../components";
-import type {
-  BoothApiData,
-  BoothBookedFilter,
-  BoothClientFilters,
-  GetBoothsParams,
-} from "../types";
+import type { BoothApiData, BoothClientFilters } from "../types";
 
 type UseBoothFilteringOptions = {
   booths: BoothApiData[];
-  refetchBooths: (params?: GetBoothsParams) => Promise<BoothApiData[]>;
+  refetchBooths: () => Promise<BoothApiData[]>;
   searchValue: string;
   validationMessages?: BoothFilterValidationMessages;
 };
@@ -118,18 +113,6 @@ function getBoothValidationMessage(
   return "";
 }
 
-function getBookedParam(booked: BoothBookedFilter): GetBoothsParams {
-  if (booked === "booked") {
-    return { booked: true };
-  }
-
-  if (booked === "available") {
-    return { booked: false };
-  }
-
-  return {};
-}
-
 function filterBoothsLocally(
   booths: BoothApiData[],
   filters: BoothClientFilters,
@@ -147,6 +130,14 @@ function filterBoothsLocally(
       boothNumber &&
       !booth.number.toLowerCase().includes(boothNumber)
     ) {
+      return false;
+    }
+
+    if (filters.booked === "booked" && booth.is_booked !== true) {
+      return false;
+    }
+
+    if (filters.booked === "available" && booth.is_booked !== false) {
       return false;
     }
 
@@ -225,30 +216,20 @@ export function useBoothFiltering({
     }
 
     const nextFilters = draftFilters;
-    const shouldRefetchBooths = nextFilters.booked !== filters.booked;
 
     setFilters(nextFilters);
     setIsFilterPanelOpen(false);
-
-    if (shouldRefetchBooths) {
-      void refetchBooths(getBookedParam(nextFilters.booked));
-    }
   }
 
   function clearFilters() {
     const emptyFilters = createEmptyBoothFilters();
-    const shouldRefetchBooths = filters.booked !== "";
 
     setDraftFilters(emptyFilters);
     setFilters(emptyFilters);
-
-    if (shouldRefetchBooths) {
-      void refetchBooths();
-    }
   }
 
   function refetchFilteredBooths() {
-    return refetchBooths(getBookedParam(filters.booked));
+    return refetchBooths();
   }
 
   return {

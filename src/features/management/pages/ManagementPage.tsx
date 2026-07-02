@@ -211,6 +211,7 @@ export function ManagementPage() {
             <DataTable
               actions={boothActions}
               ariaLabel={t.management.booths.ariaLabel}
+              className="management-booth-table"
               columns={boothColumns}
               getItemKey={(booth) => booth.id}
               items={boothFiltering.visibleBooths}

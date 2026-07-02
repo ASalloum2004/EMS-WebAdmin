@@ -112,6 +112,11 @@ export const en = {
       number: "Number",
       area: "Area",
       price: "Price",
+      status: {
+        label: "Status",
+        booked: "Booked",
+        available: "Available",
+      },
       ariaLabel: "Booths",
     },
     filters: {

@@ -20,7 +20,7 @@ export type BoothApiData = {
   price: string;
   svg_id: string;
   created_at: string;
-  is_booked?: boolean;
+  is_booked: boolean;
 };
 
 export type BoothBookedFilter = "" | "booked" | "available";
@@ -32,10 +32,6 @@ export type BoothClientFilters = {
   minArea: string;
   minPrice: string;
   number: string;
-};
-
-export type GetBoothsParams = {
-  booked?: boolean | "";
 };
 
 export type BoothsResponse = {

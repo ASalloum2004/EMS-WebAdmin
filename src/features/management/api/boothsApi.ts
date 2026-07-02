@@ -1,9 +1,5 @@
 import { apiRequest } from "../../../api";
-import type {
-  BoothApiData,
-  BoothsResponse,
-  GetBoothsParams,
-} from "../types";
+import type { BoothApiData, BoothsResponse } from "../types";
 
 type NestedBoothsResponse = Omit<BoothsResponse, "data"> & {
   data: {
@@ -24,22 +20,8 @@ function isNestedBoothsData(
   );
 }
 
-function getBoothsPath(params: GetBoothsParams = {}) {
-  if (params.booked === true) {
-    return "booths?filter[booked]=true";
-  }
-
-  if (params.booked === false) {
-    return "booths?filter[booked]=false";
-  }
-
-  return "booths";
-}
-
-export async function getBooths(
-  params: GetBoothsParams = {},
-): Promise<BoothApiData[]> {
-  const response = await apiRequest<BoothsApiResponse>(getBoothsPath(params), {
+export async function getBooths(): Promise<BoothApiData[]> {
+  const response = await apiRequest<BoothsApiResponse>("booths", {
     method: "GET",
     requiresAuth: true,
   });

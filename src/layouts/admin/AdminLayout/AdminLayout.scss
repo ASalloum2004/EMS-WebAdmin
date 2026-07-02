@@ -21,13 +21,8 @@
   flex: 1;
   min-width: 0;
   min-height: 0;
-  direction: ltr;
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-[dir="rtl"] .admin-layout__main {
-  direction: ltr;
 }
 
 [dir="rtl"] .admin-layout__main > * {

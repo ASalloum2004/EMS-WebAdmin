@@ -1,140 +1,80 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, type FormEvent } from "react";
 import {
   ModalCloseButton,
   SearchFilterBar,
   TableFooter,
-  filterBySearchQuery,
 } from "../../../../components";
 import { useI18n } from "../../../../i18n";
+import { useServices } from "../../hooks";
 import "./ManagementServicesModal.scss";
 
 const SERVICES_PER_PAGE = 3;
 
-type ServicePreview = {
-  id: number;
-  is_active: boolean;
-  name: string;
-  price: string;
-};
-
-type ServiceFormMode = "add" | "edit";
-
-type ServiceFormState = {
-  isActive: boolean;
-  name: string;
-  price: string;
-};
-
-type ActiveServiceForm = {
-  mode: ServiceFormMode;
-  service?: ServicePreview;
-};
-
 interface ManagementServicesModalProps {
   onClose: () => void;
-}
-
-function getInitialFormState(service?: ServicePreview): ServiceFormState {
-  return {
-    isActive: service?.is_active ?? true,
-    name: service?.name ?? "",
-    price: service?.price ?? "",
-  };
 }
 
 export function ManagementServicesModal({
   onClose,
 }: ManagementServicesModalProps) {
   const { t } = useI18n();
-  const [searchValue, setSearchValue] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeForm, setActiveForm] = useState<ActiveServiceForm | null>(null);
-  const [formState, setFormState] = useState<ServiceFormState>(
-    getInitialFormState(),
-  );
-
-  const services = useMemo<ServicePreview[]>(
-    () => [
-      { id: 1, name: "Electricity", price: "50.00", is_active: true },
-      { id: 2, name: "Cleaning", price: "25.00", is_active: true },
-      {
-        id: 3,
-        name: "Premium Booth Setup",
-        price: "150.00",
-        is_active: false,
-      },
+  const validationMessages = useMemo(
+    () => ({
+      invalidPrice: t.management.servicesModal.invalidPrice,
+      nameRequired: t.management.servicesModal.nameRequired,
+      negativePrice: t.management.servicesModal.negativePrice,
+      priceRequired: t.management.servicesModal.priceRequired,
+      statusRequired: t.management.servicesModal.statusRequired,
+    }),
+    [
+      t.management.servicesModal.invalidPrice,
+      t.management.servicesModal.nameRequired,
+      t.management.servicesModal.negativePrice,
+      t.management.servicesModal.priceRequired,
+      t.management.servicesModal.statusRequired,
     ],
-    [],
   );
-
-  const visibleServices = useMemo(() => {
-    return filterBySearchQuery(services, searchValue, (service) => [
-      service.name,
-    ]);
-  }, [searchValue, services]);
-
-  const totalServicePages = Math.max(
-    1,
-    Math.ceil(visibleServices.length / SERVICES_PER_PAGE),
-  );
-  const safeCurrentPage = Math.min(Math.max(1, currentPage), totalServicePages);
-  const paginatedServices = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * SERVICES_PER_PAGE;
-
-    return visibleServices.slice(startIndex, startIndex + SERVICES_PER_PAGE);
-  }, [safeCurrentPage, visibleServices]);
+  const {
+    services,
+    isLoading,
+    error,
+    currentPage,
+    setCurrentPage,
+    perPage,
+    totalItems,
+    searchName,
+    setSearchName,
+    serviceForm,
+    openCreate,
+    openEdit,
+    closeForm,
+    submitForm,
+    isSubmitting,
+    isSaveDisabled,
+    formStatusMessage,
+  } = useServices({
+    enabled: true,
+    initialPerPage: SERVICES_PER_PAGE,
+    validationMessages,
+  });
 
   const formTitle =
-    activeForm?.mode === "edit"
+    serviceForm.mode === "edit"
       ? t.management.servicesModal.editTitle
       : t.management.servicesModal.addTitle;
-  const isSaveDisabled =
-    !formState.name.trim() || !formState.price.trim() || !activeForm;
-
-  useEffect(() => {
-    if (currentPage !== safeCurrentPage) {
-      setCurrentPage(safeCurrentPage);
-    }
-  }, [currentPage, safeCurrentPage]);
-
-  function openAddForm() {
-    setActiveForm({ mode: "add" });
-    setFormState(getInitialFormState());
-  }
 
   function handleSearchChange(value: string) {
-    setSearchValue(value);
-    setCurrentPage(1);
+    setSearchName(value);
   }
 
-  function openEditForm(service: ServicePreview) {
-    setActiveForm({ mode: "edit", service });
-    setFormState(getInitialFormState(service));
-  }
-
-  function closeForm() {
-    setActiveForm(null);
-    setFormState(getInitialFormState());
-  }
-
-  function updateFormField(
-    field: keyof ServiceFormState,
-    value: string | boolean,
-  ) {
-    setFormState((currentFormState) => ({
-      ...currentFormState,
-      [field]: value,
-    }));
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isSaveDisabled) {
       return;
     }
 
-    closeForm();
+    await submitForm();
   }
 
   return (
@@ -167,7 +107,7 @@ export function ManagementServicesModal({
         <div className="management-services-modal__toolbar">
           <SearchFilterBar
             className="management-services-modal__search"
-            value={searchValue}
+            value={searchName}
             onChange={handleSearchChange}
             placeholder={t.management.servicesModal.searchPlaceholder}
             inputAriaLabel={t.management.servicesModal.searchAriaLabel}
@@ -179,7 +119,7 @@ export function ManagementServicesModal({
           <button
             className="management-services-modal__add-button"
             type="button"
-            onClick={openAddForm}
+            onClick={openCreate}
           >
             <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
               <path d="M10 3.25c.41 0 .75.34.75.75v5.25H16a.75.75 0 0 1 0 1.5h-5.25V16a.75.75 0 0 1-1.5 0v-5.25H4a.75.75 0 0 1 0-1.5h5.25V4c0-.41.34-.75.75-.75Z" />
@@ -188,7 +128,7 @@ export function ManagementServicesModal({
           </button>
         </div>
 
-        {activeForm ? (
+        {serviceForm.isOpen ? (
           <form
             className="management-services-modal__form"
             aria-label={formTitle}
@@ -196,7 +136,9 @@ export function ManagementServicesModal({
           >
             <div className="management-services-modal__form-header">
               <h3>{formTitle}</h3>
-              {activeForm.service ? <span>#{activeForm.service.id}</span> : null}
+              {serviceForm.selectedService ? (
+                <span>#{serviceForm.selectedService.id}</span>
+              ) : null}
             </div>
 
             <div className="management-services-modal__form-grid">
@@ -204,9 +146,9 @@ export function ManagementServicesModal({
                 <span>{t.management.servicesModal.serviceName}</span>
                 <input
                   type="text"
-                  value={formState.name}
+                  value={serviceForm.values.name}
                   onChange={(event) =>
-                    updateFormField("name", event.target.value)
+                    serviceForm.updateField("name", event.target.value)
                   }
                 />
               </label>
@@ -217,26 +159,35 @@ export function ManagementServicesModal({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formState.price}
+                  value={serviceForm.values.price}
                   onChange={(event) =>
-                    updateFormField("price", event.target.value)
+                    serviceForm.updateField("price", event.target.value)
                   }
                 />
               </label>
 
-              {activeForm.mode === "edit" ? (
+              {serviceForm.mode === "edit" ? (
                 <label className="management-services-modal__toggle">
                   <input
                     type="checkbox"
-                    checked={formState.isActive}
+                    checked={serviceForm.values.isActive}
                     onChange={(event) =>
-                      updateFormField("isActive", event.target.checked)
+                      serviceForm.updateField("isActive", event.target.checked)
                     }
                   />
                   <span>{t.management.servicesModal.active}</span>
                 </label>
               ) : null}
             </div>
+
+            {formStatusMessage ? (
+              <p
+                className="management-services-modal__form-message"
+                role="alert"
+              >
+                {formStatusMessage}
+              </p>
+            ) : null}
 
             <div className="management-services-modal__form-actions">
               <button
@@ -251,7 +202,7 @@ export function ManagementServicesModal({
                 type="submit"
                 disabled={isSaveDisabled}
               >
-                {t.management.servicesModal.save}
+                {isSubmitting ? t.common.saving : t.management.servicesModal.save}
               </button>
             </div>
           </form>
@@ -282,7 +233,7 @@ export function ManagementServicesModal({
             className="management-services-modal__table-body"
             role="rowgroup"
           >
-            {paginatedServices.map((service) => {
+            {services.map((service) => {
               const statusLabel = service.is_active
                 ? t.management.servicesModal.active
                 : t.management.servicesModal.inactive;
@@ -308,7 +259,7 @@ export function ManagementServicesModal({
                     role="cell"
                     data-label={t.management.servicesModal.price}
                   >
-                    {service.price}
+                    {String(service.price)}
                   </div>
                   <div
                     className="management-services-modal__cell"
@@ -325,7 +276,7 @@ export function ManagementServicesModal({
                     <button
                       className="management-services-modal__edit-button"
                       type="button"
-                      onClick={() => openEditForm(service)}
+                      onClick={() => openEdit(service)}
                     >
                       {t.management.servicesModal.edit}
                     </button>
@@ -337,13 +288,25 @@ export function ManagementServicesModal({
         </div>
 
         <TableFooter
-          currentPage={safeCurrentPage}
-          perPage={SERVICES_PER_PAGE}
-          totalItems={visibleServices.length}
+          currentPage={currentPage}
+          perPage={perPage}
+          totalItems={totalItems}
           onPageChange={setCurrentPage}
         />
 
-        {!visibleServices.length ? (
+        {isLoading ? (
+          <p className="management-services-modal__empty">
+            {t.management.servicesModal.loading}
+          </p>
+        ) : null}
+
+        {error ? (
+          <p className="management-services-modal__empty" role="alert">
+            {error || t.management.servicesModal.loadError}
+          </p>
+        ) : null}
+
+        {!isLoading && !error && !services.length ? (
           <p className="management-services-modal__empty">
             {t.management.servicesModal.empty}
           </p>

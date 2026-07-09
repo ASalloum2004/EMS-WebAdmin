@@ -90,6 +90,7 @@
 .management-services-modal__copy p,
 .management-services-modal__form-header h3,
 .management-services-modal__form-header span,
+.management-services-modal__form-message,
 .management-services-modal__empty {
   margin: 0;
   font-family: var(--ems-font-body);
@@ -225,6 +226,13 @@
 .management-services-modal__field input:focus {
   border-color: var(--ems-color-primary);
   box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+}
+
+.management-services-modal__form-message {
+  color: var(--management-services-inactive-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
 }
 
 .management-services-modal__toggle {

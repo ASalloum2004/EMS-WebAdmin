@@ -51,3 +51,60 @@ export type UpdateBoothResponse = {
   message: string;
   data: BoothApiData;
 };
+
+export type ServiceApiData = {
+  id: number;
+  name: string;
+  price: string | number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PaginationMeta = {
+  current_page?: number;
+  per_page?: number;
+  total?: number;
+  last_page?: number;
+};
+
+export type ServicesResponse = {
+  status: boolean;
+  message: string;
+  data: ServiceApiData[];
+  meta?: PaginationMeta;
+  links?: Record<string, unknown>;
+  current_page?: number;
+  per_page?: number;
+  total?: number;
+  last_page?: number;
+};
+
+export type GetServicesResult = {
+  services: ServiceApiData[];
+  pagination: PaginationMeta;
+};
+
+export type GetServicesParams = {
+  name?: string;
+  perPage?: number;
+  page?: number;
+  sort?: string;
+};
+
+export type CreateServicePayload = {
+  name: string;
+  price: number;
+};
+
+export type UpdateServicePayload = {
+  name: string;
+  price: number;
+  is_active: boolean;
+};
+
+export type ServiceResponse = {
+  status: boolean;
+  message: string;
+  data: ServiceApiData;
+};

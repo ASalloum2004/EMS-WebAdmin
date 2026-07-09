@@ -6,6 +6,7 @@ import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal
 import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
 import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
 import { ManagementHeader } from "../components/ManagementHeader";
+import { ManagementServicesModal } from "../components/ManagementServicesModal";
 import {
   ManagementTabs,
   type ManagementTab,
@@ -27,6 +28,7 @@ import "./ManagementPage.scss";
 export function ManagementPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ManagementTab>("Hall");
+  const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
   const isHallTab = activeTab === "Hall";
   const isBoothTab = activeTab === "Booth";
   const isAllTab = activeTab === "All";
@@ -98,6 +100,7 @@ export function ManagementPage() {
           title={t.management.title}
           description={t.management.description}
           actionLabel={t.management.services}
+          onActionClick={() => setIsServicesModalOpen(true)}
         />
 
         <section
@@ -232,6 +235,12 @@ export function ManagementPage() {
             isSubmitting={isUpdatingBooth}
             onCancel={boothEditing.closeEditModal}
             onSave={boothEditing.saveBooth}
+          />
+        ) : null}
+
+        {isServicesModalOpen ? (
+          <ManagementServicesModal
+            onClose={() => setIsServicesModalOpen(false)}
           />
         ) : null}
       </div>

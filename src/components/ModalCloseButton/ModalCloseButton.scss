@@ -1,0 +1,45 @@
+.modal-close-button {
+  --modal-close-button-danger: var(--ems-color-danger);
+
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--ems-color-danger-surface);
+  border-radius: 9999px;
+  background-color: transparent;
+  color: var(--modal-close-button-danger);
+  font-family: var(--ems-font-body);
+  font-size: 0;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 120ms ease;
+}
+
+.modal-close-button::before {
+  content: "\00d7";
+  font-size: 22px;
+  line-height: 1;
+}
+
+.modal-close-button:hover {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-danger-surface);
+}
+
+.modal-close-button:active {
+  background-color: var(--ems-color-danger-surface);
+  transform: scale(0.96);
+}
+
+.modal-close-button:focus-visible {
+  outline: 2px solid var(--modal-close-button-danger);
+  outline-offset: 2px;
+}

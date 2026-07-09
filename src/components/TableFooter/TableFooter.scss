@@ -1,0 +1,105 @@
+.table-footer {
+  --table-footer-button-bg: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  --table-footer-button-border: var(--ems-color-border-soft);
+  --table-footer-button-text: var(--ems-color-muted);
+  --table-footer-button-hover-bg: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  --table-footer-active-bg: rgba(23, 186, 192, 0.12);
+  --table-footer-active-border: var(--ems-color-primary);
+  --table-footer-active-text: var(--ems-color-primary);
+
+  display: flex;
+  justify-content: center;
+}
+
+[data-theme="dark"] .table-footer {
+  --table-footer-button-bg: #0c141a;
+  --table-footer-button-border: #3c4949;
+  --table-footer-button-text: rgba(255, 255, 255, 0.78);
+  --table-footer-button-hover-bg: #101d24;
+  --table-footer-active-bg: rgba(23, 186, 192, 0.18);
+  --table-footer-active-border: #17bac0;
+  --table-footer-active-text: #7ee7eb;
+}
+
+.table-footer__controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.table-footer__button {
+  min-width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border: 1px solid var(--table-footer-button-border);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--table-footer-button-bg);
+  color: var(--table-footer-button-text);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.table-footer__button:hover {
+  background-color: var(--table-footer-button-hover-bg);
+  color: var(--table-footer-active-text);
+}
+
+.table-footer__button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.table-footer__button--page {
+  font-variant-numeric: tabular-nums;
+}
+
+.table-footer__button--arrow {
+  width: 32px;
+  padding: 0;
+}
+
+.table-footer__button--active,
+.table-footer__button--active:hover {
+  border-color: var(--table-footer-active-border);
+  background-color: var(--table-footer-active-bg);
+  color: var(--table-footer-active-text);
+}
+
+.table-footer__icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
+}
+
+[dir="rtl"] .table-footer__icon {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 520px) {
+  .table-footer__button {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 9px;
+  }
+
+  .table-footer__button--arrow {
+    width: 30px;
+    padding: 0;
+  }
+}

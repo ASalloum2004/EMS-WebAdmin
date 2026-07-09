@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import eyeIcon from "../../../../assets/auth/eye.svg";
 import eyeOpenIcon from "../../../../assets/auth/eye-open.svg";
 import { resetPasswordIcon } from "../../../../assets/Profile";
+import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import { useChangePassword } from "../../hooks";
 import "./ChangePasswordModal.scss";
@@ -159,14 +160,11 @@ export function ChangePasswordModal({ onClose }: ChangePasswordModalProps) {
         aria-modal="true"
         onSubmit={submitChangePassword}
       >
-        <button
-          type="button"
+        <ModalCloseButton
           className="change-password-modal__close"
-          aria-label={t.profile.closeChangePasswordModal}
+          ariaLabel={t.profile.closeChangePasswordModal}
           onClick={onClose}
-        >
-          x
-        </button>
+        />
 
         <div className="change-password-modal__header">
           <span className="change-password-modal__icon-container">

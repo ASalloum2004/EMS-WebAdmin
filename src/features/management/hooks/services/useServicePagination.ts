@@ -17,11 +17,23 @@ function getSafeTotalItems(value: number) {
   return Math.max(0, Math.trunc(value));
 }
 
-function getTotalItemsFromMeta(meta: PaginationMeta, fallbackCount: number) {
-  const total = meta.total;
+function getSafeTotalPages(value: number) {
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
 
-  if (typeof total === "number" && Number.isFinite(total) && total >= 0) {
-    return Math.max(Math.trunc(total), fallbackCount);
+  return Math.max(1, Math.trunc(value));
+}
+
+function getTotalItemsFromMeta(meta: PaginationMeta, fallbackCount: number) {
+  const totalItems = meta.totalItems;
+
+  if (
+    typeof totalItems === "number" &&
+    Number.isFinite(totalItems) &&
+    totalItems >= 0
+  ) {
+    return Math.max(Math.trunc(totalItems), fallbackCount);
   }
 
   return fallbackCount;
@@ -44,10 +56,13 @@ export function useServicePagination({
     clampPositiveInteger(initialPerPage),
   );
   const [totalItems, setTotalItemsState] = useState(0);
+  const [responseTotalPages, setResponseTotalPages] = useState<
+    number | undefined
+  >();
 
   const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(totalItems / perPage)),
-    [perPage, totalItems],
+    () => responseTotalPages ?? Math.max(1, Math.ceil(totalItems / perPage)),
+    [perPage, responseTotalPages, totalItems],
   );
 
   const resetPage = useCallback(() => {
@@ -66,6 +81,7 @@ export function useServicePagination({
   const setPerPage = useCallback((nextPerPage: number) => {
     setPerPageState(clampPositiveInteger(nextPerPage));
     setCurrentPageState(1);
+    setResponseTotalPages(undefined);
   }, []);
 
   const setTotalItems = useCallback((nextTotalItems: number) => {
@@ -74,25 +90,42 @@ export function useServicePagination({
 
   const applyPaginationResult = useCallback(
     ({ itemCount, meta }: ApplyPaginationResultOptions) => {
-      setTotalItemsState(getTotalItemsFromMeta(meta, itemCount));
+      const nextPerPage =
+        typeof meta.perPage === "number" &&
+        Number.isFinite(meta.perPage) &&
+        meta.perPage >= 1
+          ? Math.trunc(meta.perPage)
+          : perPage;
+      const nextTotalItems = getTotalItemsFromMeta(meta, itemCount);
+      const nextTotalPages =
+        typeof meta.totalPages === "number" &&
+        Number.isFinite(meta.totalPages) &&
+        meta.totalPages >= 1
+          ? getSafeTotalPages(meta.totalPages)
+          : Math.max(1, Math.ceil(nextTotalItems / nextPerPage));
+
+      setTotalItemsState(nextTotalItems);
+      setResponseTotalPages(nextTotalPages);
 
       if (
-        typeof meta.current_page === "number" &&
-        Number.isFinite(meta.current_page) &&
-        meta.current_page >= 1
+        typeof meta.currentPage === "number" &&
+        Number.isFinite(meta.currentPage) &&
+        meta.currentPage >= 1
       ) {
-        setCurrentPageState(Math.trunc(meta.current_page));
+        setCurrentPageState(
+          Math.min(Math.trunc(meta.currentPage), nextTotalPages),
+        );
       }
 
       if (
-        typeof meta.per_page === "number" &&
-        Number.isFinite(meta.per_page) &&
-        meta.per_page >= 1
+        typeof meta.perPage === "number" &&
+        Number.isFinite(meta.perPage) &&
+        meta.perPage >= 1
       ) {
-        setPerPageState(Math.trunc(meta.per_page));
+        setPerPageState(nextPerPage);
       }
     },
-    [],
+    [perPage],
   );
 
   useEffect(() => {
@@ -100,6 +133,17 @@ export function useServicePagination({
       setCurrentPageState(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log("[Services] pagination state", {
+        currentPage,
+        perPage,
+        totalItems,
+        totalPages,
+      });
+    }
+  }, [currentPage, perPage, totalItems, totalPages]);
 
   return {
     currentPage,

@@ -9,6 +9,8 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
 type UseServicesListOptions = {
   currentPage: number;
   enabled?: boolean;
+  maxPrice?: number;
+  minPrice?: number;
   onResult?: (result: GetServicesResult) => void;
   perPage: number;
   searchName: string;
@@ -18,10 +20,12 @@ type UseServicesListOptions = {
 export function useServicesList({
   currentPage,
   enabled = true,
+  maxPrice,
+  minPrice,
   onResult,
   perPage,
   searchName,
-  sort = "",
+  sort,
 }: UseServicesListOptions) {
   const [services, setServices] = useState<ServiceApiData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +43,20 @@ export function useServicesList({
     setIsLoading(true);
 
     try {
+      if (import.meta.env.DEV) {
+        console.log("[Services] list params", {
+          currentPage,
+          maxPrice,
+          minPrice,
+          perPage,
+          searchName,
+          sort,
+        });
+      }
+
       const result = await getServices({
+        maxPrice,
+        minPrice,
         name: searchName,
         page: currentPage,
         perPage,
@@ -64,7 +81,16 @@ export function useServicesList({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, enabled, onResult, perPage, searchName, sort]);
+  }, [
+    currentPage,
+    enabled,
+    maxPrice,
+    minPrice,
+    onResult,
+    perPage,
+    searchName,
+    sort,
+  ]);
 
   const clearListError = useCallback(() => {
     setError("");

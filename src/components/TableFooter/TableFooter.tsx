@@ -5,7 +5,8 @@ import "./TableFooter.scss";
 export type TableFooterProps = {
   currentPage: number;
   perPage: number;
-  totalItems: number;
+  totalItems?: number;
+  totalPages?: number;
   onPageChange?: (page: number) => void;
   className?: string;
 };
@@ -53,24 +54,34 @@ export function TableFooter({
   currentPage,
   perPage,
   totalItems,
+  totalPages,
   onPageChange,
   className,
 }: TableFooterProps) {
   const { t } = useI18n();
-  const safeTotalItems = Number.isFinite(totalItems)
-    ? Math.max(0, totalItems)
-    : 0;
-  const safePerPage = Number.isFinite(perPage) && perPage > 0 ? perPage : 1;
-  const totalPages = Math.max(1, Math.ceil(safeTotalItems / safePerPage));
-  const activePage = clampPage(currentPage, totalPages);
+  const safeTotalItems =
+    typeof totalItems === "number" && Number.isFinite(totalItems)
+      ? Math.max(0, Math.trunc(totalItems))
+      : 0;
+  const safePerPage =
+    Number.isFinite(perPage) && perPage > 0
+      ? Math.max(1, Math.trunc(perPage))
+      : 1;
+  const safeTotalPages =
+    typeof totalPages === "number" &&
+    Number.isFinite(totalPages) &&
+    totalPages > 0
+      ? Math.max(1, Math.trunc(totalPages))
+      : Math.max(1, Math.ceil(safeTotalItems / safePerPage));
+  const activePage = clampPage(currentPage, safeTotalPages);
 
   const pageNumbers = useMemo(
-    () => getPageNumbers(activePage, totalPages),
-    [activePage, totalPages],
+    () => getPageNumbers(activePage, safeTotalPages),
+    [activePage, safeTotalPages],
   );
 
   function handlePageChange(page: number) {
-    const nextPage = clampPage(page, totalPages);
+    const nextPage = clampPage(page, safeTotalPages);
 
     if (nextPage === activePage) {
       return;
@@ -79,7 +90,7 @@ export function TableFooter({
     onPageChange?.(nextPage);
   }
 
-  if (safeTotalItems === 0 || totalPages <= 1) {
+  if (safeTotalPages <= 1) {
     return null;
   }
 
@@ -119,7 +130,7 @@ export function TableFooter({
           </button>
         ))}
 
-        {activePage < totalPages ? (
+        {activePage < safeTotalPages ? (
           <button
             className="table-footer__button table-footer__button--arrow"
             type="button"

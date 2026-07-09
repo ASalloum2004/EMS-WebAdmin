@@ -62,17 +62,22 @@ export type ServiceApiData = {
 };
 
 export type PaginationMeta = {
-  current_page?: number;
-  per_page?: number;
-  total?: number;
-  last_page?: number;
+  currentPage?: number;
+  perPage?: number;
+  totalItems?: number;
+  totalPages?: number;
 };
 
 export type ServicesResponse = {
   status: boolean;
   message: string;
   data: ServiceApiData[];
-  meta?: PaginationMeta;
+  meta?: {
+    current_page?: number;
+    per_page?: number;
+    total?: number;
+    last_page?: number;
+  };
   links?: Record<string, unknown>;
   current_page?: number;
   per_page?: number;
@@ -86,6 +91,8 @@ export type GetServicesResult = {
 };
 
 export type GetServicesParams = {
+  maxPrice?: number;
+  minPrice?: number;
   name?: string;
   perPage?: number;
   page?: number;

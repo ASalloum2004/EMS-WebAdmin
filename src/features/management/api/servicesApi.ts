@@ -2,15 +2,24 @@ import { apiRequest } from "../../../api";
 import type {
   GetServicesParams,
   GetServicesResult,
-  PaginationMeta,
   ServiceApiData,
   ServicesResponse,
 } from "../types";
 
+type RawPaginationMeta = {
+  current_page?: number | string;
+  links?: Record<string, unknown>;
+  per_page?: number | string;
+  pagination?: Record<string, unknown>;
+  total?: number | string;
+  last_page?: number | string;
+};
+
 type NestedServicesData = {
   data: ServiceApiData[];
   links?: Record<string, unknown>;
-  meta?: PaginationMeta;
+  meta?: RawPaginationMeta;
+  pagination?: RawPaginationMeta;
   current_page?: number | string;
   per_page?: number | string;
   total?: number | string;
@@ -21,7 +30,9 @@ type NestedServicesResponse = Omit<ServicesResponse, "data"> & {
   data: NestedServicesData;
 };
 
-type ServicesApiResponse = ServicesResponse | NestedServicesResponse;
+type ServicesApiResponse = (ServicesResponse | NestedServicesResponse) & {
+  pagination?: RawPaginationMeta;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -45,37 +56,99 @@ function getNumber(value: unknown) {
   return undefined;
 }
 
+function getRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {};
+}
+
+function getPageFromLink(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value, "https://ems.local");
+
+    return getNumber(url.searchParams.get("page"));
+  } catch {
+    return undefined;
+  }
+}
+
+function getLastPageFromLinks(...linksList: unknown[]) {
+  for (const links of linksList) {
+    const lastPage = getPageFromLink(getRecord(links).last);
+
+    if (lastPage) {
+      return lastPage;
+    }
+  }
+
+  return undefined;
+}
+
+function logServicesDebug(message: string, details: unknown) {
+  if (import.meta.env.DEV) {
+    console.log(`[Services] ${message}`, details);
+  }
+}
+
 function getPaginationMeta(
   response: ServicesApiResponse,
   nestedData?: NestedServicesData,
-): PaginationMeta {
-  const responseMeta: Record<string, unknown> = isRecord(response.meta)
-    ? response.meta
-    : {};
-  const nestedMeta: Record<string, unknown> = isRecord(nestedData?.meta)
-    ? nestedData.meta
-    : {};
+): GetServicesResult["pagination"] {
+  const responseMeta = getRecord(response.meta);
+  const responseMetaPagination = getRecord(responseMeta.pagination);
+  const responsePagination = getRecord(response.pagination);
+  const nestedMeta = getRecord(nestedData?.meta);
+  const nestedMetaPagination = getRecord(nestedMeta.pagination);
+  const nestedPagination = getRecord(nestedData?.pagination);
 
   return {
-    current_page:
+    currentPage:
       getNumber(nestedMeta.current_page) ??
+      getNumber(nestedMetaPagination.current_page) ??
+      getNumber(nestedPagination.current_page) ??
       getNumber(nestedData?.current_page) ??
       getNumber(responseMeta.current_page) ??
+      getNumber(responseMetaPagination.current_page) ??
+      getNumber(responsePagination.current_page) ??
       getNumber(response.current_page),
-    per_page:
+    perPage:
       getNumber(nestedMeta.per_page) ??
+      getNumber(nestedMetaPagination.per_page) ??
+      getNumber(nestedPagination.per_page) ??
       getNumber(nestedData?.per_page) ??
       getNumber(responseMeta.per_page) ??
+      getNumber(responseMetaPagination.per_page) ??
+      getNumber(responsePagination.per_page) ??
       getNumber(response.per_page),
-    total:
+    totalItems:
       getNumber(nestedMeta.total) ??
+      getNumber(nestedMetaPagination.total) ??
+      getNumber(nestedPagination.total) ??
       getNumber(nestedData?.total) ??
       getNumber(responseMeta.total) ??
+      getNumber(responseMetaPagination.total) ??
+      getNumber(responsePagination.total) ??
       getNumber(response.total),
-    last_page:
+    totalPages:
       getNumber(nestedMeta.last_page) ??
+      getNumber(nestedMetaPagination.last_page) ??
+      getNumber(nestedPagination.last_page) ??
       getNumber(nestedData?.last_page) ??
       getNumber(responseMeta.last_page) ??
+      getNumber(responseMetaPagination.last_page) ??
+      getNumber(responsePagination.last_page) ??
+      getLastPageFromLinks(
+        nestedData?.links,
+        nestedMeta.links,
+        nestedMetaPagination.links,
+        nestedPagination.links,
+        response.links,
+        responseMeta.links,
+        responseMetaPagination.links,
+        responsePagination.links,
+      ) ??
       getNumber(response.last_page),
   };
 }
@@ -85,6 +158,22 @@ function buildServicesPath(params?: GetServicesParams) {
 
   if (params?.name?.trim()) {
     queryParams.set("filter[name]", params.name.trim());
+  }
+
+  if (
+    typeof params?.minPrice === "number" &&
+    Number.isFinite(params.minPrice) &&
+    params.minPrice >= 0
+  ) {
+    queryParams.set("filter[min_price]", String(params.minPrice));
+  }
+
+  if (
+    typeof params?.maxPrice === "number" &&
+    Number.isFinite(params.maxPrice) &&
+    params.maxPrice >= 0
+  ) {
+    queryParams.set("filter[max_price]", String(params.maxPrice));
   }
 
   if (
@@ -115,25 +204,41 @@ function buildServicesPath(params?: GetServicesParams) {
 export async function getServices(
   params?: GetServicesParams,
 ): Promise<GetServicesResult> {
+  const path = buildServicesPath(params);
+
+  logServicesDebug("request params", { path, params });
+
   const response = await apiRequest<ServicesApiResponse>(
-    buildServicesPath(params),
+    path,
     {
       method: "GET",
       requiresAuth: true,
     },
   );
 
+  logServicesDebug("raw response", response);
+
   if (Array.isArray(response.data)) {
+    const pagination = getPaginationMeta(response);
+
+    logServicesDebug("normalized services", response.data);
+    logServicesDebug("normalized pagination", pagination);
+
     return {
       services: response.data,
-      pagination: getPaginationMeta(response),
+      pagination,
     };
   }
 
   if (isNestedServicesData(response.data)) {
+    const pagination = getPaginationMeta(response, response.data);
+
+    logServicesDebug("normalized services", response.data.data);
+    logServicesDebug("normalized pagination", pagination);
+
     return {
       services: response.data.data,
-      pagination: getPaginationMeta(response, response.data),
+      pagination,
     };
   }
 

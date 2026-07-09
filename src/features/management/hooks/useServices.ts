@@ -1,10 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import type { GetServicesResult, ServiceApiData } from "../types";
 import {
   useServiceForm,
+  useServiceFilters,
   useServiceMutations,
   useServicePagination,
   useServiceSearch,
+  useServiceSort,
   useServicesList,
   type ServiceFormValidationMessages,
 } from "./services";
@@ -14,19 +16,26 @@ const DEFAULT_SERVICES_PER_PAGE = 3;
 type UseServicesOptions = {
   enabled?: boolean;
   initialPerPage?: number;
-  initialSort?: string;
   validationMessages: ServiceFormValidationMessages;
+  filterValidationMessages: {
+    invalidPrice: string;
+    minGreaterThanMax: string;
+  };
 };
 
 export function useServices({
   enabled = true,
   initialPerPage = DEFAULT_SERVICES_PER_PAGE,
-  initialSort = "",
+  filterValidationMessages,
   validationMessages,
 }: UseServicesOptions) {
   const pagination = useServicePagination({ initialPerPage });
   const search = useServiceSearch({ onSearchChange: pagination.resetPage });
-  const [sort, setSortState] = useState(initialSort);
+  const serviceFilters = useServiceFilters({
+    onFiltersChange: pagination.resetPage,
+    validationMessages: filterValidationMessages,
+  });
+  const serviceSort = useServiceSort({ onSortChange: pagination.resetPage });
   const serviceForm = useServiceForm({ validationMessages });
   const { applyPaginationResult } = pagination;
 
@@ -40,21 +49,15 @@ export function useServices({
     [applyPaginationResult],
   );
 
-  const setSort = useCallback(
-    (nextSort: string) => {
-      pagination.resetPage();
-      setSortState(nextSort);
-    },
-    [pagination],
-  );
-
   const servicesList = useServicesList({
     currentPage: pagination.currentPage,
     enabled,
+    maxPrice: serviceFilters.appliedMaxPrice,
+    minPrice: serviceFilters.appliedMinPrice,
     onResult: handleServicesResult,
     perPage: pagination.perPage,
     searchName: search.searchName,
-    sort,
+    sort: serviceSort.sortParam,
   });
 
   const serviceMutations = useServiceMutations({
@@ -155,8 +158,8 @@ export function useServices({
     searchName: search.searchName,
     setSearchName: search.setSearchName,
     resetSearch: search.resetSearch,
-    sort,
-    setSort,
+    serviceFilters,
+    serviceSort,
     isCreating: serviceMutations.isCreating,
     createError: serviceMutations.createError,
     createServiceByPayload: serviceMutations.createServiceByPayload,

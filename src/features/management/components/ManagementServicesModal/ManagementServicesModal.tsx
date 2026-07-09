@@ -34,6 +34,16 @@ export function ManagementServicesModal({
       t.management.servicesModal.statusRequired,
     ],
   );
+  const filterValidationMessages = useMemo(
+    () => ({
+      invalidPrice: t.management.servicesModal.invalidFilterPrice,
+      minGreaterThanMax: t.management.servicesModal.minPriceGreaterThanMaxPrice,
+    }),
+    [
+      t.management.servicesModal.invalidFilterPrice,
+      t.management.servicesModal.minPriceGreaterThanMaxPrice,
+    ],
+  );
   const {
     services,
     isLoading,
@@ -42,8 +52,11 @@ export function ManagementServicesModal({
     setCurrentPage,
     perPage,
     totalItems,
+    totalPages,
     searchName,
     setSearchName,
+    serviceFilters,
+    serviceSort,
     serviceForm,
     openCreate,
     openEdit,
@@ -54,6 +67,7 @@ export function ManagementServicesModal({
     formStatusMessage,
   } = useServices({
     enabled: true,
+    filterValidationMessages,
     initialPerPage: SERVICES_PER_PAGE,
     validationMessages,
   });
@@ -65,6 +79,19 @@ export function ManagementServicesModal({
 
   function handleSearchChange(value: string) {
     setSearchName(value);
+  }
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (serviceFilters.applyFilters()) {
+      serviceSort.applySort();
+    }
+  }
+
+  function handleClearFilters() {
+    serviceFilters.clearFilters();
+    serviceSort.clearSort();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -113,6 +140,7 @@ export function ManagementServicesModal({
             inputAriaLabel={t.management.servicesModal.searchAriaLabel}
             filterLabel={t.management.servicesModal.filter}
             filterAriaLabel={t.management.servicesModal.filterAriaLabel}
+            onFilterClick={serviceFilters.toggleFilters}
             showFilterButton
           />
 
@@ -127,6 +155,119 @@ export function ManagementServicesModal({
             <span>{t.management.servicesModal.addService}</span>
           </button>
         </div>
+
+        {serviceFilters.isFilterOpen ? (
+          <form
+            className="management-services-modal__filters-panel"
+            aria-label={t.management.servicesModal.filterAriaLabel}
+            onSubmit={handleFilterSubmit}
+          >
+            <div className="management-services-modal__filters-grid">
+              <label className="management-services-modal__field">
+                <span>{t.management.servicesModal.minPrice}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={serviceFilters.minPrice}
+                  onChange={(event) =>
+                    serviceFilters.setMinPrice(event.target.value)
+                  }
+                />
+              </label>
+
+              <label className="management-services-modal__field">
+                <span>{t.management.servicesModal.maxPrice}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={serviceFilters.maxPrice}
+                  onChange={(event) =>
+                    serviceFilters.setMaxPrice(event.target.value)
+                  }
+                />
+              </label>
+            </div>
+
+            {serviceFilters.filterError ? (
+              <p
+                className="management-services-modal__form-message"
+                role="alert"
+              >
+                {serviceFilters.filterError}
+              </p>
+            ) : null}
+
+            <div className="management-services-modal__sort-section">
+              <p className="management-services-modal__sort-title">
+                {t.management.servicesModal.sort}
+              </p>
+
+              <fieldset className="management-services-modal__sort-options">
+                <legend>{t.management.servicesModal.sortByPrice}</legend>
+
+                <label className="management-services-modal__sort-option">
+                  <input
+                    type="radio"
+                    name="services-sort"
+                    value="none"
+                    checked={serviceSort.sortValue === "none"}
+                    onChange={() => serviceSort.setSortValue("none")}
+                  />
+                  <span>{t.management.servicesModal.noSorting}</span>
+                </label>
+
+                <label className="management-services-modal__sort-option">
+                  <input
+                    type="radio"
+                    name="services-sort"
+                    value="price_asc"
+                    checked={serviceSort.sortValue === "price_asc"}
+                    onChange={() => serviceSort.setSortValue("price_asc")}
+                  />
+                  <span aria-hidden="true">↑</span>
+                  <span>{t.management.servicesModal.lowToHigh}</span>
+                </label>
+
+                <label className="management-services-modal__sort-option">
+                  <input
+                    type="radio"
+                    name="services-sort"
+                    value="price_desc"
+                    checked={serviceSort.sortValue === "price_desc"}
+                    onChange={() => serviceSort.setSortValue("price_desc")}
+                  />
+                  <span aria-hidden="true">↓</span>
+                  <span>{t.management.servicesModal.highToLow}</span>
+                </label>
+              </fieldset>
+            </div>
+
+            <div className="management-services-modal__filter-actions">
+              <button
+                className="management-services-modal__button management-services-modal__button--secondary"
+                type="button"
+                onClick={serviceFilters.closeFilters}
+              >
+                {t.management.servicesModal.cancel}
+              </button>
+              <button
+                className="management-services-modal__button management-services-modal__button--secondary"
+                type="button"
+                onClick={handleClearFilters}
+              >
+                {t.management.servicesModal.clearFilters}
+              </button>
+              <button
+                className="management-services-modal__button management-services-modal__button--primary"
+                type="submit"
+              >
+                {t.management.servicesModal.applyFilters}
+              </button>
+            </div>
+          </form>
+        ) : null}
 
         {serviceForm.isOpen ? (
           <form
@@ -291,6 +432,7 @@ export function ManagementServicesModal({
           currentPage={currentPage}
           perPage={perPage}
           totalItems={totalItems}
+          totalPages={totalPages}
           onPageChange={setCurrentPage}
         />
 

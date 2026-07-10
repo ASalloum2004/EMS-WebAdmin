@@ -25,18 +25,65 @@ function getSafeTotalPages(value: number) {
   return Math.max(1, Math.trunc(value));
 }
 
-function getTotalItemsFromMeta(meta: PaginationMeta, fallbackCount: number) {
-  const totalItems = meta.totalItems;
-
+function getPositiveInteger(value: unknown) {
   if (
-    typeof totalItems === "number" &&
-    Number.isFinite(totalItems) &&
-    totalItems >= 0
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < 1
   ) {
-    return Math.max(Math.trunc(totalItems), fallbackCount);
+    return undefined;
   }
 
-  return fallbackCount;
+  return Math.trunc(value);
+}
+
+function getNonNegativeInteger(value: unknown) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    value < 0
+  ) {
+    return undefined;
+  }
+
+  return Math.trunc(value);
+}
+
+type GetNextServicePaginationStateOptions = {
+  currentPage: number;
+  itemCount: number;
+  meta: PaginationMeta;
+  perPage: number;
+};
+
+export function getNextServicePaginationState({
+  currentPage,
+  itemCount,
+  meta,
+  perPage,
+}: GetNextServicePaginationStateOptions) {
+  const requestedPerPage = clampPositiveInteger(perPage);
+  const responsePerPage = getPositiveInteger(meta.perPage);
+  const responseTotalItems = getNonNegativeInteger(meta.totalItems);
+  const nextTotalItems = responseTotalItems ?? getSafeTotalItems(itemCount);
+  const responseTotalPages = getPositiveInteger(meta.totalPages);
+  const canUseResponseTotalPages =
+    responsePerPage === undefined || responsePerPage === requestedPerPage;
+  const nextTotalPages =
+    canUseResponseTotalPages && responseTotalPages !== undefined
+      ? getSafeTotalPages(responseTotalPages)
+      : Math.max(1, Math.ceil(nextTotalItems / requestedPerPage));
+  const responseCurrentPage = getPositiveInteger(meta.currentPage);
+
+  return {
+    currentPage: Math.min(
+      responseCurrentPage ?? clampPositiveInteger(currentPage),
+      nextTotalPages,
+    ),
+    perPage: requestedPerPage,
+    totalItems: nextTotalItems,
+    totalPages: nextTotalPages,
+  };
 }
 
 type ApplyPaginationResultOptions = {
@@ -90,42 +137,18 @@ export function useServicePagination({
 
   const applyPaginationResult = useCallback(
     ({ itemCount, meta }: ApplyPaginationResultOptions) => {
-      const nextPerPage =
-        typeof meta.perPage === "number" &&
-        Number.isFinite(meta.perPage) &&
-        meta.perPage >= 1
-          ? Math.trunc(meta.perPage)
-          : perPage;
-      const nextTotalItems = getTotalItemsFromMeta(meta, itemCount);
-      const nextTotalPages =
-        typeof meta.totalPages === "number" &&
-        Number.isFinite(meta.totalPages) &&
-        meta.totalPages >= 1
-          ? getSafeTotalPages(meta.totalPages)
-          : Math.max(1, Math.ceil(nextTotalItems / nextPerPage));
+      const nextState = getNextServicePaginationState({
+        currentPage,
+        itemCount,
+        meta,
+        perPage,
+      });
 
-      setTotalItemsState(nextTotalItems);
-      setResponseTotalPages(nextTotalPages);
-
-      if (
-        typeof meta.currentPage === "number" &&
-        Number.isFinite(meta.currentPage) &&
-        meta.currentPage >= 1
-      ) {
-        setCurrentPageState(
-          Math.min(Math.trunc(meta.currentPage), nextTotalPages),
-        );
-      }
-
-      if (
-        typeof meta.perPage === "number" &&
-        Number.isFinite(meta.perPage) &&
-        meta.perPage >= 1
-      ) {
-        setPerPageState(nextPerPage);
-      }
+      setTotalItemsState(nextState.totalItems);
+      setResponseTotalPages(nextState.totalPages);
+      setCurrentPageState(nextState.currentPage);
     },
-    [perPage],
+    [currentPage, perPage],
   );
 
   useEffect(() => {
@@ -133,17 +156,6 @@ export function useServicePagination({
       setCurrentPageState(totalPages);
     }
   }, [currentPage, totalPages]);
-
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("[Services] pagination state", {
-        currentPage,
-        perPage,
-        totalItems,
-        totalPages,
-      });
-    }
-  }, [currentPage, perPage, totalItems, totalPages]);
 
   return {
     currentPage,

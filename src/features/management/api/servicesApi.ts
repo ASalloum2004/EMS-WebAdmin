@@ -86,12 +86,6 @@ function getLastPageFromLinks(...linksList: unknown[]) {
   return undefined;
 }
 
-function logServicesDebug(message: string, details: unknown) {
-  if (import.meta.env.DEV) {
-    console.log(`[Services] ${message}`, details);
-  }
-}
-
 function getPaginationMeta(
   response: ServicesApiResponse,
   nestedData?: NestedServicesData,
@@ -153,7 +147,7 @@ function getPaginationMeta(
   };
 }
 
-function buildServicesPath(params?: GetServicesParams) {
+export function buildServicesPath(params?: GetServicesParams) {
   const queryParams = new URLSearchParams();
 
   if (params?.name?.trim()) {
@@ -201,12 +195,30 @@ function buildServicesPath(params?: GetServicesParams) {
   return queryString ? `service?${queryString}` : "service";
 }
 
+export function normalizeServicesResponse(
+  response: ServicesApiResponse,
+): GetServicesResult {
+  if (Array.isArray(response.data)) {
+    return {
+      services: response.data,
+      pagination: getPaginationMeta(response),
+    };
+  }
+
+  if (isNestedServicesData(response.data)) {
+    return {
+      services: response.data.data,
+      pagination: getPaginationMeta(response, response.data),
+    };
+  }
+
+  throw new Error("Unexpected services response format.");
+}
+
 export async function getServices(
   params?: GetServicesParams,
 ): Promise<GetServicesResult> {
   const path = buildServicesPath(params);
-
-  logServicesDebug("request params", { path, params });
 
   const response = await apiRequest<ServicesApiResponse>(
     path,
@@ -216,31 +228,5 @@ export async function getServices(
     },
   );
 
-  logServicesDebug("raw response", response);
-
-  if (Array.isArray(response.data)) {
-    const pagination = getPaginationMeta(response);
-
-    logServicesDebug("normalized services", response.data);
-    logServicesDebug("normalized pagination", pagination);
-
-    return {
-      services: response.data,
-      pagination,
-    };
-  }
-
-  if (isNestedServicesData(response.data)) {
-    const pagination = getPaginationMeta(response, response.data);
-
-    logServicesDebug("normalized services", response.data.data);
-    logServicesDebug("normalized pagination", pagination);
-
-    return {
-      services: response.data.data,
-      pagination,
-    };
-  }
-
-  throw new Error("Unexpected services response format.");
+  return normalizeServicesResponse(response);
 }

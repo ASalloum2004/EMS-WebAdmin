@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "skipLibCheck": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": ".codex-temp/test-build",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": [
+    "src/api/apiClient.ts",
+    "src/api/index.ts",
+    "src/features/auth/types.ts",
+    "src/features/auth/utils/authStorage.ts",
+    "src/features/management/api/index.ts",
+    "src/features/management/api/servicesApi.ts",
+    "src/features/management/api/createServiceApi.ts",
+    "src/features/management/api/updateServiceApi.ts",
+    "src/features/management/hooks/services/useServicePagination.ts",
+    "src/features/management/hooks/services/useServicesList.ts",
+    "src/features/management/types.ts",
+    "tests/**/*.test.ts"
+  ]
+}

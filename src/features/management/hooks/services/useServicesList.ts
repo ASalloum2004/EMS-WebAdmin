@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getServices } from "../../api";
 import type { GetServicesResult, ServiceApiData } from "../../types";
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error ? error.message : fallbackMessage;
+}
+
+export function isLatestServicesRequest(
+  requestId: number,
+  latestRequestId: number,
+) {
+  return requestId === latestRequestId;
 }
 
 type UseServicesListOptions = {
@@ -30,6 +37,7 @@ export function useServicesList({
   const [services, setServices] = useState<ServiceApiData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const requestIdRef = useRef(0);
 
   const refetch = useCallback(async () => {
     if (!enabled) {
@@ -39,21 +47,13 @@ export function useServicesList({
       } satisfies GetServicesResult;
     }
 
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     setError("");
     setIsLoading(true);
 
     try {
-      if (import.meta.env.DEV) {
-        console.log("[Services] list params", {
-          currentPage,
-          maxPrice,
-          minPrice,
-          perPage,
-          searchName,
-          sort,
-        });
-      }
-
       const result = await getServices({
         maxPrice,
         minPrice,
@@ -63,23 +63,29 @@ export function useServicesList({
         sort,
       });
 
-      setServices(result.services);
-      onResult?.(result);
+      if (isLatestServicesRequest(requestId, requestIdRef.current)) {
+        setServices(result.services);
+        onResult?.(result);
+      }
 
       return result;
     } catch (servicesError) {
-      setError(getErrorMessage(servicesError, "Failed to load services."));
-      setServices([]);
-
       const emptyResult = {
         services: [],
         pagination: {},
       } satisfies GetServicesResult;
-      onResult?.(emptyResult);
+
+      if (isLatestServicesRequest(requestId, requestIdRef.current)) {
+        setError(getErrorMessage(servicesError, "Failed to load services."));
+        setServices([]);
+        onResult?.(emptyResult);
+      }
 
       return emptyResult;
     } finally {
-      setIsLoading(false);
+      if (isLatestServicesRequest(requestId, requestIdRef.current)) {
+        setIsLoading(false);
+      }
     }
   }, [
     currentPage,

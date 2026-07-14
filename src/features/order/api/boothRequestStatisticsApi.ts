@@ -1,0 +1,41 @@
+import { apiRequest } from "../../../api";
+import type {
+  BoothRequestStatisticsData,
+  BoothRequestStatisticsResponse,
+} from "../types";
+
+export const BOOTH_REQUEST_STATISTICS_PATH = "booths/requests/stats";
+
+function isNonNegativeNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+export function normalizeBoothRequestStatisticsResponse(
+  response: BoothRequestStatisticsResponse,
+): BoothRequestStatisticsData {
+  const statistics = response.data;
+
+  if (
+    !statistics ||
+    typeof statistics !== "object" ||
+    !isNonNegativeNumber(statistics.total_requests) ||
+    !isNonNegativeNumber(statistics.pending_requests) ||
+    !isNonNegativeNumber(statistics.approved_requests)
+  ) {
+    throw new Error("Unexpected booth request statistics response format.");
+  }
+
+  return statistics;
+}
+
+export async function getBoothRequestStatistics(): Promise<BoothRequestStatisticsData> {
+  const response = await apiRequest<BoothRequestStatisticsResponse>(
+    BOOTH_REQUEST_STATISTICS_PATH,
+    {
+      method: "GET",
+      requiresAuth: true,
+    },
+  );
+
+  return normalizeBoothRequestStatisticsResponse(response);
+}

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import "./DataTable.scss";
 
 export type DataTableColumn<T> = {
@@ -16,12 +16,27 @@ export type DataTableProps<T> = {
   className?: string;
   columns: Array<DataTableColumn<T>>;
   emptyMessage?: string;
+  getItemAriaLabel?: (item: T) => string;
   getItemKey: (item: T) => string | number;
   items: T[];
+  onItemClick?: (item: T) => void;
 };
 
 function classNames(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
+}
+
+export function handleDataTableRowKeyDown<T>(
+  event: KeyboardEvent<HTMLElement>,
+  item: T,
+  onItemClick: (item: T) => void,
+) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  onItemClick(item);
 }
 
 export function DataTable<T>({
@@ -30,8 +45,10 @@ export function DataTable<T>({
   className,
   columns,
   emptyMessage = "No items found.",
+  getItemAriaLabel,
   getItemKey,
   items,
+  onItemClick,
 }: DataTableProps<T>) {
   if (!items.length) {
     return (
@@ -51,11 +68,22 @@ export function DataTable<T>({
 
         return (
           <article
+            aria-label={getItemAriaLabel?.(item)}
             className={classNames(
               "data-table__row",
               actions && "data-table__row--has-actions",
+              onItemClick && "data-table__row--interactive",
             )}
             key={itemKey}
+            onClick={onItemClick ? () => onItemClick(item) : undefined}
+            onKeyDown={
+              onItemClick
+                ? (event) =>
+                    handleDataTableRowKeyDown(event, item, onItemClick)
+                : undefined
+            }
+            role={onItemClick ? "button" : undefined}
+            tabIndex={onItemClick ? 0 : undefined}
           >
             {columns.map((column, index) => {
               const variant =

@@ -28,11 +28,15 @@
     "src/features/management/hooks/services/useServicesList.ts",
     "src/features/management/types.ts",
     "src/features/order/api/index.ts",
+    "src/features/order/api/boothRequestStatisticsApi.ts",
     "src/features/order/api/boothRequestsApi.ts",
     "src/features/order/components/orderTableColumns.tsx",
+    "src/features/order/data/orderSummaryStatistics.ts",
     "src/features/order/hooks/useBoothRequestFilters.ts",
+    "src/features/order/hooks/useBoothRequestStatistics.ts",
     "src/features/order/hooks/useBoothRequests.ts",
     "src/features/order/types.ts",
-    "tests/**/*.test.ts"
+    "tests/**/*.test.ts",
+    "tests/**/*.test.tsx"
   ]
 }

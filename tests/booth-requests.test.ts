@@ -305,3 +305,22 @@ test("booth request paths never contain filter[name]", () => {
     assert.equal(getPathSearchParams(path).has("filter[name]"), false);
   }
 });
+
+test("changing the local order search value does not add filter[name]", () => {
+  let searchValue = "";
+  const initialPath = buildBoothRequestsPath({ page: 2, perPage: 15 });
+
+  searchValue = "Request 42";
+  const pathAfterSearchChange = buildBoothRequestsPath({
+    page: 2,
+    perPage: 15,
+  });
+
+  assert.equal(searchValue, "Request 42");
+  assert.equal(pathAfterSearchChange, initialPath);
+  assert.equal(
+    getPathSearchParams(pathAfterSearchChange).has("filter[name]"),
+    false,
+  );
+  assert.equal(getPathSearchParams(pathAfterSearchChange).get("page"), "2");
+});

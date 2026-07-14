@@ -28,6 +28,24 @@
   background-color: var(--ems-color-data-row-background);
 }
 
+.data-table__row--interactive {
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.data-table__row--interactive:hover {
+  border-color: var(--ems-color-border);
+}
+
+.data-table__row--interactive:focus-visible {
+  border-color: var(--ems-color-primary);
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
+}
+
 .data-table__cell {
   min-width: 0;
   display: flex;

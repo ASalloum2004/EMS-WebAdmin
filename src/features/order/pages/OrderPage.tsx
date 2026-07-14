@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import {
   ApprovedIcon,
   PendingRequestIcon,
@@ -13,23 +13,38 @@ import {
 import { useI18n } from "../../../i18n";
 import { AdminLayout } from "../../../layouts";
 import {
+  BoothRequestDetailsModal,
   getBoothRequestColumns,
   OrderFiltersPanel,
 } from "../components";
-import { orderSummaryPresentationData } from "../data";
-import { useBoothRequests } from "../hooks";
+import {
+  boothRequestDetailsMockData,
+  getOrderSummaryStatistics,
+} from "../data";
+import {
+  useBoothRequests,
+  useBoothRequestStatistics,
+} from "../hooks";
+import type { BoothRequestApiData } from "../types";
 import "./OrderPage.scss";
 
 type SummaryCard = {
   icon: ReactNode;
   key: "total" | "pending" | "approved";
   label: string;
-  value: number;
+  value: number | null;
 };
 
 export function OrderPage() {
   const { language, t } = useI18n();
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedRequest, setSelectedRequest] =
+    useState<BoothRequestApiData | null>(null);
   const boothRequests = useBoothRequests();
+  const boothRequestStatistics = useBoothRequestStatistics();
+  const summaryStatistics = getOrderSummaryStatistics(
+    boothRequestStatistics.statistics,
+  );
   const columns = useMemo(
     () => getBoothRequestColumns(t, language),
     [language, t],
@@ -45,7 +60,7 @@ export function OrderPage() {
       ),
       key: "total",
       label: t.order.summary.totalRequests,
-      value: boothRequests.totalItems,
+      value: summaryStatistics.total,
     },
     {
       icon: (
@@ -57,7 +72,7 @@ export function OrderPage() {
       ),
       key: "pending",
       label: t.order.summary.pendingRequest,
-      value: orderSummaryPresentationData.pendingRequests,
+      value: summaryStatistics.pending,
     },
     {
       icon: (
@@ -65,9 +80,13 @@ export function OrderPage() {
       ),
       key: "approved",
       label: t.order.summary.approved,
-      value: orderSummaryPresentationData.approvedRequests,
+      value: summaryStatistics.approved,
     },
   ];
+
+  const closeRequestDetails = useCallback(() => {
+    setSelectedRequest(null);
+  }, []);
 
   return (
     <AdminLayout>
@@ -88,12 +107,37 @@ export function OrderPage() {
                 title={summaryCard.label}
                 titleClassName="order-page__summary-label"
               >
-                <strong className="order-page__summary-value">
-                  {summaryCard.value}
+                <strong
+                  aria-busy={boothRequestStatistics.isLoading}
+                  aria-label={
+                    summaryCard.value === null
+                      ? boothRequestStatistics.isLoading
+                        ? t.order.summary.loading
+                        : t.order.summary.unavailable
+                      : undefined
+                  }
+                  aria-live="polite"
+                  className="order-page__summary-value"
+                >
+                  {summaryCard.value ?? "—"}
                 </strong>
               </Card>
             ))}
           </div>
+
+          {boothRequestStatistics.error ? (
+            <div className="order-page__state" role="alert">
+              <p>
+                {boothRequestStatistics.error || t.order.summary.loadError}
+              </p>
+              <button
+                onClick={() => void boothRequestStatistics.refetch()}
+                type="button"
+              >
+                {t.common.tryAgain}
+              </button>
+            </div>
+          ) : null}
 
           <Card
             aria-label={t.order.panelAriaLabel}
@@ -103,9 +147,12 @@ export function OrderPage() {
             <SearchFilterBar
               filterAriaLabel={t.order.filters.filterAriaLabel}
               filterLabel={t.order.filters.filterLabel}
+              inputAriaLabel={t.order.filters.searchAriaLabel}
+              onChange={setSearchValue}
               onFilterClick={boothRequests.filters.toggleFilterPanel}
+              placeholder={t.order.filters.searchPlaceholder}
               showFilterButton
-              showSearch={false}
+              value={searchValue}
             />
 
             {boothRequests.filters.isFilterPanelOpen ? (
@@ -139,8 +186,12 @@ export function OrderPage() {
                 className="order-page__table"
                 columns={columns}
                 emptyMessage={t.order.table.empty}
+                getItemAriaLabel={(request) =>
+                  `${t.order.details.openAriaLabel} ${t.order.table.companyPrefix} #${request.company_id}`
+                }
                 getItemKey={(request) => request.id}
                 items={boothRequests.requests}
+                onItemClick={setSelectedRequest}
               />
             ) : null}
 
@@ -159,6 +210,14 @@ export function OrderPage() {
           </Card>
         </div>
       </section>
+
+      {selectedRequest ? (
+        <BoothRequestDetailsModal
+          details={boothRequestDetailsMockData}
+          onClose={closeRequestDetails}
+          request={selectedRequest}
+        />
+      ) : null}
     </AdminLayout>
   );
 }

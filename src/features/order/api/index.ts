@@ -4,3 +4,8 @@ export {
   getBoothRequests,
   normalizeBoothRequestsResponse,
 } from "./boothRequestsApi";
+export {
+  BOOTH_REQUEST_STATISTICS_PATH,
+  getBoothRequestStatistics,
+  normalizeBoothRequestStatisticsResponse,
+} from "./boothRequestStatisticsApi";

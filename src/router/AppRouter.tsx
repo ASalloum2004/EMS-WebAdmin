@@ -1,5 +1,6 @@
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { ManagementPage } from "../features/management";
+import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
 import { AuthGuard } from "./AuthGuard";
 
@@ -22,6 +23,14 @@ export function AppRouter() {
     return (
       <AuthGuard>
         <ManagementPage />
+      </AuthGuard>
+    );
+  }
+
+  if (path === "/orders") {
+    return (
+      <AuthGuard>
+        <OrderPage />
       </AuthGuard>
     );
   }

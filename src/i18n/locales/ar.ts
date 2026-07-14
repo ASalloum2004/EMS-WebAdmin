@@ -83,6 +83,52 @@ export const ar: I18nDictionary = {
       adminProfileAlt: "ملف المسؤول",
     },
   },
+  order: {
+    title: "الطلبات",
+    description:
+      "إدارة طلبات حجز الشركات وطلبات الخدمات ومسارات الموافقة.",
+    panelAriaLabel: "قائمة الطلبات وأدوات التحكم",
+    summary: {
+      totalRequests: "إجمالي الطلبات",
+      pendingRequest: "الطلبات المعلقة",
+      approved: "الموافق عليها",
+    },
+    tabs: {
+      all: "الكل",
+      pending: "معلقة",
+      approved: "موافق عليها",
+      rejected: "مرفوضة",
+      ariaLabel: "حالة الطلب",
+    },
+    filters: {
+      searchPlaceholder: "ابحث عن شركة أو معرّف طلب...",
+      searchAriaLabel: "بحث في الطلبات",
+      date: "تصفية حسب التاريخ",
+      allDates: "كل التواريخ",
+      today: "اليوم",
+      thisWeek: "هذا الأسبوع",
+      thisMonth: "هذا الشهر",
+      orderType: "تصفية حسب نوع الطلب",
+      allOrderTypes: "كل أنواع الطلبات",
+    },
+    types: {
+      boothBooking: "حجز جناح",
+      serviceOrder: "طلب خدمة",
+    },
+    table: {
+      ariaLabel: "طلبات حجز الشركات وطلبات الخدمات",
+      company: "الشركة",
+      requestDate: "تاريخ الطلب",
+      requestId: "معرّف الطلب",
+      status: "الحالة",
+      empty: "لا توجد طلبات.",
+    },
+    status: {
+      pending: "معلقة",
+      approved: "موافق عليها",
+      rejected: "مرفوضة",
+    },
+  },
   management: {
     title: "إدارة القاعات والأجنحة",
     description:

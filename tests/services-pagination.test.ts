@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildServicesPath,
+  getServices,
   normalizeServicesResponse,
 } from "../src/features/management/api/servicesApi.js";
 import { getNextServicePaginationState } from "../src/features/management/hooks/services/useServicePagination.js";
@@ -77,6 +78,122 @@ test("builds page-one and page-two services request paths", () => {
     buildServicesPath({ page: 2, perPage: 3 }),
     "service?per_page=3&page=2",
   );
+});
+
+test("includes the active service filter when isActive is true", () => {
+  assert.equal(
+    buildServicesPath({ isActive: true }),
+    "service?filter%5Bis_active%5D=true",
+  );
+});
+
+test("includes the inactive service filter when isActive is false", () => {
+  assert.equal(
+    buildServicesPath({ isActive: false }),
+    "service?filter%5Bis_active%5D=false",
+  );
+});
+
+test("omits the active service filter for the all state", () => {
+  assert.equal(buildServicesPath({ isActive: undefined }), "service");
+});
+
+test("passes the inactive value through getServices as false", async () => {
+  const originalFetch = globalThis.fetch;
+  const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "sessionStorage",
+  );
+  let requestedUrl = "";
+
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    value: {
+      getItem: (key: string) =>
+        key === "auth_session" ? JSON.stringify({ token: "test-token" }) : null,
+    } as Storage,
+  });
+
+  globalThis.fetch = async (input) => {
+    requestedUrl =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+
+    return new Response(
+      JSON.stringify({ status: true, message: "", data: [] }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  };
+
+  try {
+    await getServices({ isActive: false });
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(
+        globalThis,
+        "sessionStorage",
+        sessionStorageDescriptor,
+      );
+    } else {
+      Reflect.deleteProperty(globalThis, "sessionStorage");
+    }
+  }
+
+  assert.match(
+    requestedUrl,
+    /\/service\?filter%5Bis_active%5D=false$/,
+  );
+  assert.equal(
+    new URL(requestedUrl).searchParams.get("filter[is_active]"),
+    "false",
+  );
+});
+
+test("combines active status with service filters, sorting, and pagination", () => {
+  assert.equal(
+    buildServicesPath({
+      isActive: false,
+      maxPrice: 500,
+      minPrice: 100,
+      name: "Booth Design",
+      page: 2,
+      perPage: 25,
+      sort: "-price",
+    }),
+    "service?filter%5Bname%5D=Booth+Design&filter%5Bmin_price%5D=100&filter%5Bmax_price%5D=500&filter%5Bis_active%5D=false&per_page=25&page=2&sort=-price",
+  );
+});
+
+test("uses page one after applying or clearing the active status filter", () => {
+  assert.equal(
+    buildServicesPath({ isActive: true, page: 1, perPage: 3 }),
+    "service?filter%5Bis_active%5D=true&per_page=3&page=1",
+  );
+  assert.equal(
+    buildServicesPath({ page: 1, perPage: 3 }),
+    "service?per_page=3&page=1",
+  );
+
+  const nextState = getNextServicePaginationState({
+    currentPage: 1,
+    itemCount: 3,
+    meta: {
+      perPage: 3,
+      totalItems: 9,
+      totalPages: 3,
+    },
+    perPage: 3,
+  });
+
+  assert.equal(nextState.currentPage, 1);
 });
 
 test("keeps the requested frontend page size when backend echoes a different per_page", () => {

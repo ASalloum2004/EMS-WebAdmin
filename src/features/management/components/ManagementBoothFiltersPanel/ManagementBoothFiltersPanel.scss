@@ -10,7 +10,6 @@
   --management-booth-filter-text: var(--ems-color-text);
   --management-booth-filter-label: var(--ems-color-muted);
   --management-booth-filter-placeholder: var(--ems-color-muted-light);
-  --management-booth-filter-validation: #b42318;
 
   display: flex;
   flex-direction: column;
@@ -20,10 +19,6 @@
   border-radius: var(--ems-radius-sm);
   background-color: var(--management-booth-filter-panel-bg);
   box-shadow: var(--ems-shadow-card);
-}
-
-[data-theme="dark"] .management-booth-filters-panel {
-  --management-booth-filter-validation: #ffb4ab;
 }
 
 .management-booth-filters-panel__grid {
@@ -76,7 +71,7 @@
 
 .management-booth-filters-panel__validation {
   margin: 0;
-  color: var(--management-booth-filter-validation);
+  color: var(--ems-color-danger);
   font-family: var(--ems-font-body);
   font-size: 13px;
   font-weight: 600;

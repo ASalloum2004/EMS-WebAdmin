@@ -52,6 +52,7 @@ export function useServices({
   const servicesList = useServicesList({
     currentPage: pagination.currentPage,
     enabled,
+    isActive: serviceFilters.appliedIsActive,
     maxPrice: serviceFilters.appliedMaxPrice,
     minPrice: serviceFilters.appliedMinPrice,
     onResult: handleServicesResult,

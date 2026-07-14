@@ -10,7 +10,6 @@
   --management-filter-text: var(--ems-color-text);
   --management-filter-label: var(--ems-color-muted);
   --management-filter-placeholder: var(--ems-color-muted-light);
-  --management-filter-validation: #b42318;
 
   display: flex;
   flex-direction: column;
@@ -20,10 +19,6 @@
   border-radius: var(--ems-radius-sm);
   background-color: var(--management-filter-panel-bg);
   box-shadow: var(--ems-shadow-card);
-}
-
-[data-theme="dark"] .management-filters-panel {
-  --management-filter-validation: #ffb4ab;
 }
 
 .management-filters-panel__grid {
@@ -76,7 +71,7 @@
 
 .management-filters-panel__validation {
   margin: 0;
-  color: var(--management-filter-validation);
+  color: var(--ems-color-danger);
   font-family: var(--ems-font-body);
   font-size: 13px;
   font-weight: 600;

@@ -188,6 +188,26 @@ export function ManagementServicesModal({
                   }
                 />
               </label>
+
+              <label className="management-services-modal__field">
+                <span>{t.management.servicesModal.activeStatus}</span>
+                <select
+                  value={serviceFilters.activeStatus}
+                  onChange={(event) =>
+                    serviceFilters.setActiveStatus(event.target.value)
+                  }
+                >
+                  <option value="">
+                    {t.management.servicesModal.allStatuses}
+                  </option>
+                  <option value="active">
+                    {t.management.servicesModal.active}
+                  </option>
+                  <option value="inactive">
+                    {t.management.servicesModal.inactive}
+                  </option>
+                </select>
+              </label>
             </div>
 
             {serviceFilters.filterError ? (

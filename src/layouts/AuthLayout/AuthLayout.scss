@@ -1,24 +1,10 @@
 @use "../../assets/styles/design-tokens";
 
 .auth-layout {
-  --auth-color-overlay-start: rgba(0, 83, 91, 0.9);
-  --auth-color-overlay-end: rgba(145, 82, 57, 0.8);
-  --auth-color-hero-dim: rgba(0, 0, 0, 0.6);
-  --auth-hero-secondary-text: rgba(255, 255, 255, 0.8);
-  --auth-color-purple-bright: #7946a7;
-
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   background-color: var(--ems-color-page);
-}
-
-[data-theme="dark"] .auth-layout {
-  --auth-color-overlay-start: var(--ems-color-brand-muted);
-  --auth-color-overlay-end: var(--ems-color-divider);
-  --auth-color-hero-dim: var(--ems-color-divider);
-  --auth-hero-secondary-text: var(--ems-color-muted-light);
-  --auth-color-purple-bright: var(--ems-color-purple);
 }
 
 .auth-layout-intro {
@@ -50,14 +36,14 @@
 .auth-layout-overlay--brand {
   background: linear-gradient(
     122deg,
-    var(--auth-color-overlay-start) 0%,
-    var(--auth-color-overlay-end) 100%
+    var(--ems-color-auth-overlay-start) 0%,
+    var(--ems-color-auth-overlay-end) 100%
   );
   mix-blend-mode: multiply;
 }
 
 .auth-layout-overlay--dim {
-  background-color: var(--auth-color-hero-dim);
+  background-color: var(--ems-color-auth-hero-dim);
 }
 
 .auth-layout-content {
@@ -106,7 +92,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  color: var(--auth-hero-secondary-text);
+  color: var(--ems-color-auth-hero-secondary-text);
 }
 
 .auth-layout-panel {

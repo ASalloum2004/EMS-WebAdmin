@@ -4,6 +4,7 @@
   --ems-color-primary: #0a8782;
   --ems-color-brand: #006972;
   --ems-color-primary-dark: #00535b;
+  --ems-color-purple: #5d2a8a;
 
   /* Backgrounds / surfaces
      Used for app pages, cards, white containers, and shared surfaces. */
@@ -11,6 +12,12 @@
   --ems-color-surface: #f8f9fa;
   --ems-color-white: #ffffff; // White surfaces and inverse text on dark or colored backgrounds
   --ems-color-white-20: rgba(255, 255, 255, 0.2);
+  --ems-color-data-row-background: #fdfdfd;
+  --ems-color-pagination-hover-background: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  --ems-color-pagination-active-background: rgba(23, 186, 192, 0.12);
 
   /* Typography / text colors
      Used for body text, headings, labels, placeholders, links, button text, and text states. */
@@ -21,6 +28,10 @@
   --ems-color-muted-alt: #3e4948; // Auth and reset descriptive paragraphs
   --ems-color-muted-light: #6f797a; // Placeholders, helper text, profile role, and field labels
   --ems-color-link: #00535b; // Text links such as forgot password
+  --ems-color-data-supporting-text: var(--ems-color-muted);
+  --ems-color-data-badge-text: var(--ems-color-muted);
+  --ems-color-pagination-text: var(--ems-color-muted);
+  --ems-color-pagination-active-text: var(--ems-color-primary);
 
   /* Border colors
      Used for fields, cards, modal borders, dividers, and soft separators. */
@@ -33,6 +44,10 @@
   --ems-color-danger: #b42318; // Error and destructive text
   --ems-color-success-surface: rgba(0, 130, 126, 0.2);
   --ems-color-danger-surface: rgba(180, 35, 24, 0.12);
+  --ems-color-status-positive-surface: #e7f6ec;
+  --ems-color-status-positive-text: #137333;
+  --ems-color-status-negative-surface: #fde8e8;
+  --ems-color-status-negative-text: var(--ems-color-danger);
 
   /* Overlay / alpha colors
      Used for modal backdrops and translucent layout accents. */
@@ -41,6 +56,14 @@
   /* Focus / interaction colors
      Used for focus rings and interactive control states. */
   --ems-color-focus-ring: rgba(10, 135, 130, 0.12);
+
+  /* Auth hero colors
+     Used by the auth image overlays and supporting copy. */
+  --ems-color-auth-overlay-start: rgba(0, 83, 91, 0.9);
+  --ems-color-auth-overlay-end: rgba(145, 82, 57, 0.8);
+  --ems-color-auth-hero-dim: rgba(0, 0, 0, 0.6);
+  --ems-color-auth-hero-secondary-text: rgba(255, 255, 255, 0.8);
+  --ems-color-auth-accent: #7946a7;
 
   /* Admin layout colors
      Used by the admin sidebar, appbar, navigation items, and admin page backgrounds. */

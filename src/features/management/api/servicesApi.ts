@@ -170,6 +170,10 @@ export function buildServicesPath(params?: GetServicesParams) {
     queryParams.set("filter[max_price]", String(params.maxPrice));
   }
 
+  if (typeof params?.isActive === "boolean") {
+    queryParams.set("filter[is_active]", String(params.isActive));
+  }
+
   if (
     typeof params?.perPage === "number" &&
     Number.isFinite(params.perPage) &&

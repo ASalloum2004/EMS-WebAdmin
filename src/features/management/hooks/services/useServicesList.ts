@@ -16,6 +16,7 @@ export function isLatestServicesRequest(
 type UseServicesListOptions = {
   currentPage: number;
   enabled?: boolean;
+  isActive?: boolean;
   maxPrice?: number;
   minPrice?: number;
   onResult?: (result: GetServicesResult) => void;
@@ -27,6 +28,7 @@ type UseServicesListOptions = {
 export function useServicesList({
   currentPage,
   enabled = true,
+  isActive,
   maxPrice,
   minPrice,
   onResult,
@@ -55,6 +57,7 @@ export function useServicesList({
 
     try {
       const result = await getServices({
+        isActive,
         maxPrice,
         minPrice,
         name: searchName,
@@ -90,6 +93,7 @@ export function useServicesList({
   }, [
     currentPage,
     enabled,
+    isActive,
     maxPrice,
     minPrice,
     onResult,

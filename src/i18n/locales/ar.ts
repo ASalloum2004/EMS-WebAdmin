@@ -146,6 +146,8 @@ export const ar: I18nDictionary = {
       loadError: "فشل تحميل الخدمات.",
       minPrice: "أقل سعر",
       maxPrice: "أعلى سعر",
+      activeStatus: "حالة النشاط",
+      allStatuses: "الكل",
       sort: "الترتيب",
       sortByPrice: "ترتيب حسب السعر",
       lowToHigh: "من الأقل إلى الأعلى",

@@ -74,20 +74,6 @@
   cursor: pointer;
 }
 
-.management-booth-table {
-  --management-booth-status-booked-bg: #fde8e8;
-  --management-booth-status-booked-text: #b42318;
-  --management-booth-status-available-bg: #e7f6ec;
-  --management-booth-status-available-text: #137333;
-}
-
-[data-theme="dark"] .management-booth-table {
-  --management-booth-status-booked-bg: rgba(127, 29, 29, 0.38);
-  --management-booth-status-booked-text: #fca5a5;
-  --management-booth-status-available-bg: rgba(20, 83, 45, 0.42);
-  --management-booth-status-available-text: #86efac;
-}
-
 .management-booth-table .management-booth-table__cell--balanced {
   flex: 0 1 136px;
   align-items: flex-start;
@@ -111,13 +97,13 @@
 }
 
 .management-booth-status--booked {
-  background-color: var(--management-booth-status-booked-bg);
-  color: var(--management-booth-status-booked-text);
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
 }
 
 .management-booth-status--available {
-  background-color: var(--management-booth-status-available-bg);
-  color: var(--management-booth-status-available-text);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
 }
 
 @media (max-width: 640px) {

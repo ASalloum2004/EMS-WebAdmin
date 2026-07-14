@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from "react";
 
-type ServicePriceFilters = {
+type ServiceActiveStatus = "" | "active" | "inactive";
+
+type ServiceFilters = {
+  isActive?: boolean;
   maxPrice?: number;
   minPrice?: number;
 };
@@ -27,21 +30,39 @@ function getValidPrice(value: string) {
   return Number.isFinite(price) && price >= 0 ? price : null;
 }
 
+function getIsActiveFilter(activeStatus: ServiceActiveStatus) {
+  if (activeStatus === "active") {
+    return true;
+  }
+
+  if (activeStatus === "inactive") {
+    return false;
+  }
+
+  return undefined;
+}
+
 export function useServiceFilters({
   onFiltersChange,
   validationMessages,
 }: UseServiceFiltersOptions) {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [appliedFilters, setAppliedFilters] = useState<ServicePriceFilters>({});
+  const [activeStatus, setActiveStatus] = useState<ServiceActiveStatus>("");
+  const [appliedFilters, setAppliedFilters] = useState<ServiceFilters>({});
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterError, setFilterError] = useState("");
 
   const hasActiveFilters = useMemo(
     () =>
       typeof appliedFilters.minPrice === "number" ||
-      typeof appliedFilters.maxPrice === "number",
-    [appliedFilters.maxPrice, appliedFilters.minPrice],
+      typeof appliedFilters.maxPrice === "number" ||
+      typeof appliedFilters.isActive === "boolean",
+    [
+      appliedFilters.isActive,
+      appliedFilters.maxPrice,
+      appliedFilters.minPrice,
+    ],
   );
 
   const validateFilters = useCallback(() => {
@@ -65,10 +86,12 @@ export function useServiceFilters({
     setFilterError("");
 
     return {
+      isActive: getIsActiveFilter(activeStatus),
       minPrice: nextMinPrice,
       maxPrice: nextMaxPrice,
     };
   }, [
+    activeStatus,
     maxPrice,
     minPrice,
     validationMessages.invalidPrice,
@@ -105,6 +128,7 @@ export function useServiceFilters({
   const clearFilters = useCallback(() => {
     setMinPrice("");
     setMaxPrice("");
+    setActiveStatus("");
     setAppliedFilters({});
     setFilterError("");
     onFiltersChange?.();
@@ -120,13 +144,25 @@ export function useServiceFilters({
     setFilterError("");
   }, []);
 
+  const updateActiveStatus = useCallback((nextActiveStatus: string) => {
+    setActiveStatus(
+      nextActiveStatus === "active" || nextActiveStatus === "inactive"
+        ? nextActiveStatus
+        : "",
+    );
+    setFilterError("");
+  }, []);
+
   return {
     minPrice,
     maxPrice,
+    activeStatus,
     setMinPrice: updateMinPrice,
     setMaxPrice: updateMaxPrice,
+    setActiveStatus: updateActiveStatus,
     appliedMinPrice: appliedFilters.minPrice,
     appliedMaxPrice: appliedFilters.maxPrice,
+    appliedIsActive: appliedFilters.isActive,
     isFilterOpen,
     openFilters,
     closeFilters,

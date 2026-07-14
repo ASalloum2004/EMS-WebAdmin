@@ -1,30 +1,6 @@
 .table-footer {
-  --table-footer-button-bg: var(
-    --ems-color-card-background,
-    var(--ems-color-white)
-  );
-  --table-footer-button-border: var(--ems-color-border-soft);
-  --table-footer-button-text: var(--ems-color-muted);
-  --table-footer-button-hover-bg: var(
-    --ems-color-surface-strong,
-    var(--ems-color-surface)
-  );
-  --table-footer-active-bg: rgba(23, 186, 192, 0.12);
-  --table-footer-active-border: var(--ems-color-primary);
-  --table-footer-active-text: var(--ems-color-primary);
-
   display: flex;
   justify-content: center;
-}
-
-[data-theme="dark"] .table-footer {
-  --table-footer-button-bg: #0c141a;
-  --table-footer-button-border: #3c4949;
-  --table-footer-button-text: rgba(255, 255, 255, 0.78);
-  --table-footer-button-hover-bg: #101d24;
-  --table-footer-active-bg: rgba(23, 186, 192, 0.18);
-  --table-footer-active-border: #17bac0;
-  --table-footer-active-text: #7ee7eb;
 }
 
 .table-footer__controls {
@@ -42,10 +18,13 @@
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  border: 1px solid var(--table-footer-button-border);
+  border: 1px solid var(--ems-color-border-soft);
   border-radius: var(--ems-radius-sm);
-  background-color: var(--table-footer-button-bg);
-  color: var(--table-footer-button-text);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-pagination-text);
   font-family: var(--ems-font-body);
   font-size: 13px;
   font-weight: 700;
@@ -55,8 +34,8 @@
 }
 
 .table-footer__button:hover {
-  background-color: var(--table-footer-button-hover-bg);
-  color: var(--table-footer-active-text);
+  background-color: var(--ems-color-pagination-hover-background);
+  color: var(--ems-color-pagination-active-text);
 }
 
 .table-footer__button:focus-visible {
@@ -75,9 +54,9 @@
 
 .table-footer__button--active,
 .table-footer__button--active:hover {
-  border-color: var(--table-footer-active-border);
-  background-color: var(--table-footer-active-bg);
-  color: var(--table-footer-active-text);
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-pagination-active-background);
+  color: var(--ems-color-pagination-active-text);
 }
 
 .table-footer__icon {

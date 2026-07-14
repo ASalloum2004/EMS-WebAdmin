@@ -91,6 +91,7 @@ export type GetServicesResult = {
 };
 
 export type GetServicesParams = {
+  isActive?: boolean;
   maxPrice?: number;
   minPrice?: number;
   name?: string;

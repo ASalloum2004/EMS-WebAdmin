@@ -281,11 +281,168 @@ test("the modal maps request and company details without mock content", async ()
   assert.equal(dialog.textContent?.includes("Partnerships Manager"), false);
   assert.equal(dialog.textContent?.includes("Request #901"), false);
 
-  const website = view.getByRole("link", { name: "Company website" });
-  const linkedin = view.getByRole("link", { name: "Company LinkedIn" });
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+  const totalAmountCard = view
+    .getByRole("heading", { name: "Total Amount" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  assert.ok(totalAmountCard);
+  const phone = within(contactCard).getByRole("link", {
+    name: "Phone: +963112223334",
+  });
+  const website = within(contactCard).getByRole("link", {
+    name: "Website: Visit website",
+  });
+  const linkedin = within(contactCard).getByRole("link", {
+    name: "LinkedIn: View profile",
+  });
+
+  assert.equal(phone.getAttribute("href"), "tel:+963112223334");
+  assert.ok(
+    phone.classList.contains(
+      "booth-request-details-modal__contact-item--phone",
+    ),
+  );
   assert.equal(website.getAttribute("href"), "https://dar.com/");
+  assert.equal(website.getAttribute("target"), "_blank");
+  assert.equal(website.getAttribute("rel"), "noopener noreferrer");
   assert.equal(linkedin.getAttribute("target"), "_blank");
   assert.equal(linkedin.getAttribute("rel"), "noopener noreferrer");
+  assert.ok(linkedin.querySelector(".lucide-square-user-round"));
+  assert.equal(
+    linkedin.querySelector(".lucide-briefcase-business"),
+    null,
+  );
+  assert.equal(
+    website.classList.contains(
+      "booth-request-details-modal__contact-item--social-single",
+    ),
+    false,
+  );
+  assert.equal(
+    linkedin.classList.contains(
+      "booth-request-details-modal__contact-item--social-single",
+    ),
+    false,
+  );
+  assert.equal(contactCard.nextElementSibling, totalAmountCard);
+});
+
+test("missing contact methods are omitted and one social link spans its row", async () => {
+  const websiteOnlyDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      phone: "",
+      social_links: {
+        website: "https://dar.com",
+        linkedin: "",
+      },
+    },
+  };
+  globalThis.fetch = async () => getResponse(websiteOnlyDetails);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  const website = within(contactCard).getByRole("link", {
+    name: "Website: Visit website",
+  });
+  assert.ok(
+    website.classList.contains(
+      "booth-request-details-modal__contact-item--social-single",
+    ),
+  );
+  assert.equal(
+    within(contactCard).queryByRole("link", { name: /^Phone:/ }),
+    null,
+  );
+  assert.equal(
+    within(contactCard).queryByRole("link", { name: /^LinkedIn:/ }),
+    null,
+  );
+  assert.equal(contactCard.textContent?.includes("Not available"), false);
+  assert.equal(contactCard.textContent?.includes("—"), false);
+});
+
+test("phone-only contact details do not render an empty social row", async () => {
+  const phoneOnlyDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      social_links: {
+        website: "",
+        linkedin: "",
+      },
+    },
+  };
+  globalThis.fetch = async () => getResponse(phoneOnlyDetails);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  assert.equal(within(contactCard).getAllByRole("link").length, 1);
+  assert.ok(
+    within(contactCard).getByRole("link", {
+      name: "Phone: +963112223334",
+    }),
+  );
+  assert.equal(
+    contactCard.querySelectorAll(
+      ".booth-request-details-modal__contact-item",
+    ).length,
+    1,
+  );
+});
+
+test("missing all contact values displays one compact empty state", async () => {
+  const noContactDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      phone: "",
+      social_links: {
+        website: "",
+        linkedin: "",
+      },
+    },
+  };
+  globalThis.fetch = async () => getResponse(noContactDetails);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  assert.ok(
+    within(contactCard).getByText("No contact information available"),
+  );
+  assert.equal(within(contactCard).queryAllByRole("link").length, 0);
+  assert.equal(
+    contactCard.querySelector(
+      ".booth-request-details-modal__contact-grid",
+    ),
+    null,
+  );
 });
 
 test("missing additional notes use the standard empty value", async () => {

@@ -169,11 +169,12 @@ export const ar: I18nDictionary = {
       },
       contact: {
         title: "جهة الاتصال",
-        socialLinks: "روابط الشركة الاجتماعية",
-        website: "موقع الشركة",
-        linkedin: "حساب الشركة على لينكدإن",
-        instagram: "حساب الشركة على إنستغرام",
-        notAvailable: "غير متاح",
+        phone: "الهاتف",
+        website: "الموقع الإلكتروني",
+        linkedin: "لينكدإن",
+        visitWebsite: "زيارة الموقع",
+        viewLinkedin: "عرض الملف الشخصي",
+        empty: "لا تتوفر معلومات اتصال",
       },
       notes: {
         title: "ملاحظات إضافية",

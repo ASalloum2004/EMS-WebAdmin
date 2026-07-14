@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   CompanyIcon,
   ContactIcon,
-  EmailIcon,
   LinkedinIcon,
   LocationIcon,
   PhoneIcon,
@@ -175,28 +174,40 @@ function CompanyProfile({
   );
 }
 
-function ContactItem({
-  children,
+function ContactMethodLink({
+  accessibleLabel,
+  className,
   href,
   icon,
+  isExternal = false,
+  label,
+  value,
 }: {
-  children: ReactNode;
-  href?: string;
+  accessibleLabel: string;
+  className?: string;
+  href: string;
   icon: ReactNode;
+  isExternal?: boolean;
+  label: string;
+  value: string;
 }) {
-  if (!href) {
-    return (
-      <span className="booth-request-details-modal__contact-link">
-        {icon}
-        <span>{children}</span>
-      </span>
-    );
-  }
-
   return (
-    <a className="booth-request-details-modal__contact-link" href={href}>
-      {icon}
-      <span>{children}</span>
+    <a
+      aria-label={accessibleLabel}
+      className={`booth-request-details-modal__contact-item${
+        className ? ` ${className}` : ""
+      }`}
+      href={href}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      target={isExternal ? "_blank" : undefined}
+    >
+      <span className="booth-request-details-modal__contact-item-icon">
+        {icon}
+      </span>
+      <span className="booth-request-details-modal__contact-item-copy">
+        <small>{label}</small>
+        <strong>{value}</strong>
+      </span>
     </a>
   );
 }
@@ -215,66 +226,70 @@ function PointOfContact({
   const linkedin = getSafeExternalUrl(
     details.company.social_links.linkedin.trim(),
   );
+  const socialLinkCount = Number(Boolean(website)) + Number(Boolean(linkedin));
+  const hasContactMethods = Boolean(phone || website || linkedin);
 
   return (
     <DetailsCard
       icon={<ContactIcon aria-hidden="true" size={19} strokeWidth={1.8} />}
       title={t.order.details.contact.title}
     >
-      <div className="booth-request-details-modal__contact-person">
-        <span className="booth-request-details-modal__contact-avatar">
-          <ContactIcon aria-hidden="true" size={20} strokeWidth={1.8} />
-        </span>
-        <span>
-          <strong>{t.order.details.emptyValue}</strong>
-          <small>{t.order.details.contact.notAvailable}</small>
-        </span>
-      </div>
-
-      <div className="booth-request-details-modal__contact-details">
-        <ContactItem
-          icon={<EmailIcon aria-hidden="true" size={16} strokeWidth={1.8} />}
-        >
-          {t.order.details.emptyValue}
-        </ContactItem>
-        <ContactItem
-          href={phone ? `tel:${phone.replace(/\s/g, "")}` : undefined}
-          icon={<PhoneIcon aria-hidden="true" size={16} strokeWidth={1.8} />}
-        >
-          {phone || t.order.details.emptyValue}
-        </ContactItem>
-      </div>
-
-      <div
-        aria-label={t.order.details.contact.socialLinks}
-        className="booth-request-details-modal__social-links"
-      >
-        {website ? (
-          <a
-            aria-label={t.order.details.contact.website}
-            href={website}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <WebsiteIcon aria-hidden="true" size={17} strokeWidth={1.8} />
-          </a>
-        ) : null}
-        {linkedin ? (
-          <a
-            aria-label={t.order.details.contact.linkedin}
-            href={linkedin}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <LinkedinIcon aria-hidden="true" size={17} strokeWidth={1.8} />
-          </a>
-        ) : null}
-        {!website && !linkedin ? (
-          <span className="booth-request-details-modal__social-empty">
-            {t.order.details.emptyValue}
-          </span>
-        ) : null}
-      </div>
+      {hasContactMethods ? (
+        <div className="booth-request-details-modal__contact-grid">
+          {phone ? (
+            <ContactMethodLink
+              accessibleLabel={`${t.order.details.contact.phone}: ${phone}`}
+              className="booth-request-details-modal__contact-item--phone"
+              href={`tel:${phone.replace(/\s/g, "")}`}
+              icon={
+                <PhoneIcon aria-hidden="true" size={18} strokeWidth={1.8} />
+              }
+              label={t.order.details.contact.phone}
+              value={phone}
+            />
+          ) : null}
+          {website ? (
+            <ContactMethodLink
+              accessibleLabel={`${t.order.details.contact.website}: ${t.order.details.contact.visitWebsite}`}
+              className={
+                socialLinkCount === 1
+                  ? "booth-request-details-modal__contact-item--social-single"
+                  : undefined
+              }
+              href={website}
+              icon={
+                <WebsiteIcon
+                  aria-hidden="true"
+                  size={18}
+                  strokeWidth={1.8}
+                />
+              }
+              isExternal
+              label={t.order.details.contact.website}
+              value={t.order.details.contact.visitWebsite}
+            />
+          ) : null}
+          {linkedin ? (
+            <ContactMethodLink
+              accessibleLabel={`${t.order.details.contact.linkedin}: ${t.order.details.contact.viewLinkedin}`}
+              className={
+                socialLinkCount === 1
+                  ? "booth-request-details-modal__contact-item--social-single"
+                  : undefined
+              }
+              href={linkedin}
+              icon={<LinkedinIcon aria-hidden="true" size={18} strokeWidth={1.8} />}
+              isExternal
+              label={t.order.details.contact.linkedin}
+              value={t.order.details.contact.viewLinkedin}
+            />
+          ) : null}
+        </div>
+      ) : (
+        <p className="booth-request-details-modal__contact-empty">
+          {t.order.details.contact.empty}
+        </p>
+      )}
     </DetailsCard>
   );
 }

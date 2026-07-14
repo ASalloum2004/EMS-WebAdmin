@@ -168,11 +168,12 @@ export const en = {
       },
       contact: {
         title: "Point of Contact",
-        socialLinks: "Company social links",
-        website: "Company website",
-        linkedin: "Company LinkedIn",
-        instagram: "Company Instagram",
-        notAvailable: "Not available",
+        phone: "Phone",
+        website: "Website",
+        linkedin: "LinkedIn",
+        visitWebsite: "Visit website",
+        viewLinkedin: "View profile",
+        empty: "No contact information available",
       },
       notes: {
         title: "Additional Notes",

@@ -1,6 +1,5 @@
 export {
   BadgeCheck as VerifiedCompanyIcon,
-  BriefcaseBusiness as LinkedinIcon,
   Building2 as CompanyIcon,
   Camera as InstagramIcon,
   Check as ApproveRequestIcon,
@@ -14,6 +13,7 @@ export {
   MessageSquareText as NotesIcon,
   Phone as PhoneIcon,
   ReceiptText as TotalRequestsIcon,
+  SquareUserRound as LinkedinIcon,
   UserRound as ContactIcon,
   Wrench as ServiceIcon,
   X as RejectRequestIcon,

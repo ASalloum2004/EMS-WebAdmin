@@ -17,11 +17,9 @@ import {
   getBoothRequestColumns,
   OrderFiltersPanel,
 } from "../components";
+import { getOrderSummaryStatistics } from "../data";
 import {
-  boothRequestDetailsMockData,
-  getOrderSummaryStatistics,
-} from "../data";
-import {
+  useBoothRequestDetails,
   useBoothRequests,
   useBoothRequestStatistics,
 } from "../hooks";
@@ -40,6 +38,9 @@ export function OrderPage() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
+  const boothRequestDetails = useBoothRequestDetails(
+    selectedRequest?.id ?? null,
+  );
   const boothRequests = useBoothRequests();
   const boothRequestStatistics = useBoothRequestStatistics();
   const summaryStatistics = getOrderSummaryStatistics(
@@ -213,9 +214,11 @@ export function OrderPage() {
 
       {selectedRequest ? (
         <BoothRequestDetailsModal
-          details={boothRequestDetailsMockData}
+          details={boothRequestDetails.details}
+          error={boothRequestDetails.error}
+          isLoading={boothRequestDetails.isLoading}
           onClose={closeRequestDetails}
-          request={selectedRequest}
+          onRetry={() => void boothRequestDetails.refetch()}
         />
       ) : null}
     </AdminLayout>

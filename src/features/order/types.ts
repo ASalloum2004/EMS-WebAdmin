@@ -20,42 +20,35 @@ export type BoothRequestApiData = {
   created_at: string;
 };
 
-export type BoothRequestServiceViewModel = {
-  category: string;
-  id: string;
-  name: string;
-  quantity: number;
-  unitPrice: number;
+export type BoothRequestCompanySocialLinks = {
+  linkedin: string;
+  website: string;
 };
 
-export type BoothRequestCompanyViewModel = {
+export type BoothRequestCompanyDetails = {
+  business_sector: string;
   description: string;
-  headquarters: string;
-  industry: string;
-  initials: string;
-  isVerified: boolean;
-  name: string;
-};
-
-export type BoothRequestContactViewModel = {
-  email: string;
+  gallery: unknown[];
+  headquarters_lat: number;
+  headquarters_lng: number;
+  id: number;
+  logo: string;
   name: string;
   phone: string;
-  position: string;
-  socialLinks: {
-    instagram: string;
-    linkedin: string;
-    website: string;
-  };
+  social_links: BoothRequestCompanySocialLinks;
+  status: string;
+  year_founded: number;
 };
 
-export type BoothRequestDetailsViewModel = {
-  company: BoothRequestCompanyViewModel;
-  contact: BoothRequestContactViewModel;
-  currency: string;
-  notes: string;
-  requestType: string;
-  services: BoothRequestServiceViewModel[];
+export type BoothRequestDetailsApiData = BoothRequestApiData & {
+  company: BoothRequestCompanyDetails;
+  services: unknown[];
+};
+
+export type BoothRequestDetailsResponse = {
+  status: boolean;
+  message: string;
+  data: BoothRequestDetailsApiData;
 };
 
 export type BoothRequestStatisticsData = {

@@ -9,3 +9,8 @@ export {
   getBoothRequestStatistics,
   normalizeBoothRequestStatisticsResponse,
 } from "./boothRequestStatisticsApi";
+export {
+  buildBoothRequestDetailsPath,
+  getBoothRequestDetails,
+  normalizeBoothRequestDetailsResponse,
+} from "./boothRequestDetailsApi";

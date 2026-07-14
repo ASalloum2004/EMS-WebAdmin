@@ -24,7 +24,7 @@ function renderStatus(request: BoothRequestApiData, t: I18nDictionary) {
   );
 }
 
-function formatRequestDate(date: string, language: SupportedLanguage) {
+export function formatRequestDate(date: string, language: SupportedLanguage) {
   const parsedDate = new Date(date.replace(" ", "T"));
 
   if (Number.isNaN(parsedDate.getTime())) {

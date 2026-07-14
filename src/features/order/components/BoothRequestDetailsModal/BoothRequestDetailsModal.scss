@@ -60,8 +60,16 @@
 .booth-request-details-modal__avatar {
   width: 52px;
   height: 52px;
+  overflow: hidden;
   font-size: 17px;
   line-height: 24px;
+}
+
+.booth-request-details-modal__avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .booth-request-details-modal__avatar--large {
@@ -120,6 +128,14 @@
 .booth-request-details-modal__status--rejected {
   background-color: var(--ems-color-status-negative-surface);
   color: var(--ems-color-status-negative-text);
+}
+
+.booth-request-details-modal__status--placeholder {
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-muted-light);
 }
 
 .booth-request-details-modal__header-copy p {
@@ -301,6 +317,22 @@
   list-style: none;
 }
 
+.booth-request-details-modal__services-empty {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
 .booth-request-details-modal__service-row {
   min-width: 0;
   display: grid;
@@ -369,22 +401,16 @@
   color: var(--ems-color-primary);
 }
 
-.booth-request-details-modal__services-total {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-top: 15px;
-  color: var(--ems-color-heading);
-  font-family: var(--ems-font-body);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 22px;
+.booth-request-details-modal__total-card.card {
+  --ems-card-header-margin: 8px;
 }
 
-.booth-request-details-modal__services-total strong {
+.booth-request-details-modal__total-amount {
   color: var(--ems-color-primary);
-  font-size: 18px;
+  font-family: var(--ems-font-body);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
 }
 
 .booth-request-details-modal__profile-identity,
@@ -431,18 +457,20 @@
 }
 
 .booth-request-details-modal__profile-facts > div {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
 .booth-request-details-modal__profile-facts dd {
+  min-width: 0;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 5px;
-  text-align: end;
+  overflow-wrap: anywhere;
+  text-align: start;
 }
 
 .booth-request-details-modal__description,
@@ -545,6 +573,59 @@
   border-color: var(--ems-color-primary);
 }
 
+.booth-request-details-modal__social-empty {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.booth-request-details-modal__request-state {
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  text-align: center;
+}
+
+.booth-request-details-modal__request-state p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.booth-request-details-modal__request-state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.booth-request-details-modal__request-state button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
 .booth-request-details-modal__contact-link:focus-visible,
 .booth-request-details-modal__social-links a:focus-visible,
 .booth-request-details-modal__action:focus-visible {
@@ -555,11 +636,11 @@
 .booth-request-details-modal__actions {
   position: relative;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   padding: 16px 24px;
+  direction: ltr;
   border-top: 1px solid var(--ems-color-border-soft);
   background-color: var(
     --ems-color-card-background,
@@ -568,8 +649,10 @@
 }
 
 .booth-request-details-modal__action {
-  min-width: 150px;
+  width: 100%;
+  min-width: 0;
   min-height: 42px;
+  height: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -692,13 +775,16 @@
   }
 
   .booth-request-details-modal__actions {
-    flex-direction: column-reverse;
     padding: 14px 16px;
   }
 
-  .booth-request-details-modal__action {
-    width: 100%;
+  .booth-request-details-modal__request-state {
+    min-height: 300px;
   }
+}
+
+[dir="rtl"] .booth-request-details-modal__action {
+  direction: rtl;
 }
 
 @media (max-width: 420px) {

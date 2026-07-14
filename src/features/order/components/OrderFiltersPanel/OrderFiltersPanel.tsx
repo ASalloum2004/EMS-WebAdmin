@@ -1,5 +1,5 @@
-import { useI18n } from "../../../i18n";
-import type { BoothRequestFilters } from "../types";
+import { useI18n } from "../../../../i18n";
+import type { BoothRequestFilters } from "../../types";
 import "./OrderFiltersPanel.scss";
 
 interface OrderFiltersPanelProps {

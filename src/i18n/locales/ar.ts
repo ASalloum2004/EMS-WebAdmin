@@ -130,8 +130,12 @@ export const ar: I18nDictionary = {
       rejected: "مرفوضة",
     },
     details: {
+      title: "تفاصيل الطلب",
       openAriaLabel: "عرض تفاصيل",
       closeAriaLabel: "إغلاق تفاصيل الطلب",
+      loading: "جار تحميل تفاصيل طلب الجناح...",
+      loadError: "تعذر تحميل تفاصيل طلب الجناح.",
+      emptyValue: "—",
       gallery: {
         title: "معرض الشركة",
         description: "ستظهر هنا صور العلامة التجارية وتصاميم الجناح.",
@@ -140,6 +144,7 @@ export const ar: I18nDictionary = {
         title: "نظرة عامة على الطلب",
         submissionDate: "تاريخ التقديم",
         requestType: "نوع الطلب",
+        boothBooking: "حجز جناح",
         allocatedSpace: "المساحة / الجناح المخصص",
         requestedServices: "الخدمات المطلوبة",
       },
@@ -150,6 +155,8 @@ export const ar: I18nDictionary = {
         unitPrice: "سعر الوحدة",
         rowTotal: "إجمالي البند",
         totalAmount: "المبلغ الإجمالي",
+        empty: "لا توجد خدمات مطلوبة.",
+        detailsUnavailable: "تفاصيل الخدمات المطلوبة غير متاحة بعد.",
       },
       companyProfile: {
         title: "ملف الشركة",
@@ -157,6 +164,7 @@ export const ar: I18nDictionary = {
         companyId: "معرّف الشركة",
         industry: "القطاع / مجال العمل",
         headquarters: "المقر الرئيسي",
+        yearFounded: "سنة التأسيس",
       },
       contact: {
         title: "جهة الاتصال",
@@ -164,6 +172,7 @@ export const ar: I18nDictionary = {
         website: "موقع الشركة",
         linkedin: "حساب الشركة على لينكدإن",
         instagram: "حساب الشركة على إنستغرام",
+        notAvailable: "غير متاح",
       },
       notes: {
         title: "ملاحظات إضافية",

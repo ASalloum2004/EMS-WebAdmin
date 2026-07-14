@@ -3,6 +3,10 @@ export {
   useBoothRequests,
 } from "./useBoothRequests";
 export {
+  isLatestBoothRequestDetailsRequest,
+  useBoothRequestDetails,
+} from "./useBoothRequestDetails";
+export {
   getBoothRequestStatisticsFailureState,
   getBoothRequestStatisticsLoadingState,
   getBoothRequestStatisticsSuccessState,

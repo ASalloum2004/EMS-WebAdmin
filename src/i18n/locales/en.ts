@@ -129,8 +129,12 @@ export const en = {
       rejected: "Rejected",
     },
     details: {
+      title: "Request Details",
       openAriaLabel: "View details for",
       closeAriaLabel: "Close request details",
+      loading: "Loading booth request details...",
+      loadError: "Unable to load booth request details.",
+      emptyValue: "—",
       gallery: {
         title: "Company gallery",
         description: "Brand artwork and booth visuals will appear here.",
@@ -139,6 +143,7 @@ export const en = {
         title: "Request Overview",
         submissionDate: "Submission Date",
         requestType: "Request Type",
+        boothBooking: "Booth Booking",
         allocatedSpace: "Allocated Space / Booth",
         requestedServices: "Requested Services",
       },
@@ -149,6 +154,8 @@ export const en = {
         unitPrice: "Unit price",
         rowTotal: "Row total",
         totalAmount: "Total Amount",
+        empty: "No requested services.",
+        detailsUnavailable: "Requested service details are not available yet.",
       },
       companyProfile: {
         title: "Company Profile",
@@ -156,6 +163,7 @@ export const en = {
         companyId: "Company ID",
         industry: "Industry / Business sector",
         headquarters: "Headquarters",
+        yearFounded: "Year Founded",
       },
       contact: {
         title: "Point of Contact",
@@ -163,6 +171,7 @@ export const en = {
         website: "Company website",
         linkedin: "Company LinkedIn",
         instagram: "Company Instagram",
+        notAvailable: "Not available",
       },
       notes: {
         title: "Additional Notes",

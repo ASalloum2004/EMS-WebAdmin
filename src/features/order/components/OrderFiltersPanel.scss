@@ -1,0 +1,100 @@
+.order-filters-panel {
+  --order-filter-panel-background: var(
+    --ems-color-card-background,
+    var(--ems-color-surface)
+  );
+  --order-filter-control-background: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--order-filter-panel-background);
+  box-shadow: var(--ems-shadow-card);
+}
+
+.order-filters-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.order-filters-panel__field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.order-filters-panel__field span {
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.order-filters-panel__field select,
+.order-filters-panel__field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--order-filter-control-background);
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0;
+  outline: none;
+}
+
+.order-filters-panel__field select:focus,
+.order-filters-panel__field input:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+}
+
+.order-filters-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.order-filters-panel__button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.order-filters-panel__button--secondary {
+  background-color: var(--order-filter-control-background);
+  color: var(--ems-color-muted);
+}
+
+.order-filters-panel__button--primary {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+@media (max-width: 720px) {
+  .order-filters-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}

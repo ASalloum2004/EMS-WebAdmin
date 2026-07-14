@@ -123,48 +123,17 @@
   padding: 16px 18px;
 }
 
-.order-company {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
+.order-table__cell--identifier {
+  flex-basis: 130px;
 }
 
-.order-company__avatar {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  background-color: var(
-    --ems-color-primary-soft,
-    var(--ems-color-success-surface)
-  );
-  color: var(--ems-color-primary);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.order-company__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.order-page__table .data-table__supporting-text {
-  padding-inline-start: 52px;
-}
-
-.order-table__cell--date {
+.order-table__cell--created {
   flex-basis: 170px;
 }
 
-.order-table__cell--id {
-  flex-basis: 130px;
+.order-page__table .order-table__cell--status {
+  flex: 0 1 120px;
+  align-items: center;
 }
 
 .order-page__table .data-table__cell--badge .data-table__value {
@@ -203,6 +172,42 @@
 .order-status--rejected {
   background-color: var(--ems-color-status-negative-surface);
   color: var(--ems-color-status-negative-text);
+}
+
+.order-status--unknown {
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
+.order-page__state {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.order-page__state p {
+  margin: 0 0 12px;
+}
+
+.order-page__state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
 }
 
 .order-page__footer {
@@ -247,12 +252,13 @@
     --ems-card-padding: 18px;
   }
 
-  .order-page__table .data-table__supporting-text {
-    padding-inline-start: 0;
+  .order-table__cell--identifier,
+  .order-table__cell--created {
+    flex-basis: 100%;
   }
 
-  .order-table__cell--date,
-  .order-table__cell--id {
-    flex-basis: 100%;
+  .order-page__table .order-table__cell--status {
+    flex: 0 0 auto;
+    align-items: flex-start;
   }
 }

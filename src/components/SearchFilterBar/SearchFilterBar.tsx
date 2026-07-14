@@ -10,6 +10,7 @@ interface SearchFilterBarProps {
   onFilterClick?: () => void;
   placeholder?: string;
   showFilterButton?: boolean;
+  showSearch?: boolean;
   value?: string;
 }
 
@@ -59,6 +60,7 @@ export function SearchFilterBar({
   onFilterClick,
   placeholder = "Search...",
   showFilterButton = true,
+  showSearch = true,
   value,
 }: SearchFilterBarProps) {
   const [internalValue, setInternalValue] = useState("");
@@ -79,23 +81,28 @@ export function SearchFilterBar({
       className={classNames(
         "search-filter-bar",
         !showFilterButton && "search-filter-bar--without-filter",
+        !showSearch && "search-filter-bar--without-search",
         className,
       )}
     >
-      <span className="search-filter-bar__search-icon" aria-hidden="true">
-        <svg viewBox="0 0 20 20" focusable="false">
-          <path d="M8.75 3.5a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5ZM2 8.75a6.75 6.75 0 1 1 12.13 4.07l3.03 3.02a.75.75 0 0 1-1.06 1.06l-3.02-3.03A6.75 6.75 0 0 1 2 8.75Z" />
-        </svg>
-      </span>
+      {showSearch ? (
+        <>
+          <span className="search-filter-bar__search-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" focusable="false">
+              <path d="M8.75 3.5a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5ZM2 8.75a6.75 6.75 0 1 1 12.13 4.07l3.03 3.02a.75.75 0 0 1-1.06 1.06l-3.02-3.03A6.75 6.75 0 0 1 2 8.75Z" />
+            </svg>
+          </span>
 
-      <input
-        className="search-filter-bar__input"
-        type="search"
-        aria-label={inputAriaLabel}
-        placeholder={placeholder}
-        value={inputValue}
-        onChange={handleChange}
-      />
+          <input
+            className="search-filter-bar__input"
+            type="search"
+            aria-label={inputAriaLabel}
+            placeholder={placeholder}
+            value={inputValue}
+            onChange={handleChange}
+          />
+        </>
+      ) : null}
 
       {showFilterButton ? (
         <button

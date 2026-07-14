@@ -1,67 +1,75 @@
 import type { DataTableColumn } from "../../../components";
 import type { I18nDictionary, SupportedLanguage } from "../../../i18n";
-import type { OrderPresentationItem, OrderStatus } from "../types";
+import type {
+  BoothRequestApiData,
+  BoothRequestStatus,
+} from "../types";
 
-function renderCompanyIdentity(order: OrderPresentationItem) {
-  return (
-    <span className="order-company">
-      <span className="order-company__avatar" aria-hidden="true">
-        {order.companyInitials}
-      </span>
-      <span className="order-company__name" dir="auto">
-        {order.companyName}
-      </span>
-    </span>
-  );
+function isBoothRequestStatus(value: string): value is BoothRequestStatus {
+  return value === "pending" || value === "approved" || value === "rejected";
 }
 
-function renderStatus(status: OrderStatus, t: I18nDictionary) {
+function renderStatus(request: BoothRequestApiData, t: I18nDictionary) {
+  const rawStatus = String(request.status);
+  const isKnownStatus = isBoothRequestStatus(rawStatus);
+  const label = isKnownStatus ? t.order.status[rawStatus] : rawStatus;
+  const statusClassName = isKnownStatus
+    ? `order-status order-status--${rawStatus}`
+    : "order-status order-status--unknown";
+
   return (
-    <span className={`order-status order-status--${status}`}>
-      {t.order.status[status]}
+    <span className={statusClassName} aria-label={`${t.order.table.status}: ${label}`}>
+      {label}
     </span>
   );
 }
 
 function formatRequestDate(date: string, language: SupportedLanguage) {
+  const parsedDate = new Date(date.replace(" ", "T"));
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return date;
+  }
+
   return new Intl.DateTimeFormat(language === "ar" ? "ar-SY" : "en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(parsedDate);
 }
 
-export function getOrderColumns(
+export function getBoothRequestColumns(
   t: I18nDictionary,
   language: SupportedLanguage,
-): Array<DataTableColumn<OrderPresentationItem>> {
+): Array<DataTableColumn<BoothRequestApiData>> {
   return [
     {
-      key: "company",
-      label: t.order.table.company,
-      render: renderCompanyIdentity,
-      supportingText: (order) => t.order.types[order.type],
+      key: "company_id",
+      label: t.order.table.companyId,
+      render: (request) =>
+        `${t.order.table.companyPrefix} #${request.company_id}`,
       variant: "primary",
     },
     {
-      key: "requestDate",
-      className: "order-table__cell--date",
-      label: t.order.table.requestDate,
-      render: (order) => formatRequestDate(order.requestDate, language),
-      variant: "metric",
-    },
-    {
-      key: "requestId",
-      className: "order-table__cell--id",
-      label: t.order.table.requestId,
-      render: (order) => order.requestId,
+      key: "booth_id",
+      className: "order-table__cell--identifier",
+      label: t.order.table.boothId,
+      render: (request) => `${t.order.table.boothPrefix} #${request.booth_id}`,
       variant: "metric",
     },
     {
       key: "status",
+      className: "order-table__cell--status",
       label: t.order.table.status,
-      render: (order) => renderStatus(order.status, t),
+      render: (request) => renderStatus(request, t),
       variant: "badge",
+    },
+    {
+      key: "created_at",
+      className: "order-table__cell--created",
+      label: t.order.table.createdDate,
+      render: (request) => formatRequestDate(request.created_at, language),
+      variant: "metric",
     },
   ];
 }

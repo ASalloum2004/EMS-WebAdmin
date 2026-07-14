@@ -12,9 +12,12 @@ import {
 } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { AdminLayout } from "../../../layouts";
-import { getOrderColumns } from "../components";
-import { orderPresentationData } from "../data";
-import { useOrderView } from "../hooks";
+import {
+  getBoothRequestColumns,
+  OrderFiltersPanel,
+} from "../components";
+import { orderSummaryPresentationData } from "../data";
+import { useBoothRequests } from "../hooks";
 import "./OrderPage.scss";
 
 type SummaryCard = {
@@ -26,9 +29,9 @@ type SummaryCard = {
 
 export function OrderPage() {
   const { language, t } = useI18n();
-  const orderView = useOrderView(orderPresentationData);
+  const boothRequests = useBoothRequests();
   const columns = useMemo(
-    () => getOrderColumns(t, language),
+    () => getBoothRequestColumns(t, language),
     [language, t],
   );
   const summaryCards: SummaryCard[] = [
@@ -42,7 +45,7 @@ export function OrderPage() {
       ),
       key: "total",
       label: t.order.summary.totalRequests,
-      value: orderPresentationData.length,
+      value: boothRequests.totalItems,
     },
     {
       icon: (
@@ -54,9 +57,7 @@ export function OrderPage() {
       ),
       key: "pending",
       label: t.order.summary.pendingRequest,
-      value: orderPresentationData.filter(
-        (order) => order.status === "pending",
-      ).length,
+      value: orderSummaryPresentationData.pendingRequests,
     },
     {
       icon: (
@@ -64,9 +65,7 @@ export function OrderPage() {
       ),
       key: "approved",
       label: t.order.summary.approved,
-      value: orderPresentationData.filter(
-        (order) => order.status === "approved",
-      ).length,
+      value: orderSummaryPresentationData.approvedRequests,
     },
   ];
 
@@ -104,30 +103,59 @@ export function OrderPage() {
             <SearchFilterBar
               filterAriaLabel={t.order.filters.filterAriaLabel}
               filterLabel={t.order.filters.filterLabel}
-              inputAriaLabel={t.order.filters.searchAriaLabel}
-              onChange={orderView.onSearchChange}
-              placeholder={t.order.filters.searchPlaceholder}
+              onFilterClick={boothRequests.filters.toggleFilterPanel}
               showFilterButton
-              value={orderView.searchQuery}
+              showSearch={false}
             />
 
-            <DataTable
-              ariaLabel={t.order.table.ariaLabel}
-              className="order-page__table"
-              columns={columns}
-              emptyMessage={t.order.table.empty}
-              getItemKey={(order) => order.requestId}
-              items={orderView.visibleOrders}
-            />
+            {boothRequests.filters.isFilterPanelOpen ? (
+              <OrderFiltersPanel
+                filters={boothRequests.filters.draftFilters}
+                onApply={boothRequests.filters.applyFilters}
+                onChange={boothRequests.filters.setDraftFilters}
+                onClear={boothRequests.filters.clearFilters}
+              />
+            ) : null}
 
-            <TableFooter
-              className="order-page__footer"
-              currentPage={orderView.currentPage}
-              onPageChange={orderView.setCurrentPage}
-              perPage={orderView.perPage}
-              totalItems={orderView.totalOrderCount}
-              totalPages={orderView.totalPages}
-            />
+            {boothRequests.isLoading ? (
+              <p className="order-page__state">{t.order.table.loading}</p>
+            ) : null}
+
+            {!boothRequests.isLoading && boothRequests.error ? (
+              <div className="order-page__state" role="alert">
+                <p>{boothRequests.error || t.order.table.loadError}</p>
+                <button
+                  type="button"
+                  onClick={() => void boothRequests.refetch()}
+                >
+                  {t.common.tryAgain}
+                </button>
+              </div>
+            ) : null}
+
+            {!boothRequests.isLoading && !boothRequests.error ? (
+              <DataTable
+                ariaLabel={t.order.table.ariaLabel}
+                className="order-page__table"
+                columns={columns}
+                emptyMessage={t.order.table.empty}
+                getItemKey={(request) => request.id}
+                items={boothRequests.requests}
+              />
+            ) : null}
+
+            {!boothRequests.isLoading &&
+            !boothRequests.error &&
+            boothRequests.requests.length ? (
+              <TableFooter
+                className="order-page__footer"
+                currentPage={boothRequests.currentPage}
+                onPageChange={boothRequests.setCurrentPage}
+                perPage={boothRequests.perPage}
+                totalItems={boothRequests.totalItems}
+                totalPages={boothRequests.totalPages}
+              />
+            ) : null}
           </Card>
         </div>
       </section>

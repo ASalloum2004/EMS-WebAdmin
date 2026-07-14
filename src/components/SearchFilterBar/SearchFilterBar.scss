@@ -96,3 +96,23 @@
 .search-filter-bar--without-filter {
   --search-filter-bar-end-padding: 14px;
 }
+
+.search-filter-bar--without-search {
+  width: fit-content;
+  min-width: 88px;
+  align-self: flex-end;
+  margin-inline-start: auto;
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.search-filter-bar--without-search:focus-within {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.search-filter-bar--without-search .search-filter-bar__filter-button {
+  position: static;
+  height: 40px;
+  transform: none;
+}

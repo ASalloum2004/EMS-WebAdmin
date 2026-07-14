@@ -154,7 +154,8 @@ export const en = {
         unitPrice: "Unit price",
         rowTotal: "Row total",
         totalAmount: "Total Amount",
-        empty: "No requested services.",
+        empty: "No additional services requested",
+        emptyDescription: "This request includes the booth booking only.",
         detailsUnavailable: "Requested service details are not available yet.",
       },
       companyProfile: {

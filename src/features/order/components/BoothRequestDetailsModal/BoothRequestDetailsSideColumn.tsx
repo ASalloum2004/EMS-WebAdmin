@@ -312,7 +312,7 @@ export function BoothRequestDetailsSideColumn({
   t,
 }: BoothRequestDetailsSideColumnProps) {
   return (
-    <div className="booth-request-details-modal__column">
+    <div className="booth-request-details-modal__column booth-request-details-modal__column--side">
       <CompanyProfile details={details} language={language} t={t} />
       <PointOfContact details={details} t={t} />
       <TotalAmount details={details} language={language} t={t} />

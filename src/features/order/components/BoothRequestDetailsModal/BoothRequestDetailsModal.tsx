@@ -211,7 +211,9 @@ export function BoothRequestDetailsModal({
           )}
         </div>
 
-        <BoothRequestDetailsActions t={t} />
+        {details ? (
+          <BoothRequestDetailsActions requestDetails={details} t={t} />
+        ) : null}
       </section>
     </div>
   );

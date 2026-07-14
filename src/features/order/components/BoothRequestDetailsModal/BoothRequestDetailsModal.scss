@@ -309,6 +309,8 @@
 }
 
 .booth-request-details-modal__services-list {
+  --booth-request-details-service-row-height: 64px;
+
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -317,29 +319,71 @@
   list-style: none;
 }
 
-.booth-request-details-modal__services-empty {
-  margin: 0;
-  padding: 14px;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: var(--ems-radius-sm);
-  background-color: var(
-    --ems-color-surface-strong,
-    var(--ems-color-surface)
+.booth-request-details-modal__services-list--scrollable {
+  max-block-size: calc(
+    var(--booth-request-details-service-row-height) +
+      var(--booth-request-details-service-row-height) +
+      var(--booth-request-details-service-row-height) + 20px
   );
-  color: var(--ems-color-muted);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline-end: 4px;
+  scrollbar-gutter: stable;
+}
+
+.booth-request-details-modal__services-empty {
+  min-height: 132px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 22px 16px;
+  color: var(--ems-color-muted-light);
   font-family: var(--ems-font-body);
-  font-size: 13px;
-  font-weight: 500;
+  text-align: center;
+}
+
+.booth-request-details-modal__services-empty-icon {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3px;
+  border-radius: 13px;
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary);
+}
+
+.booth-request-details-modal__services-empty strong {
+  color: var(--ems-color-heading);
+  font-size: 14px;
+  font-weight: 700;
   line-height: 20px;
+}
+
+.booth-request-details-modal__services-empty p {
+  max-width: 300px;
+  margin: 0;
+  color: var(--ems-color-muted-light);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
 }
 
 .booth-request-details-modal__service-row {
   min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(190px, 1fr) 58px minmax(92px, auto) minmax(92px, auto);
+  min-block-size: var(--booth-request-details-service-row-height, 64px);
+  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 0;
+  gap: 10px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--ems-color-border-soft);
 }
 
@@ -347,11 +391,8 @@
   padding-top: 0;
 }
 
-.booth-request-details-modal__service-identity {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.booth-request-details-modal__service-row:last-child {
+  border-bottom: 0;
 }
 
 .booth-request-details-modal__service-icon {
@@ -366,39 +407,15 @@
   color: var(--ems-color-primary);
 }
 
-.booth-request-details-modal__service-identity > span:last-child,
-.booth-request-details-modal__service-value {
+.booth-request-details-modal__service-row > strong {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.booth-request-details-modal__service-identity strong,
-.booth-request-details-modal__service-value strong {
+  flex: 1 1 auto;
   overflow-wrap: anywhere;
   color: var(--ems-color-text);
   font-family: var(--ems-font-body);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  line-height: 18px;
-}
-
-.booth-request-details-modal__service-identity small,
-.booth-request-details-modal__service-value small {
-  color: var(--ems-color-muted-light);
-  font-family: var(--ems-font-body);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 15px;
-}
-
-.booth-request-details-modal__service-value {
-  text-align: end;
-}
-
-.booth-request-details-modal__service-value--total strong {
-  color: var(--ems-color-primary);
+  line-height: 20px;
 }
 
 .booth-request-details-modal__total-card.card {
@@ -637,7 +654,7 @@
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   padding: 16px 24px;
   direction: ltr;
@@ -646,6 +663,14 @@
     --ems-color-card-background,
     var(--ems-color-white)
   );
+}
+
+.booth-request-details-modal__actions--pending {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.booth-request-details-modal__actions--final {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .booth-request-details-modal__action {
@@ -694,6 +719,47 @@
 .booth-request-details-modal__action--approve:hover {
   border-color: var(--ems-color-primary-dark);
   background-color: var(--ems-color-primary-dark);
+}
+
+.booth-request-details-modal__action--state {
+  cursor: default;
+  user-select: none;
+}
+
+.booth-request-details-modal__action--state:active {
+  transform: none;
+}
+
+.booth-request-details-modal__action--state-approved {
+  border-color: var(--ems-color-status-positive-text);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.booth-request-details-modal__action--state-rejected {
+  border-color: var(--ems-color-status-negative-text);
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+@media (min-width: 861px) {
+  .booth-request-details-modal__content-grid {
+    align-items: stretch;
+  }
+
+  .booth-request-details-modal__column {
+    align-self: stretch;
+  }
+
+  .booth-request-details-modal__column--main
+    .booth-request-details-modal__services-card--empty.card {
+    flex: 1 1 auto;
+  }
+
+  .booth-request-details-modal__services-card--empty
+    .booth-request-details-modal__card-body.card__body {
+    flex: 1 1 auto;
+  }
 }
 
 @media (max-width: 860px) {
@@ -758,20 +824,9 @@
     grid-template-columns: 1fr;
   }
 
-  .booth-request-details-modal__service-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .booth-request-details-modal__service-identity {
-    grid-column: 1 / -1;
-  }
-
-  .booth-request-details-modal__service-value {
-    text-align: start;
-  }
-
-  .booth-request-details-modal__service-value--total {
-    text-align: end;
+  .booth-request-details-modal__services-empty {
+    min-height: 112px;
+    padding-block: 18px;
   }
 
   .booth-request-details-modal__actions {

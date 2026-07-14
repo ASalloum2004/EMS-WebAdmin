@@ -12,6 +12,7 @@ import {
 } from "@testing-library/react";
 import { DataTable, type DataTableColumn } from "../src/components/DataTable/DataTable.js";
 import { BoothRequestDetailsModal } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsModal.js";
+import { BoothRequestDetailsActions } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsActions.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
 import type {
   BoothRequestApiData,
@@ -19,6 +20,7 @@ import type {
   BoothRequestDetailsResponse,
 } from "../src/features/order/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
+import { en } from "../src/i18n/locales/en.js";
 
 const firstRequest: BoothRequestApiData = {
   booth_id: 9,
@@ -324,15 +326,216 @@ test("request status and company status remain separate", async () => {
   assert.ok(within(profileCard).getByText("Pending"));
 });
 
-test("empty services and logo use safe presentation fallbacks", async () => {
+test("pending request actions remain two equal-width buttons", () => {
+  const view = render(
+    <BoothRequestDetailsActions requestDetails={secondDetails} t={en} />,
+  );
+  const footer = view.container.querySelector<HTMLElement>(
+    ".booth-request-details-modal__actions--pending",
+  );
+
+  assert.ok(footer);
+  const buttons = within(footer).getAllByRole("button");
+  assert.equal(buttons.length, 2);
+  assert.equal(buttons[0]?.textContent?.trim(), "Reject");
+  assert.equal(buttons[1]?.textContent?.trim(), "Approve Request");
+  assert.ok(
+    buttons.every((button) =>
+      button.classList.contains("booth-request-details-modal__action"),
+    ),
+  );
+});
+
+test("approved request actions show only one full-width final state", () => {
+  const approvedDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      status: "rejected",
+    },
+    status: "approved",
+  };
+  const view = render(
+    <BoothRequestDetailsActions requestDetails={approvedDetails} t={en} />,
+  );
+  const approvedState = view.getByRole("status", { name: "Approved" });
+
+  assert.equal(view.queryByRole("button"), null);
+  assert.equal(approvedState.textContent?.trim(), "Approved");
+  assert.equal(approvedState.getAttribute("aria-disabled"), "true");
+  assert.ok(
+    approvedState.classList.contains(
+      "booth-request-details-modal__action--state-approved",
+    ),
+  );
+  assert.ok(
+    approvedState.closest(
+      ".booth-request-details-modal__actions--final",
+    ),
+  );
+});
+
+test("rejected request actions show only one full-width final state", () => {
+  const rejectedDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      status: "approved",
+    },
+    status: "rejected",
+  };
+  const view = render(
+    <BoothRequestDetailsActions requestDetails={rejectedDetails} t={en} />,
+  );
+  const rejectedState = view.getByRole("status", { name: "Rejected" });
+
+  assert.equal(view.queryByRole("button"), null);
+  assert.equal(rejectedState.textContent?.trim(), "Rejected");
+  assert.equal(rejectedState.getAttribute("aria-disabled"), "true");
+  assert.ok(
+    rejectedState.classList.contains(
+      "booth-request-details-modal__action--state-rejected",
+    ),
+  );
+  assert.ok(
+    rejectedState.closest(
+      ".booth-request-details-modal__actions--final",
+    ),
+  );
+});
+
+test("final request states have no click handler and send no API requests", () => {
+  let fetchCalls = 0;
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    return getResponse(firstDetails);
+  };
+  const view = render(
+    <BoothRequestDetailsActions requestDetails={firstDetails} t={en} />,
+  );
+  const approvedState = view.getByRole("status", { name: "Approved" });
+
+  assert.equal(approvedState.onclick, null);
+  fireEvent.click(approvedState);
+
+  const rejectedDetails: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    status: "rejected",
+  };
+  view.rerender(
+    <BoothRequestDetailsActions requestDetails={rejectedDetails} t={en} />,
+  );
+  const rejectedState = view.getByRole("status", { name: "Rejected" });
+
+  assert.equal(rejectedState.onclick, null);
+  fireEvent.click(rejectedState);
+  assert.equal(fetchCalls, 0);
+});
+
+test("empty services use the expanded centered state and logo initials", async () => {
   globalThis.fetch = async () => getResponse(firstDetails);
   const view = renderHarness();
 
   openRequestDetails(view);
   await view.findByRole("heading", { name: "Dar Al feker" });
 
-  assert.ok(view.getByText("No requested services."));
+  const dialog = view.getByRole("dialog");
+  const servicesCard = view
+    .getByRole("heading", { name: "Requested Services" })
+    .closest("section");
+
+  assert.ok(servicesCard);
+  assert.ok(
+    servicesCard.classList.contains(
+      "booth-request-details-modal__services-card--empty",
+    ),
+  );
+  assert.ok(
+    dialog.querySelector(".booth-request-details-modal__column--main"),
+  );
+  assert.ok(
+    dialog.querySelector(".booth-request-details-modal__column--side"),
+  );
+  assert.ok(
+    servicesCard.querySelector(
+      ".booth-request-details-modal__services-empty-icon svg",
+    ),
+  );
+  assert.ok(view.getByText("No additional services requested"));
+  assert.ok(
+    view.getByText("This request includes the booth booking only."),
+  );
   assert.ok(view.getAllByText("DA").length >= 2);
+});
+
+test("non-empty services render every row in the bounded rows area", async () => {
+  const detailsWithServices: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    services: [
+      { id: 1, name: "Power supply", price: 25, is_active: true },
+      { id: 2, name: "Display screen", price: 40, is_active: true },
+      { id: 3, name: "Extra lighting", price: 15, is_active: true },
+      { id: 4, name: "Storage cabinet", price: 20, is_active: true },
+    ],
+  };
+  globalThis.fetch = async () => getResponse(detailsWithServices);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const servicesCard = view
+    .getByRole("heading", { name: "Requested Services" })
+    .closest("section");
+
+  assert.ok(servicesCard);
+  assert.equal(
+    servicesCard.classList.contains(
+      "booth-request-details-modal__services-card--empty",
+    ),
+    false,
+  );
+  assert.equal(within(servicesCard).getAllByRole("listitem").length, 4);
+  assert.ok(
+    servicesCard.querySelector(
+      ".booth-request-details-modal__services-list--scrollable",
+    ),
+  );
+  assert.ok(within(servicesCard).getByText("Power supply"));
+  assert.ok(within(servicesCard).getByText("Storage cabinet"));
+  assert.equal(
+    within(servicesCard).queryByText("No additional services requested"),
+    null,
+  );
+});
+
+test("three service rows remain content-sized without the scroll modifier", async () => {
+  const detailsWithThreeServices: BoothRequestDetailsApiData = {
+    ...firstDetails,
+    services: [
+      { id: 1, name: "Power supply", price: 25, is_active: true },
+      { id: 2, name: "Display screen", price: 40, is_active: true },
+      { id: 3, name: "Extra lighting", price: 15, is_active: true },
+    ],
+  };
+  globalThis.fetch = async () => getResponse(detailsWithThreeServices);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const servicesCard = view
+    .getByRole("heading", { name: "Requested Services" })
+    .closest("section");
+
+  assert.ok(servicesCard);
+  assert.equal(within(servicesCard).getAllByRole("listitem").length, 3);
+  assert.equal(
+    servicesCard.querySelector(
+      ".booth-request-details-modal__services-list--scrollable",
+    ),
+    null,
+  );
 });
 
 test("loading and API error states keep the modal open and support retry", async () => {
@@ -415,12 +618,12 @@ test("Approve and Reject remain UI-only", async () => {
   let fetchCalls = 0;
   globalThis.fetch = async () => {
     fetchCalls += 1;
-    return getResponse(firstDetails);
+    return getResponse(secondDetails);
   };
-  const view = renderHarness();
+  const view = renderHarness([secondRequest]);
 
-  openRequestDetails(view);
-  await view.findByRole("heading", { name: "Dar Al feker" });
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
   const detailsFetchCount = fetchCalls;
 
   fireEvent.click(view.getByRole("button", { name: "Approve Request" }));

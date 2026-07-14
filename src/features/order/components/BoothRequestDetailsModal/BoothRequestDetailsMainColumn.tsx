@@ -103,17 +103,66 @@ function RequestedServices({
   details: BoothRequestDetailsApiData;
   t: I18nDictionary;
 }) {
+  const isEmpty = details.services.length === 0;
+
   return (
     <DetailsCard
-      className="booth-request-details-modal__services-card"
+      className={`booth-request-details-modal__services-card${
+        isEmpty
+          ? " booth-request-details-modal__services-card--empty"
+          : ""
+      }`}
       icon={<ServiceIcon aria-hidden="true" size={19} strokeWidth={1.8} />}
       title={t.order.details.services.title}
     >
-      <p className="booth-request-details-modal__services-empty">
-        {details.services.length === 0
-          ? t.order.details.services.empty
-          : t.order.details.services.detailsUnavailable}
-      </p>
+      {isEmpty ? (
+        <div className="booth-request-details-modal__services-empty">
+          <span className="booth-request-details-modal__services-empty-icon">
+            <ServiceIcon aria-hidden="true" size={22} strokeWidth={1.8} />
+          </span>
+          <strong>{t.order.details.services.empty}</strong>
+          <p>{t.order.details.services.emptyDescription}</p>
+        </div>
+      ) : (
+        <ul
+          className={`booth-request-details-modal__services-list${
+            details.services.length > 3
+              ? " booth-request-details-modal__services-list--scrollable"
+              : ""
+          }`}
+        >
+          {details.services.map((service, index) => {
+            const serviceName =
+              typeof service === "string"
+                ? service.trim()
+                : typeof service === "object" &&
+                    service !== null &&
+                    "name" in service &&
+                    typeof service.name === "string"
+                  ? service.name.trim()
+                  : "";
+
+            return (
+              <li
+                className="booth-request-details-modal__service-row"
+                key={index}
+              >
+                <span className="booth-request-details-modal__service-icon">
+                  <ServiceIcon
+                    aria-hidden="true"
+                    size={18}
+                    strokeWidth={1.8}
+                  />
+                </span>
+                <strong>
+                  {serviceName ||
+                    t.order.details.services.detailsUnavailable}
+                </strong>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </DetailsCard>
   );
 }
@@ -154,7 +203,7 @@ export function BoothRequestDetailsMainColumn({
   t,
 }: BoothRequestDetailsMainColumnProps) {
   return (
-    <div className="booth-request-details-modal__column">
+    <div className="booth-request-details-modal__column booth-request-details-modal__column--main">
       <RequestOverview details={details} language={language} t={t} />
       <RequestedServices details={details} t={t} />
       <AdditionalNotes details={details} t={t} />

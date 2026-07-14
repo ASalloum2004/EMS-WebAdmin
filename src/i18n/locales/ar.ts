@@ -155,7 +155,8 @@ export const ar: I18nDictionary = {
         unitPrice: "سعر الوحدة",
         rowTotal: "إجمالي البند",
         totalAmount: "المبلغ الإجمالي",
-        empty: "لا توجد خدمات مطلوبة.",
+        empty: "لم تُطلب خدمات إضافية",
+        emptyDescription: "يتضمن هذا الطلب حجز الجناح فقط.",
         detailsUnavailable: "تفاصيل الخدمات المطلوبة غير متاحة بعد.",
       },
       companyProfile: {

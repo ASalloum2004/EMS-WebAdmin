@@ -7,6 +7,7 @@ import {
 import { Card } from "../../../../components";
 import type { I18nDictionary } from "../../../../i18n";
 import type { BoothRequestDetailsApiData } from "../../types";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 import { formatRequestDate } from "../orderTableColumns";
 
 interface DetailsCardProps {
@@ -58,7 +59,9 @@ function RequestOverview({
   const overviewItems = [
     {
       label: t.order.details.overview.submissionDate,
-      value: formatRequestDate(details.created_at, language),
+      value:
+        formatRequestDate(details.created_at, language) ||
+        t.order.details.emptyValue,
     },
     {
       label: t.order.details.overview.requestType,
@@ -133,14 +136,11 @@ function RequestedServices({
         >
           {details.services.map((service, index) => {
             const serviceName =
-              typeof service === "string"
-                ? service.trim()
-                : typeof service === "object" &&
-                    service !== null &&
-                    "name" in service &&
-                    typeof service.name === "string"
-                  ? service.name.trim()
-                  : "";
+              typeof service === "object" &&
+              service !== null &&
+              "name" in service
+                ? getTrimmedString(service.name)
+                : getTrimmedString(service);
 
             return (
               <li
@@ -174,10 +174,7 @@ function AdditionalNotes({
   details: BoothRequestDetailsApiData;
   t: I18nDictionary;
 }) {
-  const notes =
-    typeof details.reason_for_booking === "string"
-      ? details.reason_for_booking.trim()
-      : "";
+  const notes = getTrimmedString(details.reason_for_booking);
 
   return (
     <DetailsCard

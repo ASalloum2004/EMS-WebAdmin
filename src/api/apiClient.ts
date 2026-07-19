@@ -1,7 +1,7 @@
 import { getAuthSession } from "../features/auth/utils/authStorage";
 
 export const API_BASE_URL =
-  "https://unavailable-towers-skirt-roll.trycloudflare.com/api/v1/admin/";
+  "https://anything-sku-rico-html.trycloudflare.com/api/v1/admin/";
 
 type ApiErrorBody = {
   error?: string;

@@ -13,6 +13,7 @@ import {
 import { DataTable, type DataTableColumn } from "../src/components/DataTable/DataTable.js";
 import { BoothRequestDetailsModal } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsModal.js";
 import { BoothRequestDetailsActions } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsActions.js";
+import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
 import type {
   BoothRequestApiData,
@@ -132,7 +133,7 @@ function RequestDetailsHarness({
   );
 }
 
-function getResponse(details: BoothRequestDetailsApiData) {
+function getResponse(details: BoothRequestDetailsResponse["data"]) {
   const response: BoothRequestDetailsResponse = {
     status: true,
     message: "booth request retrived successfully",
@@ -445,11 +446,130 @@ test("missing all contact values displays one compact empty state", async () => 
   );
 });
 
+test("missing optional company fields open the modal with fallback values", async () => {
+  const detailsWithMissingFields: BoothRequestDetailsResponse["data"] = {
+    ...firstDetails,
+    company: {
+      ...firstDetails.company,
+      description: undefined,
+      logo: undefined,
+      phone: undefined,
+      social_links: {
+        linkedin: undefined,
+        website: undefined,
+      },
+    },
+  };
+  globalThis.fetch = async () => getResponse(detailsWithMissingFields);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const dialog = view.getByRole("dialog");
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+  const profileCard = view
+    .getByRole("heading", { name: "Company Profile" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  assert.ok(profileCard);
+  assert.ok(
+    within(contactCard).getByText("No contact information available"),
+  );
+  assert.ok(within(profileCard).getByText(en.order.details.emptyValue));
+  assert.equal(within(contactCard).queryAllByRole("link").length, 0);
+  assert.equal(dialog.querySelector("img"), null);
+  assert.ok(view.getAllByText("DA").length >= 2);
+});
+
+test("null optional display fields open the modal without a runtime exception", async () => {
+  const detailsWithNullFields: BoothRequestDetailsResponse["data"] = {
+    ...firstDetails,
+    created_at: null,
+    company: {
+      ...firstDetails.company,
+      description: null,
+      logo: null,
+      name: null,
+      phone: null,
+      social_links: {
+        linkedin: null,
+        website: null,
+      },
+      status: null,
+    },
+  };
+  globalThis.fetch = async () => getResponse(detailsWithNullFields);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Request Details" });
+
+  const dialog = view.getByRole("dialog");
+  const contactCard = view
+    .getByRole("heading", { name: "Point of Contact" })
+    .closest("section");
+  const overviewCard = view
+    .getByRole("heading", { name: "Request Overview" })
+    .closest("section");
+
+  assert.ok(contactCard);
+  assert.ok(overviewCard);
+  assert.ok(
+    within(contactCard).getByText("No contact information available"),
+  );
+  assert.ok(
+    within(overviewCard).getByText(en.order.details.emptyValue),
+  );
+  assert.ok(
+    within(dialog).getAllByText(en.order.details.emptyValue).length >= 4,
+  );
+  assert.equal(dialog.querySelector("img"), null);
+});
+
+test("normalizes nullable API display fields to stable strings", () => {
+  const response: BoothRequestDetailsResponse = {
+    status: true,
+    message: "booth request retrived successfully",
+    data: {
+      ...firstDetails,
+      created_at: null,
+      reason_for_booking: undefined,
+      company: {
+        ...firstDetails.company,
+        business_sector: null,
+        description: undefined,
+        logo: null,
+        name: undefined,
+        phone: null,
+        social_links: null,
+        status: undefined,
+      },
+    },
+  };
+
+  const details = normalizeBoothRequestDetailsResponse(response);
+
+  assert.equal(details.created_at, "");
+  assert.equal(details.reason_for_booking, "");
+  assert.equal(details.company.business_sector, "");
+  assert.equal(details.company.description, "");
+  assert.equal(details.company.logo, "");
+  assert.equal(details.company.name, "");
+  assert.equal(details.company.phone, "");
+  assert.equal(details.company.social_links.linkedin, "");
+  assert.equal(details.company.social_links.website, "");
+  assert.equal(details.company.status, "");
+});
+
 test("missing additional notes use the standard empty value", async () => {
-  const detailsWithoutNotes = {
+  const detailsWithoutNotes: BoothRequestDetailsResponse["data"] = {
     ...firstDetails,
     reason_for_booking: undefined,
-  } as unknown as BoothRequestDetailsApiData;
+  };
   globalThis.fetch = async () => getResponse(detailsWithoutNotes);
   const view = renderHarness();
 

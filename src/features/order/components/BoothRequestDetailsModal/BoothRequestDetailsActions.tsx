@@ -7,11 +7,12 @@ import type {
   BoothRequestDetailsApiData,
   BoothRequestStatus,
 } from "../../types";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 
 function normalizeBoothRequestStatus(
   status: BoothRequestStatus,
 ): BoothRequestStatus | null {
-  const normalizedStatus = String(status).trim().toLowerCase();
+  const normalizedStatus = getTrimmedString(status).toLowerCase();
 
   if (
     normalizedStatus === "pending" ||

@@ -25,6 +25,11 @@ export type BoothRequestCompanySocialLinks = {
   website: string;
 };
 
+export type BoothRequestCompanySocialLinksResponse = {
+  linkedin?: string | null;
+  website?: string | null;
+};
+
 export type BoothRequestCompanyDetails = {
   business_sector: string;
   description: string;
@@ -40,15 +45,43 @@ export type BoothRequestCompanyDetails = {
   year_founded: number;
 };
 
+export type BoothRequestCompanyDetailsResponse = Omit<
+  BoothRequestCompanyDetails,
+  | "business_sector"
+  | "description"
+  | "logo"
+  | "name"
+  | "phone"
+  | "social_links"
+  | "status"
+> & {
+  business_sector?: string | null;
+  description?: string | null;
+  logo?: string | null;
+  name?: string | null;
+  phone?: string | null;
+  social_links?: BoothRequestCompanySocialLinksResponse | null;
+  status?: string | null;
+};
+
 export type BoothRequestDetailsApiData = BoothRequestApiData & {
   company: BoothRequestCompanyDetails;
   services: unknown[];
 };
 
+export type BoothRequestDetailsResponseData = Omit<
+  BoothRequestDetailsApiData,
+  "company" | "created_at" | "reason_for_booking"
+> & {
+  company: BoothRequestCompanyDetailsResponse;
+  created_at?: string | null;
+  reason_for_booking?: string | null;
+};
+
 export type BoothRequestDetailsResponse = {
   status: boolean;
   message: string;
-  data: BoothRequestDetailsApiData;
+  data: BoothRequestDetailsResponseData;
 };
 
 export type BoothRequestStatisticsData = {

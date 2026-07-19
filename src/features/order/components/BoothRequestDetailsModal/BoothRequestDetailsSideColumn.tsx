@@ -14,11 +14,11 @@ import type {
   BoothRequestDetailsApiData,
   BoothRequestStatus,
 } from "../../types";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 import { DetailsCard, formatPrice } from "./BoothRequestDetailsMainColumn";
 
-export function getCompanyInitials(companyName: string) {
-  const initials = companyName
-    .trim()
+export function getCompanyInitials(companyName: unknown) {
+  const initials = getTrimmedString(companyName)
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
@@ -28,9 +28,11 @@ export function getCompanyInitials(companyName: string) {
   return initials || "—";
 }
 
-function getSafeExternalUrl(value: string) {
+function getSafeExternalUrl(value: unknown) {
+  const normalizedValue = getTrimmedString(value);
+
   try {
-    const url = new URL(value);
+    const url = new URL(normalizedValue);
 
     return url.protocol === "https:" || url.protocol === "http:"
       ? url.toString()
@@ -40,18 +42,19 @@ function getSafeExternalUrl(value: string) {
   }
 }
 
-function getCompanyStatusLabel(status: string, t: I18nDictionary) {
-  const normalizedStatus = status.trim().toLowerCase();
+function isBoothRequestStatus(value: string): value is BoothRequestStatus {
+  return value === "pending" || value === "approved" || value === "rejected";
+}
 
-  if (
-    normalizedStatus === "pending" ||
-    normalizedStatus === "approved" ||
-    normalizedStatus === "rejected"
-  ) {
-    return t.order.status[normalizedStatus as BoothRequestStatus];
+function getCompanyStatusLabel(status: unknown, t: I18nDictionary) {
+  const displayStatus = getTrimmedString(status);
+  const normalizedStatus = displayStatus.toLowerCase();
+
+  if (isBoothRequestStatus(normalizedStatus)) {
+    return t.order.status[normalizedStatus];
   }
 
-  return status.trim() || t.order.details.emptyValue;
+  return displayStatus || t.order.details.emptyValue;
 }
 
 export function CompanyAvatar({
@@ -61,7 +64,7 @@ export function CompanyAvatar({
   className?: string;
   company: BoothRequestCompanyDetails;
 }) {
-  const logoUrl = getSafeExternalUrl(company.logo.trim());
+  const logoUrl = getSafeExternalUrl(company.logo);
   const [hasLogoError, setHasLogoError] = useState(false);
 
   useEffect(() => {
@@ -114,7 +117,7 @@ function CompanyProfile({
     Number.isFinite(details.company.id) && details.company.id > 0
       ? details.company.id
       : details.company_id;
-  const description = details.company.description.trim();
+  const description = getTrimmedString(details.company.description);
 
   return (
     <DetailsCard
@@ -127,7 +130,10 @@ function CompanyProfile({
           company={details.company}
         />
         <span>
-          <strong>{details.company.name}</strong>
+          <strong>
+            {getTrimmedString(details.company.name) ||
+              t.order.details.emptyValue}
+          </strong>
           <small className="booth-request-details-modal__verified">
             <VerifiedCompanyIcon
               aria-hidden="true"
@@ -146,7 +152,10 @@ function CompanyProfile({
         </div>
         <div>
           <dt>{t.order.details.companyProfile.industry}</dt>
-          <dd>{details.company.business_sector}</dd>
+          <dd>
+            {getTrimmedString(details.company.business_sector) ||
+              t.order.details.emptyValue}
+          </dd>
         </div>
         <div>
           <dt>{t.order.details.companyProfile.headquarters}</dt>
@@ -219,13 +228,9 @@ function PointOfContact({
   details: BoothRequestDetailsApiData;
   t: I18nDictionary;
 }) {
-  const phone = details.company.phone.trim();
-  const website = getSafeExternalUrl(
-    details.company.social_links.website.trim(),
-  );
-  const linkedin = getSafeExternalUrl(
-    details.company.social_links.linkedin.trim(),
-  );
+  const phone = getTrimmedString(details.company.phone);
+  const website = getSafeExternalUrl(details.company.social_links.website);
+  const linkedin = getSafeExternalUrl(details.company.social_links.linkedin);
   const socialLinkCount = Number(Boolean(website)) + Number(Boolean(linkedin));
   const hasContactMethods = Boolean(phone || website || linkedin);
 

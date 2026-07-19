@@ -4,6 +4,7 @@ import type {
   BoothRequestApiData,
   BoothRequestStatus,
 } from "../types";
+import { getTrimmedString } from "../utils/getTrimmedString";
 
 function isBoothRequestStatus(value: string): value is BoothRequestStatus {
   return value === "pending" || value === "approved" || value === "rejected";
@@ -24,11 +25,12 @@ function renderStatus(request: BoothRequestApiData, t: I18nDictionary) {
   );
 }
 
-export function formatRequestDate(date: string, language: SupportedLanguage) {
-  const parsedDate = new Date(date.replace(" ", "T"));
+export function formatRequestDate(date: unknown, language: SupportedLanguage) {
+  const normalizedDate = getTrimmedString(date);
+  const parsedDate = new Date(normalizedDate.replace(" ", "T"));
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return date;
+    return normalizedDate;
   }
 
   return new Intl.DateTimeFormat(language === "ar" ? "ar-SY" : "en-US", {

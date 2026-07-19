@@ -6,6 +6,7 @@ import {
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type { BoothRequestDetailsApiData } from "../../types";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
 import { BoothRequestDetailsMainColumn } from "./BoothRequestDetailsMainColumn";
 import {
@@ -132,7 +133,8 @@ export function BoothRequestDetailsModal({
           <div className="booth-request-details-modal__header-copy">
             <div className="booth-request-details-modal__title-row">
               <h2 id="booth-request-details-title">
-                {details?.company.name ?? t.order.details.title}
+                {getTrimmedString(details?.company.name) ||
+                  t.order.details.title}
               </h2>
               {details ? (
                 <span
@@ -152,7 +154,7 @@ export function BoothRequestDetailsModal({
             </div>
             <p id="booth-request-details-company-meta">
               <CompanyIcon aria-hidden="true" size={15} strokeWidth={1.8} />
-              {details?.company.business_sector ??
+              {getTrimmedString(details?.company.business_sector) ||
                 (isLoading
                   ? t.order.details.loading
                   : t.order.details.emptyValue)}

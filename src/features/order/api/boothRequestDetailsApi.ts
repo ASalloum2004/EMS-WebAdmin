@@ -3,6 +3,7 @@ import type {
   BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
 } from "../types";
+import { getTrimmedString } from "../utils/getTrimmedString";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -29,13 +30,31 @@ export function normalizeBoothRequestDetailsResponse(
     !isRecord(details) ||
     !Array.isArray(details.services) ||
     !isRecord(details.company) ||
-    !Array.isArray(details.company.gallery) ||
-    !isRecord(details.company.social_links)
+    !Array.isArray(details.company.gallery)
   ) {
     throw new Error("Unexpected booth request details response format.");
   }
 
-  return details;
+  return {
+    ...details,
+    company: {
+      ...details.company,
+      business_sector: getTrimmedString(details.company.business_sector),
+      description: getTrimmedString(details.company.description),
+      logo: getTrimmedString(details.company.logo),
+      name: getTrimmedString(details.company.name),
+      phone: getTrimmedString(details.company.phone),
+      social_links: {
+        linkedin: getTrimmedString(
+          details.company.social_links?.linkedin,
+        ),
+        website: getTrimmedString(details.company.social_links?.website),
+      },
+      status: getTrimmedString(details.company.status),
+    },
+    created_at: getTrimmedString(details.created_at),
+    reason_for_booking: getTrimmedString(details.reason_for_booking),
+  };
 }
 
 export async function getBoothRequestDetails(

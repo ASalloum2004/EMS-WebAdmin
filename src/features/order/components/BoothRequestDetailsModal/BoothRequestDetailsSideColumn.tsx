@@ -16,6 +16,7 @@ import type {
 } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import { DetailsCard, formatPrice } from "./BoothRequestDetailsMainColumn";
+import "./BoothRequestDetailsSideColumn.scss";
 
 export function getCompanyInitials(companyName: unknown) {
   const initials = getTrimmedString(companyName)

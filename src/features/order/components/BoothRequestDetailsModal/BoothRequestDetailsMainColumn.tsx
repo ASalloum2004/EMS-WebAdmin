@@ -9,6 +9,7 @@ import type { I18nDictionary } from "../../../../i18n";
 import type { BoothRequestDetailsApiData } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import { formatRequestDate } from "../orderTableColumns";
+import "./BoothRequestDetailsMainColumn.scss";
 
 interface DetailsCardProps {
   children: ReactNode;

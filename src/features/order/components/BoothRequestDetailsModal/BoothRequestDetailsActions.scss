@@ -1,0 +1,110 @@
+.booth-request-details-modal__actions {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+  direction: ltr;
+  border-top: 1px solid var(--ems-color-border-soft);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+}
+
+.booth-request-details-modal__actions--pending {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.booth-request-details-modal__actions--final {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.booth-request-details-modal__action {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.booth-request-details-modal__action:active {
+  transform: scale(0.98);
+}
+
+.booth-request-details-modal__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.booth-request-details-modal__action:disabled:active {
+  transform: none;
+}
+
+.booth-request-details-modal__action--reject {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-danger);
+}
+
+.booth-request-details-modal__action--reject:hover {
+  background-color: var(--ems-color-danger-surface);
+}
+
+.booth-request-details-modal__action--approve {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+.booth-request-details-modal__action--approve:hover {
+  border-color: var(--ems-color-primary-dark);
+  background-color: var(--ems-color-primary-dark);
+}
+
+.booth-request-details-modal__action--state {
+  cursor: default;
+  user-select: none;
+}
+
+.booth-request-details-modal__action--state:active {
+  transform: none;
+}
+
+.booth-request-details-modal__action--state-approved {
+  border-color: var(--ems-color-status-positive-text);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.booth-request-details-modal__action--state-rejected {
+  border-color: var(--ems-color-status-negative-text);
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+@media (max-width: 640px) {
+  .booth-request-details-modal__actions {
+    padding: 14px 16px;
+  }
+}
+
+[dir="rtl"] .booth-request-details-modal__action {
+  direction: rtl;
+}

@@ -128,6 +128,15 @@ export const en = {
       approved: "Approved",
       rejected: "Rejected",
     },
+    rejectConfirmation: {
+      title: "Reject booth request?",
+      message:
+        "Are you sure you want to reject this booth request? This action cannot be undone.",
+      requestLabel: "Request ID",
+      confirm: "Reject Request",
+      rejecting: "Rejecting…",
+      error: "Unable to reject booth request.",
+    },
     details: {
       title: "Request Details",
       openAriaLabel: "View details for",

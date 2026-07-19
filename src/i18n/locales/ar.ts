@@ -129,6 +129,15 @@ export const ar: I18nDictionary = {
       approved: "موافق عليها",
       rejected: "مرفوضة",
     },
+    rejectConfirmation: {
+      title: "رفض طلب حجز الجناح؟",
+      message:
+        "هل أنت متأكد من رغبتك في رفض طلب حجز الجناح هذا؟ لا يمكن التراجع عن هذا الإجراء.",
+      requestLabel: "معرّف الطلب",
+      confirm: "رفض الطلب",
+      rejecting: "جارٍ الرفض…",
+      error: "تعذر رفض طلب الجناح.",
+    },
     details: {
       title: "تفاصيل الطلب",
       openAriaLabel: "عرض تفاصيل",

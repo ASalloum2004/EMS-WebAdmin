@@ -3,11 +3,13 @@ import {
   RejectRequestIcon,
 } from "../../../../assets/icons/orderIcons";
 import type { I18nDictionary } from "../../../../i18n";
+import type { Ref } from "react";
 import type {
   BoothRequestDetailsApiData,
   BoothRequestStatus,
 } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
+import "./BoothRequestDetailsActions.scss";
 
 function normalizeBoothRequestStatus(
   status: BoothRequestStatus,
@@ -27,14 +29,14 @@ function normalizeBoothRequestStatus(
 
 export function BoothRequestDetailsActions({
   isRejecting,
-  onReject,
-  rejectError,
+  onRejectClick,
+  rejectButtonRef,
   requestDetails,
   t,
 }: {
   isRejecting: boolean;
-  onReject: (boothRequestId: number) => Promise<unknown> | unknown;
-  rejectError: string;
+  onRejectClick: () => void;
+  rejectButtonRef?: Ref<HTMLButtonElement>;
   requestDetails: BoothRequestDetailsApiData;
   t: I18nDictionary;
 }) {
@@ -72,7 +74,8 @@ export function BoothRequestDetailsActions({
       <button
         className="booth-request-details-modal__action booth-request-details-modal__action--reject"
         disabled={isRejecting}
-        onClick={() => void onReject(requestDetails.id)}
+        onClick={onRejectClick}
+        ref={rejectButtonRef}
         type="button"
       >
         <RejectRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
@@ -88,14 +91,6 @@ export function BoothRequestDetailsActions({
         <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
         {t.order.details.actions.approve}
       </button>
-      {rejectError ? (
-        <p
-          className="booth-request-details-modal__action-error"
-          role="alert"
-        >
-          {rejectError}
-        </p>
-      ) : null}
     </footer>
   );
 }

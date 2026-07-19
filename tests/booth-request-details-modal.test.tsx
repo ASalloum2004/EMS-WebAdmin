@@ -13,6 +13,7 @@ import {
 import { DataTable, type DataTableColumn } from "../src/components/DataTable/DataTable.js";
 import { BoothRequestDetailsModal } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsModal.js";
 import { BoothRequestDetailsActions } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsActions.js";
+import { RejectBoothRequestConfirmModal } from "../src/features/order/components/RejectBoothRequestConfirmModal/RejectBoothRequestConfirmModal.js";
 import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
 import { useBoothRequestMutations } from "../src/features/order/hooks/useBoothRequestMutations.js";
@@ -23,6 +24,7 @@ import type {
   BoothRequestDetailsResponse,
 } from "../src/features/order/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
+import { ar } from "../src/i18n/locales/ar.js";
 import { en } from "../src/i18n/locales/en.js";
 
 const firstRequest: BoothRequestApiData = {
@@ -95,8 +97,7 @@ const rejectSuccessResponse: BoothRequestActionResponse = {
 
 const idleRejectActionProps = {
   isRejecting: false,
-  onReject: () => undefined,
-  rejectError: "",
+  onRejectClick: () => undefined,
 };
 
 const columns: Array<DataTableColumn<BoothRequestApiData>> = [
@@ -134,7 +135,7 @@ function RequestDetailsHarness({
   }, [onListRefresh, onStatisticsRefresh, requestDetails.refetch]);
   const requestMutations = useBoothRequestMutations({
     onRejectSuccess: refreshAfterReject,
-    rejectFallbackMessage: en.order.details.actions.rejectFailure,
+    rejectFallbackMessage: en.order.rejectConfirmation.error,
   });
 
   const closeDetails = useCallback(() => {
@@ -160,6 +161,7 @@ function RequestDetailsHarness({
           error={requestDetails.error}
           isLoading={requestDetails.isLoading}
           isRejecting={requestMutations.isRejecting}
+          onClearRejectError={requestMutations.clearRejectError}
           onClose={closeDetails}
           onReject={requestMutations.rejectBoothRequestById}
           onRetry={() => void requestDetails.refetch()}
@@ -247,6 +249,7 @@ const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
 );
 
 beforeEach(() => {
+  window.localStorage.setItem("ems-language", "en");
   Object.defineProperty(globalThis, "sessionStorage", {
     configurable: true,
     value: {
@@ -749,14 +752,13 @@ test("rejected request actions show only one full-width final state", () => {
 
 test("approved and rejected request states never call Reject", () => {
   let rejectCalls = 0;
-  const onReject = () => {
+  const onRejectClick = () => {
     rejectCalls += 1;
   };
   const view = render(
     <BoothRequestDetailsActions
       isRejecting={false}
-      onReject={onReject}
-      rejectError=""
+      onRejectClick={onRejectClick}
       requestDetails={firstDetails}
       t={en}
     />,
@@ -773,8 +775,7 @@ test("approved and rejected request states never call Reject", () => {
   view.rerender(
     <BoothRequestDetailsActions
       isRejecting={false}
-      onReject={onReject}
-      rejectError=""
+      onRejectClick={onRejectClick}
       requestDetails={rejectedDetails}
       t={en}
     />,
@@ -968,7 +969,7 @@ test("closing during a request prevents late details from reopening the modal", 
   assert.equal(view.queryByText("Dar Al feker"), null);
 });
 
-test("clicking Reject once uses the selected id and disables both actions", async () => {
+test("Reject confirmation defers the API call and prevents duplicate submissions", async () => {
   const rejectDeferred = createDeferred<Response>();
   const rejectPaths: string[] = [];
   globalThis.fetch = async (input, init) => {
@@ -985,21 +986,44 @@ test("clicking Reject once uses the selected id and disables both actions", asyn
   await view.findByRole("heading", { name: "Second Company" });
   fireEvent.click(view.getByRole("button", { name: "Reject" }));
 
+  const confirmation = view.getByRole("alertdialog", {
+    name: "Reject booth request?",
+  });
+  const confirmButton = within(confirmation).getByRole("button", {
+    name: "Reject Request",
+  });
+
+  assert.equal(rejectPaths.length, 0);
+  assert.match(confirmation.textContent ?? "", /Request ID#902/);
+  fireEvent.click(confirmButton);
+
   const rejectingButton = await view.findByRole("button", {
     name: "Rejecting…",
   });
-  const approveButton = view.getByRole("button", {
-    name: "Approve Request",
+  const cancelButton = within(confirmation).getByRole("button", {
+    name: "Cancel",
   });
+  const approveButton = view.container.querySelector<HTMLButtonElement>(
+    ".booth-request-details-modal__action--approve",
+  );
 
   assert.equal(rejectingButton.hasAttribute("disabled"), true);
-  assert.equal(approveButton.hasAttribute("disabled"), true);
+  assert.equal(cancelButton.hasAttribute("disabled"), true);
+  assert.equal(approveButton?.hasAttribute("disabled"), true);
   assert.deepEqual(rejectPaths, [
     "/api/v1/admin/booths/requests/reject/902",
   ]);
 
   fireEvent.click(rejectingButton);
+  fireEvent.click(cancelButton);
+  fireEvent.keyDown(document, { key: "Escape" });
+  fireEvent.mouseDown(
+    view.container.querySelector(
+      ".reject-booth-request-confirm-modal",
+    )!,
+  );
   assert.equal(rejectPaths.length, 1);
+  assert.ok(view.getByRole("alertdialog"));
 
   await act(async () => {
     rejectDeferred.resolve(getRejectResponse());
@@ -1012,7 +1036,215 @@ test("clicking Reject once uses the selected id and disables both actions", asyn
       false,
     );
   });
+  assert.equal(view.queryByRole("alertdialog"), null);
   assert.equal(rejectPaths.length, 1);
+});
+
+test("Cancel, backdrop, and Escape close only the Reject confirmation", async () => {
+  let rejectRequests = 0;
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PATCH") {
+      rejectRequests += 1;
+      return getRejectResponse();
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  const rejectButton = view.getByRole("button", { name: "Reject" });
+
+  rejectButton.focus();
+  fireEvent.click(rejectButton);
+
+  const cancelButton = view.getByRole("button", { name: "Cancel" });
+  assert.equal(document.activeElement, cancelButton);
+  assert.equal(document.body.style.overflow, "hidden");
+  assert.equal(
+    view.getByRole("dialog", { hidden: true }).hasAttribute("inert"),
+    true,
+  );
+
+  fireEvent.click(cancelButton);
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.ok(view.getByRole("dialog"));
+  assert.equal(document.activeElement, rejectButton);
+  assert.equal(document.body.style.overflow, "hidden");
+
+  fireEvent.click(rejectButton);
+  fireEvent.mouseDown(
+    view.container.querySelector(
+      ".reject-booth-request-confirm-modal",
+    )!,
+  );
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.ok(view.getByRole("dialog"));
+
+  fireEvent.click(rejectButton);
+  fireEvent.keyDown(document, { key: "Escape" });
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.ok(view.getByRole("dialog"));
+  assert.equal(rejectRequests, 0);
+});
+
+test("Reject confirmation traps focus and starts on the safe action", async () => {
+  globalThis.fetch = async () => getResponse(secondDetails);
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+
+  const confirmation = view.getByRole("alertdialog");
+  const cancelButton = within(confirmation).getByRole("button", {
+    name: "Cancel",
+  });
+  const confirmButton = within(confirmation).getByRole("button", {
+    name: "Reject Request",
+  });
+
+  assert.equal(document.activeElement, cancelButton);
+
+  confirmButton.focus();
+  fireEvent.keyDown(document, { key: "Tab" });
+  assert.equal(document.activeElement, cancelButton);
+
+  cancelButton.focus();
+  fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+  assert.equal(document.activeElement, confirmButton);
+});
+
+test("Reject confirmation guards repeated Confirm clicks before props update", async () => {
+  const confirmDeferred = createDeferred<void>();
+  let confirmCalls = 0;
+  const view = render(
+    <I18nProvider>
+      <RejectBoothRequestConfirmModal
+        error=""
+        isRejecting={false}
+        onCancel={() => undefined}
+        onConfirm={() => {
+          confirmCalls += 1;
+          return confirmDeferred.promise;
+        }}
+        requestId={902}
+      />
+    </I18nProvider>,
+  );
+  const confirmButton = view.getByRole("button", {
+    name: "Reject Request",
+  });
+
+  fireEvent.click(confirmButton);
+  fireEvent.click(confirmButton);
+  assert.equal(confirmCalls, 1);
+
+  await act(async () => {
+    confirmDeferred.resolve();
+    await confirmDeferred.promise;
+  });
+});
+
+test("changing the selected request or status closes Reject confirmation", () => {
+  const sharedProps = {
+    error: "",
+    isLoading: false,
+    isRejecting: false,
+    onClearRejectError: () => undefined,
+    onClose: () => undefined,
+    onReject: () => rejectSuccessResponse,
+    onRetry: () => undefined,
+    rejectError: "",
+  };
+  const view = render(
+    <I18nProvider>
+      <BoothRequestDetailsModal {...sharedProps} details={secondDetails} />
+    </I18nProvider>,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+  assert.ok(view.getByRole("alertdialog"));
+
+  const anotherPendingRequest = { ...secondDetails, id: 903 };
+  view.rerender(
+    <I18nProvider>
+      <BoothRequestDetailsModal
+        {...sharedProps}
+        details={anotherPendingRequest}
+      />
+    </I18nProvider>,
+  );
+  assert.equal(view.queryByRole("alertdialog"), null);
+
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+  assert.ok(view.getByRole("alertdialog"));
+
+  view.rerender(
+    <I18nProvider>
+      <BoothRequestDetailsModal
+        {...sharedProps}
+        details={{ ...anotherPendingRequest, status: "rejected" }}
+      />
+    </I18nProvider>,
+  );
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.equal(view.queryByRole("button", { name: "Reject" }), null);
+});
+
+test("Reject confirmation renders localized English and Arabic text", () => {
+  window.localStorage.setItem("ems-language", "en");
+  const englishView = render(
+    <I18nProvider>
+      <RejectBoothRequestConfirmModal
+        error=""
+        isRejecting={false}
+        onCancel={() => undefined}
+        onConfirm={() => undefined}
+        requestId={902}
+      />
+    </I18nProvider>,
+  );
+
+  assert.ok(
+    englishView.getByRole("alertdialog", {
+      name: en.order.rejectConfirmation.title,
+    }),
+  );
+  assert.ok(englishView.getByText(en.order.rejectConfirmation.message));
+  assert.ok(
+    englishView.getByRole("button", {
+      name: en.order.rejectConfirmation.confirm,
+    }),
+  );
+
+  englishView.unmount();
+  window.localStorage.setItem("ems-language", "ar");
+
+  const arabicView = render(
+    <I18nProvider>
+      <RejectBoothRequestConfirmModal
+        error=""
+        isRejecting={false}
+        onCancel={() => undefined}
+        onConfirm={() => undefined}
+        requestId={902}
+      />
+    </I18nProvider>,
+  );
+
+  assert.ok(
+    arabicView.getByRole("alertdialog", {
+      name: ar.order.rejectConfirmation.title,
+    }),
+  );
+  assert.ok(arabicView.getByText(ar.order.rejectConfirmation.message));
+  assert.ok(
+    arabicView.getByRole("button", {
+      name: ar.order.rejectConfirmation.confirm,
+    }),
+  );
 });
 
 test("Reject errors keep the modal open and re-enable both actions", async () => {
@@ -1034,22 +1266,32 @@ test("Reject errors keep the modal open and re-enable both actions", async () =>
   openRequestDetails(view, 52);
   await view.findByRole("heading", { name: "Second Company" });
   fireEvent.click(view.getByRole("button", { name: "Reject" }));
+  fireEvent.click(
+    view.getByRole("button", { name: "Reject Request" }),
+  );
 
   assert.equal(
     (await view.findByRole("alert")).textContent,
     "Request can no longer be rejected.",
   );
-  assert.ok(view.getByRole("dialog"));
+  const confirmation = view.getByRole("alertdialog");
+  const cancelButton = within(confirmation).getByRole("button", {
+    name: "Cancel",
+  });
+
+  assert.ok(view.getByRole("dialog", { hidden: true }));
+  assert.ok(confirmation);
   assert.equal(
-    view.getByRole("button", { name: "Reject" }).hasAttribute("disabled"),
-    false,
-  );
-  assert.equal(
-    view
-      .getByRole("button", { name: "Approve Request" })
+    within(confirmation)
+      .getByRole("button", { name: "Reject Request" })
       .hasAttribute("disabled"),
     false,
   );
+  assert.equal(
+    cancelButton.hasAttribute("disabled"),
+    false,
+  );
+  assert.equal(document.activeElement, cancelButton);
   assert.equal(view.queryByRole("status", { name: "Rejected" }), null);
 });
 
@@ -1092,9 +1334,13 @@ test("successful Reject refreshes details, Orders, and statistics", async () => 
   openRequestDetails(view, 52);
   await view.findByRole("heading", { name: "Second Company" });
   fireEvent.click(view.getByRole("button", { name: "Reject" }));
+  fireEvent.click(
+    view.getByRole("button", { name: "Reject Request" }),
+  );
 
   assert.ok(await view.findByRole("status", { name: "Rejected" }));
   assert.ok(view.getByRole("dialog"));
+  assert.equal(view.queryByRole("alertdialog"), null);
   assert.equal(rejectRequests, 1);
   assert.equal(detailsRequests, 2);
   assert.equal(listRequests, 1);

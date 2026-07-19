@@ -57,7 +57,7 @@ export function OrderPage() {
   ]);
   const boothRequestMutations = useBoothRequestMutations({
     onRejectSuccess: refreshAfterReject,
-    rejectFallbackMessage: t.order.details.actions.rejectFailure,
+    rejectFallbackMessage: t.order.rejectConfirmation.error,
   });
   const summaryStatistics = getOrderSummaryStatistics(
     boothRequestStatistics.statistics,
@@ -235,6 +235,7 @@ export function OrderPage() {
           error={boothRequestDetails.error}
           isLoading={boothRequestDetails.isLoading}
           isRejecting={boothRequestMutations.isRejecting}
+          onClearRejectError={boothRequestMutations.clearRejectError}
           onClose={closeRequestDetails}
           onReject={boothRequestMutations.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}

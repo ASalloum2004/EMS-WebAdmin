@@ -711,6 +711,26 @@
   transform: scale(0.98);
 }
 
+.booth-request-details-modal__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.booth-request-details-modal__action:disabled:active {
+  transform: none;
+}
+
+.booth-request-details-modal__action-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+}
+
 .booth-request-details-modal__action--reject {
   border-color: var(--ems-color-danger);
   background-color: var(--ems-color-card-background, var(--ems-color-white));
@@ -858,6 +878,10 @@
 }
 
 [dir="rtl"] .booth-request-details-modal__action {
+  direction: rtl;
+}
+
+[dir="rtl"] .booth-request-details-modal__action-error {
   direction: rtl;
 }
 

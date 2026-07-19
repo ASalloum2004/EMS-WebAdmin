@@ -14,3 +14,8 @@ export {
   getBoothRequestDetails,
   normalizeBoothRequestDetailsResponse,
 } from "./boothRequestDetailsApi";
+export {
+  buildRejectBoothRequestPath,
+  normalizeBoothRequestActionResponse,
+  rejectBoothRequest,
+} from "./boothRequestActionsApi";

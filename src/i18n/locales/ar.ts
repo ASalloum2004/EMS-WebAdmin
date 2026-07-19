@@ -181,6 +181,8 @@ export const ar: I18nDictionary = {
       },
       actions: {
         reject: "رفض",
+        rejecting: "جارٍ الرفض…",
+        rejectFailure: "تعذر رفض طلب الجناح.",
         approve: "الموافقة على الطلب",
       },
     },

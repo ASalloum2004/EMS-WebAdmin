@@ -1,7 +1,7 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
-import { StrictMode, useState } from "react";
+import { StrictMode, useCallback, useState } from "react";
 import {
   act,
   cleanup,
@@ -15,7 +15,9 @@ import { BoothRequestDetailsModal } from "../src/features/order/components/Booth
 import { BoothRequestDetailsActions } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsActions.js";
 import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
+import { useBoothRequestMutations } from "../src/features/order/hooks/useBoothRequestMutations.js";
 import type {
+  BoothRequestActionResponse,
   BoothRequestApiData,
   BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
@@ -85,6 +87,18 @@ const secondDetails: BoothRequestDetailsApiData = {
   },
 };
 
+const rejectSuccessResponse: BoothRequestActionResponse = {
+  status: true,
+  message: "request rejected successfully",
+  data: null,
+};
+
+const idleRejectActionProps = {
+  isRejecting: false,
+  onReject: () => undefined,
+  rejectError: "",
+};
+
 const columns: Array<DataTableColumn<BoothRequestApiData>> = [
   {
     key: "company_id",
@@ -101,12 +115,32 @@ const columns: Array<DataTableColumn<BoothRequestApiData>> = [
 ];
 
 function RequestDetailsHarness({
+  onListRefresh,
+  onStatisticsRefresh,
   requests = [firstRequest],
 }: {
+  onListRefresh?: () => Promise<unknown> | unknown;
+  onStatisticsRefresh?: () => Promise<unknown> | unknown;
   requests?: BoothRequestApiData[];
 }) {
   const [request, setRequest] = useState<BoothRequestApiData | null>(null);
   const requestDetails = useBoothRequestDetails(request?.id ?? null);
+  const refreshAfterReject = useCallback(async () => {
+    await Promise.all([
+      requestDetails.refetch(),
+      onListRefresh?.(),
+      onStatisticsRefresh?.(),
+    ]);
+  }, [onListRefresh, onStatisticsRefresh, requestDetails.refetch]);
+  const requestMutations = useBoothRequestMutations({
+    onRejectSuccess: refreshAfterReject,
+    rejectFallbackMessage: en.order.details.actions.rejectFailure,
+  });
+
+  const closeDetails = useCallback(() => {
+    requestMutations.clearRejectError();
+    setRequest(null);
+  }, [requestMutations.clearRejectError]);
 
   return (
     <I18nProvider>
@@ -125,8 +159,11 @@ function RequestDetailsHarness({
           details={requestDetails.details}
           error={requestDetails.error}
           isLoading={requestDetails.isLoading}
-          onClose={() => setRequest(null)}
+          isRejecting={requestMutations.isRejecting}
+          onClose={closeDetails}
+          onReject={requestMutations.rejectBoothRequestById}
           onRetry={() => void requestDetails.refetch()}
+          rejectError={requestMutations.rejectError}
         />
       ) : null}
     </I18nProvider>
@@ -141,6 +178,13 @@ function getResponse(details: BoothRequestDetailsResponse["data"]) {
   };
 
   return new Response(JSON.stringify(response), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function getRejectResponse() {
+  return new Response(JSON.stringify(rejectSuccessResponse), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
@@ -165,10 +209,20 @@ function createDeferred<T>() {
   return { promise, reject, resolve };
 }
 
-function renderHarness(requests?: BoothRequestApiData[]) {
+function renderHarness(
+  requests?: BoothRequestApiData[],
+  refreshCallbacks: {
+    onListRefresh?: () => Promise<unknown> | unknown;
+    onStatisticsRefresh?: () => Promise<unknown> | unknown;
+  } = {},
+) {
   return render(
     <StrictMode>
-      <RequestDetailsHarness requests={requests} />
+      <RequestDetailsHarness
+        onListRefresh={refreshCallbacks.onListRefresh}
+        onStatisticsRefresh={refreshCallbacks.onStatisticsRefresh}
+        requests={requests}
+      />
     </StrictMode>,
   );
 }
@@ -605,7 +659,11 @@ test("request status and company status remain separate", async () => {
 
 test("pending request actions remain two equal-width buttons", () => {
   const view = render(
-    <BoothRequestDetailsActions requestDetails={secondDetails} t={en} />,
+    <BoothRequestDetailsActions
+      {...idleRejectActionProps}
+      requestDetails={secondDetails}
+      t={en}
+    />,
   );
   const footer = view.container.querySelector<HTMLElement>(
     ".booth-request-details-modal__actions--pending",
@@ -633,7 +691,11 @@ test("approved request actions show only one full-width final state", () => {
     status: "approved",
   };
   const view = render(
-    <BoothRequestDetailsActions requestDetails={approvedDetails} t={en} />,
+    <BoothRequestDetailsActions
+      {...idleRejectActionProps}
+      requestDetails={approvedDetails}
+      t={en}
+    />,
   );
   const approvedState = view.getByRole("status", { name: "Approved" });
 
@@ -662,7 +724,11 @@ test("rejected request actions show only one full-width final state", () => {
     status: "rejected",
   };
   const view = render(
-    <BoothRequestDetailsActions requestDetails={rejectedDetails} t={en} />,
+    <BoothRequestDetailsActions
+      {...idleRejectActionProps}
+      requestDetails={rejectedDetails}
+      t={en}
+    />,
   );
   const rejectedState = view.getByRole("status", { name: "Rejected" });
 
@@ -681,14 +747,19 @@ test("rejected request actions show only one full-width final state", () => {
   );
 });
 
-test("final request states have no click handler and send no API requests", () => {
-  let fetchCalls = 0;
-  globalThis.fetch = async () => {
-    fetchCalls += 1;
-    return getResponse(firstDetails);
+test("approved and rejected request states never call Reject", () => {
+  let rejectCalls = 0;
+  const onReject = () => {
+    rejectCalls += 1;
   };
   const view = render(
-    <BoothRequestDetailsActions requestDetails={firstDetails} t={en} />,
+    <BoothRequestDetailsActions
+      isRejecting={false}
+      onReject={onReject}
+      rejectError=""
+      requestDetails={firstDetails}
+      t={en}
+    />,
   );
   const approvedState = view.getByRole("status", { name: "Approved" });
 
@@ -700,13 +771,19 @@ test("final request states have no click handler and send no API requests", () =
     status: "rejected",
   };
   view.rerender(
-    <BoothRequestDetailsActions requestDetails={rejectedDetails} t={en} />,
+    <BoothRequestDetailsActions
+      isRejecting={false}
+      onReject={onReject}
+      rejectError=""
+      requestDetails={rejectedDetails}
+      t={en}
+    />,
   );
   const rejectedState = view.getByRole("status", { name: "Rejected" });
 
   assert.equal(rejectedState.onclick, null);
   fireEvent.click(rejectedState);
-  assert.equal(fetchCalls, 0);
+  assert.equal(rejectCalls, 0);
 });
 
 test("empty services use the expanded centered state and logo initials", async () => {
@@ -891,7 +968,140 @@ test("closing during a request prevents late details from reopening the modal", 
   assert.equal(view.queryByText("Dar Al feker"), null);
 });
 
-test("Approve and Reject remain UI-only", async () => {
+test("clicking Reject once uses the selected id and disables both actions", async () => {
+  const rejectDeferred = createDeferred<Response>();
+  const rejectPaths: string[] = [];
+  globalThis.fetch = async (input, init) => {
+    if (init?.method === "PATCH") {
+      rejectPaths.push(new URL(getRequestedUrl(input)).pathname);
+      return rejectDeferred.promise;
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+
+  const rejectingButton = await view.findByRole("button", {
+    name: "Rejecting…",
+  });
+  const approveButton = view.getByRole("button", {
+    name: "Approve Request",
+  });
+
+  assert.equal(rejectingButton.hasAttribute("disabled"), true);
+  assert.equal(approveButton.hasAttribute("disabled"), true);
+  assert.deepEqual(rejectPaths, [
+    "/api/v1/admin/booths/requests/reject/902",
+  ]);
+
+  fireEvent.click(rejectingButton);
+  assert.equal(rejectPaths.length, 1);
+
+  await act(async () => {
+    rejectDeferred.resolve(getRejectResponse());
+    await rejectDeferred.promise;
+  });
+
+  await waitFor(() => {
+    assert.equal(
+      view.getByRole("button", { name: "Reject" }).hasAttribute("disabled"),
+      false,
+    );
+  });
+  assert.equal(rejectPaths.length, 1);
+});
+
+test("Reject errors keep the modal open and re-enable both actions", async () => {
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PATCH") {
+      return new Response(
+        JSON.stringify({ message: "Request can no longer be rejected." }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+
+  assert.equal(
+    (await view.findByRole("alert")).textContent,
+    "Request can no longer be rejected.",
+  );
+  assert.ok(view.getByRole("dialog"));
+  assert.equal(
+    view.getByRole("button", { name: "Reject" }).hasAttribute("disabled"),
+    false,
+  );
+  assert.equal(
+    view
+      .getByRole("button", { name: "Approve Request" })
+      .hasAttribute("disabled"),
+    false,
+  );
+  assert.equal(view.queryByRole("status", { name: "Rejected" }), null);
+});
+
+test("successful Reject refreshes details, Orders, and statistics", async () => {
+  let detailsRequests = 0;
+  let listRequests = 0;
+  let rejectRequests = 0;
+  let statisticsRequests = 0;
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(getRequestedUrl(input));
+
+    if (url.pathname.endsWith("/booths/requests/reject/902")) {
+      rejectRequests += 1;
+      assert.equal(init?.method, "PATCH");
+      return getRejectResponse();
+    }
+
+    if (url.pathname.endsWith("/booths/requests/902")) {
+      detailsRequests += 1;
+      return getResponse(
+        detailsRequests === 1
+          ? secondDetails
+          : { ...secondDetails, status: "rejected" },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  };
+
+  const view = renderHarness([secondRequest], {
+    onListRefresh: () => {
+      listRequests += 1;
+    },
+    onStatisticsRefresh: () => {
+      statisticsRequests += 1;
+    },
+  });
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+
+  assert.ok(await view.findByRole("status", { name: "Rejected" }));
+  assert.ok(view.getByRole("dialog"));
+  assert.equal(rejectRequests, 1);
+  assert.equal(detailsRequests, 2);
+  assert.equal(listRequests, 1);
+  assert.equal(statisticsRequests, 1);
+});
+
+test("Approve remains UI-only while a request is pending", async () => {
   let fetchCalls = 0;
   globalThis.fetch = async () => {
     fetchCalls += 1;
@@ -904,7 +1114,6 @@ test("Approve and Reject remain UI-only", async () => {
   const detailsFetchCount = fetchCalls;
 
   fireEvent.click(view.getByRole("button", { name: "Approve Request" }));
-  fireEvent.click(view.getByRole("button", { name: "Reject" }));
 
   assert.equal(detailsFetchCount, 1);
   assert.equal(fetchCalls, detailsFetchCount);

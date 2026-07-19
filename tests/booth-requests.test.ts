@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  DEFAULT_BOOTH_REQUESTS_PER_PAGE,
   buildBoothRequestsPath,
   getBoothRequests,
   normalizeBoothRequestsResponse,
@@ -23,28 +24,26 @@ const boothRequestsResponse: BoothRequestsResponse = {
   status: true,
   message: "booth requests retrived successfully",
   data: {
-    data: [
-      {
-        id: 1,
-        booth_id: 1,
-        company_id: 1,
-        status: "approved",
-        reason_for_booking: "Exhibitor booth request created for Elcoach.",
-        final_price: 250,
-        created_at: "2026-07-14 10:01:00",
-      },
-    ],
+    data: Array.from({ length: 5 }, (_, index) => ({
+      id: index + 1,
+      booth_id: 1,
+      company_id: index + 1,
+      status: "approved",
+      reason_for_booking: "Exhibitor booth request created for Elcoach.",
+      final_price: 250,
+      created_at: "2026-07-14 10:01:00",
+    })),
     current_page: 1,
-    per_page: 15,
-    total: 3,
-    last_page: 1,
+    per_page: 5,
+    total: 10,
+    last_page: 2,
   },
 };
 
 test("normalizes booth requests from the nested response structure", () => {
   const result = normalizeBoothRequestsResponse(boothRequestsResponse);
 
-  assert.equal(result.requests.length, 1);
+  assert.equal(result.requests.length, 5);
   assert.equal(result.requests[0]?.id, 1);
 });
 
@@ -53,20 +52,28 @@ test("maps nested booth request pagination metadata", () => {
 
   assert.deepEqual(result.pagination, {
     currentPage: 1,
-    perPage: 15,
-    totalItems: 3,
-    totalPages: 1,
+    perPage: 5,
+    totalItems: 10,
+    totalPages: 2,
   });
+});
+
+test("uses five booth requests per page by default", () => {
+  const searchParams = getPathSearchParams(buildBoothRequestsPath());
+
+  assert.equal(DEFAULT_BOOTH_REQUESTS_PER_PAGE, 5);
+  assert.equal(searchParams.get("page"), "1");
+  assert.equal(searchParams.get("per_page"), "5");
 });
 
 test("builds page-one and page-two booth request paths", () => {
   assert.equal(
-    buildBoothRequestsPath({ page: 1, perPage: 15 }),
-    "booths/requests?page=1&per_page=15",
+    buildBoothRequestsPath({ page: 1, perPage: 5 }),
+    "booths/requests?page=1&per_page=5",
   );
   assert.equal(
-    buildBoothRequestsPath({ page: 2, perPage: 15 }),
-    "booths/requests?page=2&per_page=15",
+    buildBoothRequestsPath({ page: 2, perPage: 5 }),
+    "booths/requests?page=2&per_page=5",
   );
 });
 
@@ -101,7 +108,7 @@ test("preserves reason_for_booking and final_price in fetched requests", async (
   };
 
   try {
-    const result = await getBoothRequests({ page: 1, perPage: 15 });
+    const result = await getBoothRequests({ page: 1, perPage: 5 });
 
     assert.equal(
       result.requests[0]?.reason_for_booking,
@@ -124,7 +131,7 @@ test("preserves reason_for_booking and final_price in fetched requests", async (
 
   const url = new URL(requestedUrl);
   assert.equal(url.pathname, "/api/v1/admin/booths/requests");
-  assert.equal(url.searchParams.get("per_page"), "15");
+  assert.equal(url.searchParams.get("per_page"), "5");
   assert.equal(url.searchParams.get("page"), "1");
 });
 
@@ -150,6 +157,7 @@ test("normalizes an empty booth request list", () => {
     data: {
       ...boothRequestsResponse.data,
       data: [],
+      last_page: 1,
       total: 0,
     },
   });
@@ -173,7 +181,7 @@ test("all status omits filter[status]", () => {
     buildBoothRequestsPath({
       ...getBoothRequestFilterParams(filters),
       page: 1,
-      perPage: 15,
+      perPage: 5,
     }),
   );
 
@@ -242,7 +250,7 @@ test("clearing removes status, date, and sorting parameters", () => {
     buildBoothRequestsPath({
       ...getBoothRequestFilterParams(filters),
       page: 1,
-      perPage: 15,
+      perPage: 5,
     }),
   );
 
@@ -275,14 +283,14 @@ test("filters work together with page and per_page", () => {
     buildBoothRequestsPath({
       createdDate: "2026-07-14",
       page: 2,
-      perPage: 15,
+      perPage: 5,
       sort: "-created_at",
       status: "pending",
     }),
   );
 
   assert.equal(searchParams.get("page"), "2");
-  assert.equal(searchParams.get("per_page"), "15");
+  assert.equal(searchParams.get("per_page"), "5");
   assert.equal(searchParams.get("filter[status]"), "pending");
   assert.equal(searchParams.get("filter[created_date]"), "2026-07-14");
   assert.equal(searchParams.get("sort"), "-created_at");
@@ -295,7 +303,7 @@ test("booth request paths never contain filter[name]", () => {
     buildBoothRequestsPath({
       createdDate: "2026-07-14",
       page: 2,
-      perPage: 15,
+      perPage: 5,
       sort: "created_at",
       status: "approved",
     }),
@@ -308,12 +316,12 @@ test("booth request paths never contain filter[name]", () => {
 
 test("changing the local order search value does not add filter[name]", () => {
   let searchValue = "";
-  const initialPath = buildBoothRequestsPath({ page: 2, perPage: 15 });
+  const initialPath = buildBoothRequestsPath({ page: 2, perPage: 5 });
 
   searchValue = "Request 42";
   const pathAfterSearchChange = buildBoothRequestsPath({
     page: 2,
-    perPage: 15,
+    perPage: 5,
   });
 
   assert.equal(searchValue, "Request 42");

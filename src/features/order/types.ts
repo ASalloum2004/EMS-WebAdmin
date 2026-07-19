@@ -84,6 +84,12 @@ export type BoothRequestDetailsResponse = {
   data: BoothRequestDetailsResponseData;
 };
 
+export type BoothRequestActionResponse = {
+  status: boolean;
+  message: string;
+  data: null;
+};
+
 export type BoothRequestStatisticsData = {
   total_requests: number;
   pending_requests: number;

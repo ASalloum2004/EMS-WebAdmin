@@ -180,6 +180,8 @@ export const en = {
       },
       actions: {
         reject: "Reject",
+        rejecting: "Rejecting…",
+        rejectFailure: "Unable to reject booth request.",
         approve: "Approve Request",
       },
     },

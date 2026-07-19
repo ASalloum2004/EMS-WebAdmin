@@ -20,6 +20,7 @@ import {
 import { getOrderSummaryStatistics } from "../data";
 import {
   useBoothRequestDetails,
+  useBoothRequestMutations,
   useBoothRequests,
   useBoothRequestStatistics,
 } from "../hooks";
@@ -43,6 +44,21 @@ export function OrderPage() {
   );
   const boothRequests = useBoothRequests();
   const boothRequestStatistics = useBoothRequestStatistics();
+  const refreshAfterReject = useCallback(async () => {
+    await Promise.all([
+      boothRequestDetails.refetch(),
+      boothRequests.refetch(),
+      boothRequestStatistics.refetch(),
+    ]);
+  }, [
+    boothRequestDetails.refetch,
+    boothRequests.refetch,
+    boothRequestStatistics.refetch,
+  ]);
+  const boothRequestMutations = useBoothRequestMutations({
+    onRejectSuccess: refreshAfterReject,
+    rejectFallbackMessage: t.order.details.actions.rejectFailure,
+  });
   const summaryStatistics = getOrderSummaryStatistics(
     boothRequestStatistics.statistics,
   );
@@ -86,8 +102,9 @@ export function OrderPage() {
   ];
 
   const closeRequestDetails = useCallback(() => {
+    boothRequestMutations.clearRejectError();
     setSelectedRequest(null);
-  }, []);
+  }, [boothRequestMutations.clearRejectError]);
 
   return (
     <AdminLayout>
@@ -217,8 +234,11 @@ export function OrderPage() {
           details={boothRequestDetails.details}
           error={boothRequestDetails.error}
           isLoading={boothRequestDetails.isLoading}
+          isRejecting={boothRequestMutations.isRejecting}
           onClose={closeRequestDetails}
+          onReject={boothRequestMutations.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}
+          rejectError={boothRequestMutations.rejectError}
         />
       ) : null}
     </AdminLayout>

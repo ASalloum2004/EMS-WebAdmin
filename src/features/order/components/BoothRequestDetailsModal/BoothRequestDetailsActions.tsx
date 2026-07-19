@@ -26,9 +26,15 @@ function normalizeBoothRequestStatus(
 }
 
 export function BoothRequestDetailsActions({
+  isRejecting,
+  onReject,
+  rejectError,
   requestDetails,
   t,
 }: {
+  isRejecting: boolean;
+  onReject: (boothRequestId: number) => Promise<unknown> | unknown;
+  rejectError: string;
   requestDetails: BoothRequestDetailsApiData;
   t: I18nDictionary;
 }) {
@@ -65,18 +71,31 @@ export function BoothRequestDetailsActions({
     <footer className="booth-request-details-modal__actions booth-request-details-modal__actions--pending">
       <button
         className="booth-request-details-modal__action booth-request-details-modal__action--reject"
+        disabled={isRejecting}
+        onClick={() => void onReject(requestDetails.id)}
         type="button"
       >
         <RejectRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
-        {t.order.details.actions.reject}
+        {isRejecting
+          ? t.order.details.actions.rejecting
+          : t.order.details.actions.reject}
       </button>
       <button
         className="booth-request-details-modal__action booth-request-details-modal__action--approve"
+        disabled={isRejecting}
         type="button"
       >
         <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
         {t.order.details.actions.approve}
       </button>
+      {rejectError ? (
+        <p
+          className="booth-request-details-modal__action-error"
+          role="alert"
+        >
+          {rejectError}
+        </p>
+      ) : null}
     </footer>
   );
 }

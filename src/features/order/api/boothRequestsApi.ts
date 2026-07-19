@@ -5,7 +5,7 @@ import type {
   GetBoothRequestsResult,
 } from "../types";
 
-export const DEFAULT_BOOTH_REQUESTS_PER_PAGE = 15;
+export const DEFAULT_BOOTH_REQUESTS_PER_PAGE = 5;
 
 function getPositiveInteger(value: unknown) {
   if (

@@ -28,16 +28,22 @@ export interface BoothRequestDetailsModalProps {
   details: BoothRequestDetailsApiData | null;
   error: string;
   isLoading: boolean;
+  isRejecting: boolean;
   onClose: () => void;
+  onReject: (boothRequestId: number) => Promise<unknown> | unknown;
   onRetry: () => void;
+  rejectError: string;
 }
 
 export function BoothRequestDetailsModal({
   details,
   error,
   isLoading,
+  isRejecting,
   onClose,
+  onReject,
   onRetry,
+  rejectError,
 }: BoothRequestDetailsModalProps) {
   const { language, t } = useI18n();
   const dialogRef = useRef<HTMLElement>(null);
@@ -214,7 +220,13 @@ export function BoothRequestDetailsModal({
         </div>
 
         {details ? (
-          <BoothRequestDetailsActions requestDetails={details} t={t} />
+          <BoothRequestDetailsActions
+            isRejecting={isRejecting}
+            onReject={onReject}
+            rejectError={rejectError}
+            requestDetails={details}
+            t={t}
+          />
         ) : null}
       </section>
     </div>

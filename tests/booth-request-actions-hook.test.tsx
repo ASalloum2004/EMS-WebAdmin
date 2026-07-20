@@ -2,7 +2,7 @@ import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
-import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions.js";
+import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions/index.js";
 import type { BoothRequestActionResponse } from "../src/features/order/types.js";
 
 const rejectSuccessResponse: BoothRequestActionResponse = {

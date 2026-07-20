@@ -17,7 +17,7 @@ import { ApproveBoothRequestConfirmModal } from "../src/features/order/component
 import { RejectBoothRequestConfirmModal } from "../src/features/order/components/RejectBoothRequestConfirmModal/RejectBoothRequestConfirmModal.js";
 import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
-import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions.js";
+import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions/index.js";
 import type {
   BoothRequestActionResponse,
   BoothRequestApiData,

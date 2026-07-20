@@ -58,7 +58,6 @@ export function BoothRequestDetailsModal({
 }: BoothRequestDetailsModalProps) {
   const { language, t } = useI18n();
   const dialogRef = useRef<HTMLElement>(null);
-  const isRejectingRef = useRef(isRejecting);
   const rejectButtonRef = useRef<HTMLButtonElement>(null);
   const [isRejectConfirmationOpen, setIsRejectConfirmationOpen] =
     useState(false);
@@ -69,22 +68,16 @@ export function BoothRequestDetailsModal({
     isRejectConfirmationOpen &&
     details?.status === "pending" &&
     details.id === rejectConfirmationRequestId;
-  const isRejectConfirmationVisibleRef = useRef(
-    isRejectConfirmationVisible,
-  );
-
-  isRejectingRef.current = isRejecting;
-  isRejectConfirmationVisibleRef.current = isRejectConfirmationVisible;
 
   const closeRejectConfirmation = useCallback(() => {
-    if (isRejectingRef.current) {
+    if (isRejecting) {
       return;
     }
 
     setIsRejectConfirmationOpen(false);
     setRejectConfirmationRequestId(null);
     onClearRejectError();
-  }, [onClearRejectError]);
+  }, [isRejecting, onClearRejectError]);
 
   const openRejectConfirmation = useCallback(() => {
     if (!details || details.status !== "pending" || isRejecting) {
@@ -132,8 +125,17 @@ export function BoothRequestDetailsModal({
     document.body.style.overflow = "hidden";
     dialog?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
 
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocusedElement?.focus();
+    };
+  }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+
     function handleKeyDown(event: KeyboardEvent) {
-      if (isRejectConfirmationVisibleRef.current) {
+      if (isRejectConfirmationVisible) {
         return;
       }
 
@@ -174,12 +176,8 @@ export function BoothRequestDetailsModal({
 
     document.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocusedElement?.focus();
-    };
-  }, [onClose]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isRejectConfirmationVisible, onClose]);
 
   return (
     <>
@@ -188,7 +186,7 @@ export function BoothRequestDetailsModal({
         onMouseDown={(event) => {
           if (
             event.target === event.currentTarget &&
-            !isRejectConfirmationVisibleRef.current
+            !isRejectConfirmationVisible
           ) {
             onClose();
           }

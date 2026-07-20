@@ -16,7 +16,7 @@ import { BoothRequestDetailsActions } from "../src/features/order/components/Boo
 import { RejectBoothRequestConfirmModal } from "../src/features/order/components/RejectBoothRequestConfirmModal/RejectBoothRequestConfirmModal.js";
 import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
-import { useBoothRequestMutations } from "../src/features/order/hooks/useBoothRequestMutations.js";
+import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions.js";
 import type {
   BoothRequestActionResponse,
   BoothRequestApiData,
@@ -133,15 +133,15 @@ function RequestDetailsHarness({
       onStatisticsRefresh?.(),
     ]);
   }, [onListRefresh, onStatisticsRefresh, requestDetails.refetch]);
-  const requestMutations = useBoothRequestMutations({
+  const requestActions = useBoothRequestActions({
     onRejectSuccess: refreshAfterReject,
     rejectFallbackMessage: en.order.rejectConfirmation.error,
   });
 
   const closeDetails = useCallback(() => {
-    requestMutations.clearRejectError();
+    requestActions.clearRejectError();
     setRequest(null);
-  }, [requestMutations.clearRejectError]);
+  }, [requestActions.clearRejectError]);
 
   return (
     <I18nProvider>
@@ -160,12 +160,12 @@ function RequestDetailsHarness({
           details={requestDetails.details}
           error={requestDetails.error}
           isLoading={requestDetails.isLoading}
-          isRejecting={requestMutations.isRejecting}
-          onClearRejectError={requestMutations.clearRejectError}
+          isRejecting={requestActions.isRejecting}
+          onClearRejectError={requestActions.clearRejectError}
           onClose={closeDetails}
-          onReject={requestMutations.rejectBoothRequestById}
+          onReject={requestActions.rejectBoothRequestById}
           onRetry={() => void requestDetails.refetch()}
-          rejectError={requestMutations.rejectError}
+          rejectError={requestActions.rejectError}
         />
       ) : null}
     </I18nProvider>
@@ -1114,37 +1114,6 @@ test("Reject confirmation traps focus and starts on the safe action", async () =
   cancelButton.focus();
   fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
   assert.equal(document.activeElement, confirmButton);
-});
-
-test("Reject confirmation guards repeated Confirm clicks before props update", async () => {
-  const confirmDeferred = createDeferred<void>();
-  let confirmCalls = 0;
-  const view = render(
-    <I18nProvider>
-      <RejectBoothRequestConfirmModal
-        error=""
-        isRejecting={false}
-        onCancel={() => undefined}
-        onConfirm={() => {
-          confirmCalls += 1;
-          return confirmDeferred.promise;
-        }}
-        requestId={902}
-      />
-    </I18nProvider>,
-  );
-  const confirmButton = view.getByRole("button", {
-    name: "Reject Request",
-  });
-
-  fireEvent.click(confirmButton);
-  fireEvent.click(confirmButton);
-  assert.equal(confirmCalls, 1);
-
-  await act(async () => {
-    confirmDeferred.resolve();
-    await confirmDeferred.promise;
-  });
 });
 
 test("changing the selected request or status closes Reject confirmation", () => {

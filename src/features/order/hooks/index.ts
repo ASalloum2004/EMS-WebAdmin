@@ -6,7 +6,10 @@ export {
   isLatestBoothRequestDetailsRequest,
   useBoothRequestDetails,
 } from "./useBoothRequestDetails";
-export { useBoothRequestMutations } from "./useBoothRequestMutations";
+export {
+  useBoothRequestActions,
+  type UseBoothRequestActionsOptions,
+} from "./useBoothRequestActions";
 export {
   getBoothRequestStatisticsFailureState,
   getBoothRequestStatisticsLoadingState,

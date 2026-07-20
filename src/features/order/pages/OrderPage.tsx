@@ -20,7 +20,7 @@ import {
 import { getOrderSummaryStatistics } from "../data";
 import {
   useBoothRequestDetails,
-  useBoothRequestMutations,
+  useBoothRequestActions,
   useBoothRequests,
   useBoothRequestStatistics,
 } from "../hooks";
@@ -55,7 +55,7 @@ export function OrderPage() {
     boothRequests.refetch,
     boothRequestStatistics.refetch,
   ]);
-  const boothRequestMutations = useBoothRequestMutations({
+  const boothRequestActions = useBoothRequestActions({
     onRejectSuccess: refreshAfterReject,
     rejectFallbackMessage: t.order.rejectConfirmation.error,
   });
@@ -102,9 +102,9 @@ export function OrderPage() {
   ];
 
   const closeRequestDetails = useCallback(() => {
-    boothRequestMutations.clearRejectError();
+    boothRequestActions.clearRejectError();
     setSelectedRequest(null);
-  }, [boothRequestMutations.clearRejectError]);
+  }, [boothRequestActions.clearRejectError]);
 
   return (
     <AdminLayout>
@@ -234,12 +234,12 @@ export function OrderPage() {
           details={boothRequestDetails.details}
           error={boothRequestDetails.error}
           isLoading={boothRequestDetails.isLoading}
-          isRejecting={boothRequestMutations.isRejecting}
-          onClearRejectError={boothRequestMutations.clearRejectError}
+          isRejecting={boothRequestActions.isRejecting}
+          onClearRejectError={boothRequestActions.clearRejectError}
           onClose={closeRequestDetails}
-          onReject={boothRequestMutations.rejectBoothRequestById}
+          onReject={boothRequestActions.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}
-          rejectError={boothRequestMutations.rejectError}
+          rejectError={boothRequestActions.rejectError}
         />
       ) : null}
     </AdminLayout>

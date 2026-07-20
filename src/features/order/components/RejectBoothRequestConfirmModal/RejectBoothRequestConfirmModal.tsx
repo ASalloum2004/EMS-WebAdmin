@@ -30,30 +30,34 @@ export function RejectBoothRequestConfirmModal({
   const { t } = useI18n();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLElement>(null);
-  const isRejectingRef = useRef(isRejecting);
-  const isSubmittingRef = useRef(false);
-  const wasRejectingRef = useRef(isRejecting);
   const descriptionId = useId();
   const errorId = useId();
   const titleId = useId();
-
-  isRejectingRef.current = isRejecting;
 
   useEffect(() => {
     const previouslyFocusedElement =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
-    const dialog = dialogRef.current;
 
     cancelButtonRef.current?.focus();
+
+    return () => {
+      if (previouslyFocusedElement?.isConnected) {
+        previouslyFocusedElement.focus();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
 
-        if (!isRejectingRef.current) {
+        if (!isRejecting) {
           onCancel();
         }
 
@@ -93,36 +97,14 @@ export function RejectBoothRequestConfirmModal({
 
     window.addEventListener("keydown", handleKeyDown, true);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown, true);
-
-      if (previouslyFocusedElement?.isConnected) {
-        previouslyFocusedElement.focus();
-      }
-    };
-  }, [onCancel]);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
+  }, [isRejecting, onCancel]);
 
   useEffect(() => {
-    if (wasRejectingRef.current && !isRejecting && error) {
+    if (!isRejecting && error) {
       cancelButtonRef.current?.focus();
     }
-
-    wasRejectingRef.current = isRejecting;
   }, [error, isRejecting]);
-
-  async function handleConfirm() {
-    if (isRejecting || isSubmittingRef.current) {
-      return;
-    }
-
-    isSubmittingRef.current = true;
-
-    try {
-      await onConfirm();
-    } finally {
-      isSubmittingRef.current = false;
-    }
-  }
 
   return (
     <div
@@ -193,7 +175,7 @@ export function RejectBoothRequestConfirmModal({
           <button
             className="reject-booth-request-confirm-modal__button reject-booth-request-confirm-modal__button--confirm"
             disabled={isRejecting}
-            onClick={() => void handleConfirm()}
+            onClick={() => void onConfirm()}
             type="button"
           >
             {isRejecting

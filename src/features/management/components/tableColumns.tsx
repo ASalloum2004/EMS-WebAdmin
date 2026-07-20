@@ -136,3 +136,18 @@ export function getBoothActions(
     </button>
   );
 }
+
+export function getEventHallActions(
+  onEditEventHall: (eventHall: EventHall) => void,
+  editLabel: string,
+) {
+  return (eventHall: EventHall) => (
+    <button
+      className="data-table__action-button"
+      type="button"
+      onClick={() => onEditEventHall(eventHall)}
+    >
+      {editLabel}
+    </button>
+  );
+}

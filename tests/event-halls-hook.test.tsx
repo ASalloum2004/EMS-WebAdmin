@@ -5,7 +5,15 @@ import { afterEach, beforeEach, test } from "node:test";
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { DataTable } from "../src/components/DataTable/DataTable.js";
 import { ManagementBoothFiltersPanel } from "../src/features/management/components/ManagementBoothFiltersPanel/ManagementBoothFiltersPanel.js";
-import { getEventHallColumns } from "../src/features/management/components/tableColumns.js";
+import {
+  isValidEventHallPrice,
+  ManagementEventHallEditModal,
+} from "../src/features/management/components/ManagementEventHallEditModal/ManagementEventHallEditModal.js";
+import {
+  getEventHallActions,
+  getEventHallColumns,
+} from "../src/features/management/components/tableColumns.js";
+import { useEventHallEditing } from "../src/features/management/hooks/useEventHallEditing.js";
 import { useEventHalls } from "../src/features/management/hooks/useEventHalls.js";
 import type { EventHall } from "../src/features/management/types.js";
 import {
@@ -39,6 +47,16 @@ function getEventHallsResponse(data: EventHall[]) {
   );
 }
 
+function getEventHallUpdateResponse(data: EventHall | null) {
+  return new Response(
+    JSON.stringify({ status: true, message: "Success", data }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+}
+
 function getRequestUrl(input: RequestInfo | URL) {
   return typeof input === "string"
     ? input
@@ -52,7 +70,12 @@ function EventHallsHarness({ enabled }: { enabled: boolean }) {
   const eventHallsState = useEventHalls({
     enabled,
     errorFallback: t.management.eventHalls.errorFallback,
+    updateErrorFallback: t.management.eventHalls.updateErrorFallback,
     validationMessages: t.management.validation,
+  });
+  const eventHallEditing = useEventHallEditing({
+    clearUpdateError: eventHallsState.clearUpdateError,
+    updateEventHallPriceById: eventHallsState.updateEventHallPriceById,
   });
 
   return (
@@ -87,6 +110,9 @@ function EventHallsHarness({ enabled }: { enabled: boolean }) {
       <output aria-label="Event Halls values">
         {JSON.stringify(eventHallsState.eventHalls)}
       </output>
+      <output aria-label="Event Hall update state">
+        {eventHallsState.isUpdating ? "updating" : "idle"}
+      </output>
 
       {eventHallsState.isFilterPanelOpen ? (
         <ManagementBoothFiltersPanel
@@ -105,11 +131,25 @@ function EventHallsHarness({ enabled }: { enabled: boolean }) {
 
       {!eventHallsState.isLoading && !eventHallsState.error ? (
         <DataTable
+          actions={getEventHallActions(
+            eventHallEditing.openEditModal,
+            t.common.edit,
+          )}
           ariaLabel={t.management.eventHalls.ariaLabel}
           columns={getEventHallColumns(t)}
           emptyMessage={t.management.eventHalls.empty}
           getItemKey={(eventHall) => eventHall.id}
           items={eventHallsState.eventHalls}
+        />
+      ) : null}
+
+      {eventHallEditing.selectedEventHall ? (
+        <ManagementEventHallEditModal
+          error={eventHallsState.updateError}
+          eventHall={eventHallEditing.selectedEventHall}
+          isSubmitting={eventHallsState.isUpdating}
+          onCancel={eventHallEditing.closeEditModal}
+          onSave={eventHallEditing.saveEventHallPrice}
         />
       ) : null}
     </div>
@@ -375,6 +415,251 @@ test("a filtered empty response displays the translated empty state", async () =
       view.getByText("No event halls found.").textContent,
       "No event halls found.",
     ),
+  );
+});
+
+test("validates Event Hall prices, including zero and non-finite values", () => {
+  assert.equal(isValidEventHallPrice(""), false);
+  assert.equal(isValidEventHallPrice("not-a-number"), false);
+  assert.equal(isValidEventHallPrice("NaN"), false);
+  assert.equal(isValidEventHallPrice("Infinity"), false);
+  assert.equal(isValidEventHallPrice("-0.01"), false);
+  assert.equal(isValidEventHallPrice("0"), true);
+  assert.equal(isValidEventHallPrice("75000.25"), true);
+});
+
+test("adds an Edit action to every Event Hall and validates the selected price", async () => {
+  globalThis.fetch = async () => getEventHallsResponse(eventHalls);
+  const view = renderEventHallsHarness(true);
+
+  await waitFor(() =>
+    assert.equal(view.getAllByRole("button", { name: "Edit" }).length, 2),
+  );
+  fireEvent.click(view.getAllByRole("button", { name: "Edit" })[1]);
+
+  const dialog = view.getByRole("dialog");
+  assert.match(dialog.textContent ?? "", /#2/);
+  const priceInput = view.getByLabelText(
+    "Price Per Hour",
+  ) as HTMLInputElement;
+  assert.equal(priceInput.value, "75000.00");
+
+  fireEvent.change(priceInput, { target: { value: "" } });
+  assert.equal(
+    view.getByRole("alert").textContent,
+    "Event Hall price must be a valid number greater than or equal to 0.",
+  );
+  assert.equal(
+    (view.getByRole("button", { name: "Save" }) as HTMLButtonElement)
+      .disabled,
+    true,
+  );
+
+  fireEvent.change(priceInput, { target: { value: "-1" } });
+  assert.equal(
+    (view.getByRole("button", { name: "Save" }) as HTMLButtonElement)
+      .disabled,
+    true,
+  );
+});
+
+test("updates only the matching Event Hall row and closes after success", async () => {
+  const patchRequest = createDeferred<Response>();
+  const updatedEventHall: EventHall = {
+    ...eventHalls[0],
+    price_per_hour: "0.00",
+  };
+  let patchBody = "";
+
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PATCH") {
+      patchBody = String(init.body ?? "");
+      return patchRequest.promise;
+    }
+
+    return getEventHallsResponse(eventHalls);
+  };
+  const view = renderEventHallsHarness(true);
+
+  await waitFor(() =>
+    assert.equal(view.getAllByRole("button", { name: "Edit" }).length, 2),
+  );
+  fireEvent.click(view.getAllByRole("button", { name: "Edit" })[0]);
+  fireEvent.change(view.getByLabelText("Price Per Hour"), {
+    target: { value: "0" },
+  });
+  fireEvent.click(view.getByRole("button", { name: "Save" }));
+
+  await act(async () => {
+    patchRequest.resolve(getEventHallUpdateResponse(updatedEventHall));
+    await patchRequest.promise;
+  });
+
+  await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
+  assert.deepEqual(JSON.parse(patchBody), { price_per_hour: 0 });
+  assert.equal(
+    view.getByLabelText("Event Halls values").textContent,
+    JSON.stringify([updatedEventHall, eventHalls[1]]),
+  );
+  assert.equal(
+    view.getByLabelText("Event Hall update state").textContent,
+    "idle",
+  );
+  assert.ok(view.getByText("0.00"));
+});
+
+test("preserves rows, exposes backend errors, and keeps the modal open after failure", async () => {
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PATCH") {
+      return new Response(
+        JSON.stringify({
+          status: false,
+          message: "The price per hour must be at least 0.",
+        }),
+        {
+          status: 422,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    return getEventHallsResponse(eventHalls);
+  };
+  const view = renderEventHallsHarness(true);
+
+  await waitFor(() =>
+    assert.equal(view.getAllByRole("button", { name: "Edit" }).length, 2),
+  );
+  fireEvent.click(view.getAllByRole("button", { name: "Edit" })[0]);
+  fireEvent.change(view.getByLabelText("Price Per Hour"), {
+    target: { value: "80000" },
+  });
+  fireEvent.click(view.getByRole("button", { name: "Save" }));
+
+  await waitFor(() =>
+    assert.equal(
+      view.getByRole("alert").textContent,
+      "The price per hour must be at least 0.",
+    ),
+  );
+  assert.ok(view.getByRole("dialog"));
+  assert.equal(
+    view.getByLabelText("Event Halls values").textContent,
+    JSON.stringify(eventHalls),
+  );
+  assert.equal(
+    view.getByLabelText("Event Hall update state").textContent,
+    "idle",
+  );
+});
+
+test("prevents duplicate Event Hall price submissions", async () => {
+  const patchRequest = createDeferred<Response>();
+  const updatedEventHall: EventHall = {
+    ...eventHalls[0],
+    price_per_hour: "80000.00",
+  };
+  let patchCount = 0;
+
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "PATCH") {
+      patchCount += 1;
+      return patchRequest.promise;
+    }
+
+    return getEventHallsResponse(eventHalls);
+  };
+  const view = renderEventHallsHarness(true);
+
+  await waitFor(() =>
+    assert.equal(view.getAllByRole("button", { name: "Edit" }).length, 2),
+  );
+  fireEvent.click(view.getAllByRole("button", { name: "Edit" })[0]);
+  fireEvent.change(view.getByLabelText("Price Per Hour"), {
+    target: { value: "80000" },
+  });
+  const dialog = view.getByRole("dialog");
+  fireEvent.submit(dialog);
+  fireEvent.submit(dialog);
+
+  await waitFor(() => assert.equal(patchCount, 1));
+  assert.equal(
+    view.getByLabelText("Event Hall update state").textContent,
+    "updating",
+  );
+
+  await act(async () => {
+    patchRequest.resolve(
+      new Response(
+        JSON.stringify({
+          status: true,
+          message: "Success",
+          data: updatedEventHall,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+    await patchRequest.promise;
+  });
+
+  await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
+  assert.equal(
+    view.getByLabelText("Event Hall update state").textContent,
+    "idle",
+  );
+});
+
+test("refetches with applied filters when PATCH has no usable Event Hall data", async () => {
+  const requestedUrls: string[] = [];
+  const requestedMethods: string[] = [];
+  const updatedEventHall: EventHall = {
+    ...eventHalls[0],
+    price_per_hour: "90000.00",
+  };
+
+  globalThis.fetch = async (input, init) => {
+    requestedUrls.push(getRequestUrl(input));
+    requestedMethods.push(init?.method ?? "GET");
+
+    if (init?.method === "PATCH") {
+      return getEventHallUpdateResponse(null);
+    }
+
+    return getEventHallsResponse(
+      requestedUrls.length === 4 ? [updatedEventHall] : eventHalls,
+    );
+  };
+  const view = renderEventHallsHarness(true);
+
+  await waitFor(() => assert.equal(requestedUrls.length, 1));
+  fireEvent.click(
+    view.getByRole("button", { name: "Toggle Event Hall Filters" }),
+  );
+  fireEvent.change(view.getByLabelText("Minimum area"), {
+    target: { value: "100" },
+  });
+  fireEvent.click(view.getByRole("button", { name: "Apply" }));
+  await waitFor(() => assert.equal(requestedUrls.length, 2));
+
+  fireEvent.click(view.getAllByRole("button", { name: "Edit" })[0]);
+  fireEvent.change(view.getByLabelText("Price Per Hour"), {
+    target: { value: "90000" },
+  });
+  fireEvent.click(view.getByRole("button", { name: "Save" }));
+
+  await waitFor(() => assert.equal(requestedUrls.length, 4));
+  assert.deepEqual(requestedMethods, ["GET", "GET", "PATCH", "GET"]);
+  assert.equal(
+    new URL(requestedUrls[3]).searchParams.get("filter[min_area]"),
+    "100",
+  );
+  await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
+  assert.equal(
+    view.getByLabelText("Event Halls values").textContent,
+    JSON.stringify([updatedEventHall]),
   );
 });
 

@@ -67,6 +67,16 @@ export type EventHallClientFilters = {
   minPrice: string;
 };
 
+export type UpdateEventHallPricePayload = {
+  pricePerHour: number;
+};
+
+export type UpdateEventHallResponse = {
+  status: boolean;
+  message: string;
+  data?: EventHall | null;
+};
+
 export type UpdateBoothPayload = {
   number: string;
   area: number;

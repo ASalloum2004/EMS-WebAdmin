@@ -5,12 +5,21 @@ import {
   buildEventHallsPath,
   getEventHalls,
 } from "../src/features/management/api/eventHallsApi.js";
+import { updateEventHallPrice } from "../src/features/management/api/updateEventHallApi.js";
 import type { EventHall } from "../src/features/management/types.js";
 
 const eventHalls: EventHall[] = [
   { id: 1, number: "1", area: 100, price_per_hour: "50000.00" },
   { id: 2, number: "2", area: 150, price_per_hour: "75000.00" },
 ];
+
+function getRequestUrl(input: RequestInfo | URL) {
+  return typeof input === "string"
+    ? input
+    : input instanceof URL
+      ? input.toString()
+      : input.url;
+}
 
 function installAuthenticatedSession() {
   const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
@@ -166,6 +175,84 @@ test("rejects an invalid Event Hall response format", async () => {
     await assert.rejects(
       () => getEventHalls(),
       /Unexpected event halls response format\./,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    restoreSession();
+  }
+});
+
+test("updates an Event Hall price through the authenticated PATCH endpoint", async () => {
+  const originalFetch = globalThis.fetch;
+  const restoreSession = installAuthenticatedSession();
+  const updatedEventHall: EventHall = {
+    ...eventHalls[0],
+    price_per_hour: "75000.00",
+  };
+  let requestedUrl = "";
+  let requestBody = "";
+  let requestHeaders = new Headers();
+  let requestMethod = "";
+
+  globalThis.fetch = async (input, init) => {
+    requestedUrl = getRequestUrl(input);
+    requestBody = String(init?.body ?? "");
+    requestHeaders = new Headers(init?.headers);
+    requestMethod = init?.method ?? "";
+
+    return new Response(
+      JSON.stringify({
+        status: true,
+        message: "Success",
+        data: updatedEventHall,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  };
+
+  try {
+    assert.deepEqual(
+      await updateEventHallPrice(1, { pricePerHour: 75000 }),
+      updatedEventHall,
+    );
+    assert.equal(new URL(requestedUrl).pathname, "/api/v1/admin/eventHall/1");
+    assert.equal(requestMethod, "PATCH");
+    assert.deepEqual(JSON.parse(requestBody), { price_per_hour: 75000 });
+    assert.equal(requestHeaders.get("Accept"), "application/json");
+    assert.equal(requestHeaders.get("Content-Type"), "application/json");
+    assert.equal(
+      requestHeaders.get("Authorization"),
+      "Bearer event-halls-test-token",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    restoreSession();
+  }
+});
+
+test("preserves Event Hall price validation errors from the backend", async () => {
+  const originalFetch = globalThis.fetch;
+  const restoreSession = installAuthenticatedSession();
+
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        status: false,
+        message: "The price per hour must be at least 0.",
+      }),
+      {
+        status: 422,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+
+  try {
+    await assert.rejects(
+      () => updateEventHallPrice(1, { pricePerHour: -1 }),
+      /The price per hour must be at least 0\./,
     );
   } finally {
     globalThis.fetch = originalFetch;

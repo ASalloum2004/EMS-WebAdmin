@@ -261,6 +261,8 @@ export const ar: I18nDictionary = {
       loading: "جار تحميل قاعات الفعاليات...",
       empty: "لم يتم العثور على قاعات فعاليات.",
       errorFallback: "تعذر تحميل قاعات الفعاليات.",
+      updateErrorFallback: "تعذر تحديث سعر قاعة الفعاليات.",
+      editPriceTitle: "تعديل سعر قاعة الفعاليات",
       number: "رقم القاعة",
       area: "المساحة",
       pricePerHour: "السعر لكل ساعة",
@@ -347,6 +349,8 @@ export const ar: I18nDictionary = {
       boothNumberRequired: "رقم الجناح مطلوب.",
       invalidBoothArea: "يجب أن تكون المساحة رقما صالحا أكبر من أو يساوي 0.",
       invalidBoothPrice: "يجب أن يكون السعر رقما صالحا أكبر من أو يساوي 0.",
+      invalidEventHallPrice:
+        "يجب أن يكون سعر قاعة الفعاليات رقما صالحا أكبر من أو يساوي 0.",
     },
   },
 };

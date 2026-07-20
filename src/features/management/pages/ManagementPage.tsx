@@ -8,6 +8,7 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
 import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
+import { ManagementEventHallEditModal } from "../components/ManagementEventHallEditModal";
 import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
 import { ManagementHeader } from "../components/ManagementHeader";
 import { ManagementServicesModal } from "../components/ManagementServicesModal";
@@ -19,6 +20,7 @@ import {
   useBoothEditing,
   useBoothFiltering,
   useBooths,
+  useEventHallEditing,
   useEventHalls,
   useHallFiltering,
   useHalls,
@@ -27,6 +29,7 @@ import {
   getBoothColumns,
   getBoothActions,
   getEventHallColumns,
+  getEventHallActions,
   getHallColumns,
 } from "../components/tableColumns";
 import "./ManagementPage.scss";
@@ -57,6 +60,7 @@ export function ManagementPage() {
   const eventHallFiltering = useEventHalls({
     enabled: isEventHallTab,
     errorFallback: t.management.eventHalls.errorFallback,
+    updateErrorFallback: t.management.eventHalls.updateErrorFallback,
     validationMessages: t.management.validation,
   });
   const [searchValue, setSearchValue] = useState("");
@@ -68,6 +72,10 @@ export function ManagementPage() {
   const boothEditing = useBoothEditing({
     clearUpdateError,
     updateBoothById,
+  });
+  const eventHallEditing = useEventHallEditing({
+    clearUpdateError: eventHallFiltering.clearUpdateError,
+    updateEventHallPriceById: eventHallFiltering.updateEventHallPriceById,
   });
   const boothFiltering = useBoothFiltering({
     booths,
@@ -87,6 +95,12 @@ export function ManagementPage() {
   const boothActions = useMemo(() => {
     return getBoothActions(boothEditing.openEditModal, t.common.edit);
   }, [boothEditing.openEditModal, t.common.edit]);
+  const eventHallActions = useMemo(() => {
+    return getEventHallActions(
+      eventHallEditing.openEditModal,
+      t.common.edit,
+    );
+  }, [eventHallEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = boothFiltering.visibleBooths.length > 0;
 
@@ -287,6 +301,7 @@ export function ManagementPage() {
           !eventHallFiltering.isLoading &&
           !eventHallFiltering.error ? (
             <DataTable
+              actions={eventHallActions}
               ariaLabel={t.management.eventHalls.ariaLabel}
               columns={eventHallColumns}
               emptyMessage={t.management.eventHalls.empty}
@@ -303,6 +318,16 @@ export function ManagementPage() {
             isSubmitting={isUpdatingBooth}
             onCancel={boothEditing.closeEditModal}
             onSave={boothEditing.saveBooth}
+          />
+        ) : null}
+
+        {eventHallEditing.selectedEventHall ? (
+          <ManagementEventHallEditModal
+            error={eventHallFiltering.updateError}
+            eventHall={eventHallEditing.selectedEventHall}
+            isSubmitting={eventHallFiltering.isUpdating}
+            onCancel={eventHallEditing.closeEditModal}
+            onSave={eventHallEditing.saveEventHallPrice}
           />
         ) : null}
 

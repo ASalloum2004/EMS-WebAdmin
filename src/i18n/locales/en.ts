@@ -260,6 +260,8 @@ export const en = {
       loading: "Loading event halls...",
       empty: "No event halls found.",
       errorFallback: "Unable to load event halls.",
+      updateErrorFallback: "Unable to update the Event Hall price.",
+      editPriceTitle: "Edit Event Hall Price",
       number: "Hall Number",
       area: "Area",
       pricePerHour: "Price Per Hour",
@@ -348,6 +350,8 @@ export const en = {
         "Area must be a valid number greater than or equal to 0.",
       invalidBoothPrice:
         "Price must be a valid number greater than or equal to 0.",
+      invalidEventHallPrice:
+        "Event Hall price must be a valid number greater than or equal to 0.",
     },
   },
 };

@@ -2,6 +2,7 @@ export * from "./useBoothEditing";
 export * from "./useBoothFiltering";
 export * from "./useHallFiltering";
 export * from "./useBooths";
+export * from "./useEventHallEditing";
 export * from "./useEventHalls";
 export * from "./useHalls";
 export * from "./useServices";

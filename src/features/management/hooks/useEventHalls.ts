@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getEventHalls } from "../api";
+import { getEventHalls, updateEventHallPrice } from "../api";
 import type {
   EventHall,
   EventHallClientFilters,
   GetEventHallsParams,
+  UpdateEventHallPricePayload,
 } from "../types";
 
 type EventHallFilterValidationMessages = {
@@ -18,7 +19,13 @@ type EventHallFilterValidationMessages = {
 type UseEventHallsOptions = {
   enabled?: boolean;
   errorFallback: string;
+  updateErrorFallback: string;
   validationMessages: EventHallFilterValidationMessages;
+};
+
+type RequestEventHallsOptions = {
+  preserveRowsOnError?: boolean;
+  rethrowOnError?: boolean;
 };
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
@@ -118,6 +125,7 @@ export function isLatestEventHallsRequest(
 export function useEventHalls({
   enabled = true,
   errorFallback,
+  updateErrorFallback,
   validationMessages,
 }: UseEventHallsOptions) {
   const [eventHalls, setEventHalls] = useState<EventHall[]>([]);
@@ -130,7 +138,10 @@ export function useEventHalls({
     createEmptyEventHallFilters,
   );
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [updateError, setUpdateError] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
   const hasRequestedEventHalls = useRef(false);
+  const isUpdatingRef = useRef(false);
   const appliedParamsRef = useRef<GetEventHallsParams>({});
   const latestRequestIdRef = useRef(0);
 
@@ -140,7 +151,13 @@ export function useEventHalls({
   );
 
   const requestEventHalls = useCallback(
-    async (params: GetEventHallsParams) => {
+    async (
+      params: GetEventHallsParams,
+      {
+        preserveRowsOnError = false,
+        rethrowOnError = false,
+      }: RequestEventHallsOptions = {},
+    ) => {
       if (!enabled) {
         return [];
       }
@@ -166,7 +183,13 @@ export function useEventHalls({
           isLatestEventHallsRequest(requestId, latestRequestIdRef.current)
         ) {
           setError(getErrorMessage(eventHallsError, errorFallback));
-          setEventHalls([]);
+          if (!preserveRowsOnError) {
+            setEventHalls([]);
+          }
+        }
+
+        if (rethrowOnError) {
+          throw eventHallsError;
         }
 
         return [];
@@ -232,6 +255,64 @@ export function useEventHalls({
     void requestEventHalls(emptyParams);
   }, [requestEventHalls]);
 
+  const updateEventHallPriceById = useCallback(
+    async (eventHallId: number, payload: UpdateEventHallPricePayload) => {
+      if (isUpdatingRef.current) {
+        return null;
+      }
+
+      isUpdatingRef.current = true;
+      setUpdateError("");
+      setIsUpdating(true);
+
+      try {
+        const updatedEventHall = await updateEventHallPrice(
+          eventHallId,
+          payload,
+        );
+
+        if (updatedEventHall?.id === eventHallId) {
+          latestRequestIdRef.current += 1;
+          setIsLoading(false);
+          setEventHalls((currentEventHalls) =>
+            currentEventHalls.map((eventHall) =>
+              eventHall.id === eventHallId ? updatedEventHall : eventHall,
+            ),
+          );
+
+          return updatedEventHall;
+        }
+
+        const refreshedEventHalls = await requestEventHalls(
+          appliedParamsRef.current,
+          {
+            preserveRowsOnError: true,
+            rethrowOnError: true,
+          },
+        );
+
+        return (
+          refreshedEventHalls.find(
+            (eventHall) => eventHall.id === eventHallId,
+          ) ?? null
+        );
+      } catch (eventHallUpdateError) {
+        setUpdateError(
+          getErrorMessage(eventHallUpdateError, updateErrorFallback),
+        );
+        return null;
+      } finally {
+        isUpdatingRef.current = false;
+        setIsUpdating(false);
+      }
+    },
+    [requestEventHalls, updateErrorFallback],
+  );
+
+  const clearUpdateError = useCallback(() => {
+    setUpdateError("");
+  }, []);
+
   return {
     applyFilters,
     clearFilters,
@@ -240,11 +321,15 @@ export function useEventHalls({
     eventHalls,
     error,
     filters,
+    clearUpdateError,
     isFilterPanelOpen,
     isLoading,
+    isUpdating,
     refetch,
     setDraftFilters,
     toggleFilterPanel,
+    updateError,
+    updateEventHallPriceById,
     validationMessage,
   };
 }

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import { getEventHalls } from "../src/features/management/api/eventHallsApi.js";
+import {
+  buildEventHallsPath,
+  getEventHalls,
+} from "../src/features/management/api/eventHallsApi.js";
 import type { EventHall } from "../src/features/management/types.js";
 
 const eventHalls: EventHall[] = [
@@ -101,6 +104,49 @@ test("returns the direct Event Hall data array", async () => {
     globalThis.fetch = originalFetch;
     restoreSession();
   }
+});
+
+test("maps every Event Hall filter to its backend query parameter", () => {
+  const url = new URL(
+    buildEventHallsPath({
+      maxArea: 200,
+      maxPrice: 100000,
+      minArea: 0,
+      minPrice: 50000,
+    }),
+    "https://ems.test",
+  );
+
+  assert.equal(url.pathname, "/eventHall");
+  assert.equal(url.searchParams.get("filter[min_area]"), "0");
+  assert.equal(url.searchParams.get("filter[max_area]"), "200");
+  assert.equal(url.searchParams.get("filter[min_price]"), "50000");
+  assert.equal(url.searchParams.get("filter[max_price]"), "100000");
+  assert.equal(Array.from(url.searchParams).length, 4);
+});
+
+test("includes multiple Event Hall filters together", () => {
+  const url = new URL(
+    buildEventHallsPath({ minArea: 100, maxArea: 200 }),
+    "https://ems.test",
+  );
+
+  assert.deepEqual(Array.from(url.searchParams.entries()), [
+    ["filter[min_area]", "100"],
+    ["filter[max_area]", "200"],
+  ]);
+});
+
+test("omits empty and invalid Event Hall filter parameters", () => {
+  assert.equal(buildEventHallsPath({}), "eventHall");
+  assert.equal(
+    buildEventHallsPath({
+      maxArea: undefined,
+      maxPrice: Number.NaN,
+      minArea: Number.POSITIVE_INFINITY,
+    }),
+    "eventHall",
+  );
 });
 
 test("rejects an invalid Event Hall response format", async () => {

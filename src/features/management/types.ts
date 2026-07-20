@@ -53,6 +53,13 @@ export type EventHallsResponse = {
   data: EventHall[];
 };
 
+export type GetEventHallsParams = {
+  maxArea?: number;
+  maxPrice?: number;
+  minArea?: number;
+  minPrice?: number;
+};
+
 export type EventHallClientFilters = {
   maxArea: string;
   maxPrice: string;

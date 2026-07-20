@@ -29,40 +29,12 @@ import {
   getEventHallColumns,
   getHallColumns,
 } from "../components/tableColumns";
-import type { EventHallClientFilters } from "../types";
 import "./ManagementPage.scss";
-
-function createEmptyEventHallFilters(): EventHallClientFilters {
-  return {
-    maxArea: "",
-    maxPrice: "",
-    minArea: "",
-    minPrice: "",
-  };
-}
-
-function getOptionalNumber(value: string) {
-  const trimmedValue = value.trim();
-
-  if (!trimmedValue) {
-    return null;
-  }
-
-  const numericValue = Number(trimmedValue);
-
-  return Number.isFinite(numericValue) ? numericValue : null;
-}
 
 export function ManagementPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ManagementTab>("hall");
   const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
-  const [eventHallFilters, setEventHallFilters] =
-    useState<EventHallClientFilters>(createEmptyEventHallFilters);
-  const [eventHallDraftFilters, setEventHallDraftFilters] =
-    useState<EventHallClientFilters>(createEmptyEventHallFilters);
-  const [isEventHallFilterPanelOpen, setIsEventHallFilterPanelOpen] =
-    useState(false);
   const isHallTab = activeTab === "hall";
   const isBoothTab = activeTab === "booth";
   const isEventHallTab = activeTab === "eventHall";
@@ -82,14 +54,10 @@ export function ManagementPage() {
     updateBoothById,
     updateError: boothUpdateError,
   } = useBooths({ enabled: isBoothTab });
-  const {
-    error: eventHallsError,
-    eventHalls,
-    isLoading: isEventHallsLoading,
-    refetch: refetchEventHalls,
-  } = useEventHalls({
+  const eventHallFiltering = useEventHalls({
     enabled: isEventHallTab,
     errorFallback: t.management.eventHalls.errorFallback,
+    validationMessages: t.management.validation,
   });
   const [searchValue, setSearchValue] = useState("");
   const hallFiltering = useHallFiltering({
@@ -122,69 +90,9 @@ export function ManagementPage() {
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = boothFiltering.visibleBooths.length > 0;
 
-  const eventHallValidationMessage = useMemo(() => {
-    const minArea = getOptionalNumber(eventHallDraftFilters.minArea);
-    const maxArea = getOptionalNumber(eventHallDraftFilters.maxArea);
-    const minPrice = getOptionalNumber(eventHallDraftFilters.minPrice);
-    const maxPrice = getOptionalNumber(eventHallDraftFilters.maxPrice);
-
-    if (
-      eventHallDraftFilters.minArea.trim() &&
-      minArea === null
-    ) {
-      return t.management.validation.invalidMinimumArea;
-    }
-
-    if (
-      eventHallDraftFilters.maxArea.trim() &&
-      maxArea === null
-    ) {
-      return t.management.validation.invalidMaximumArea;
-    }
-
-    if (
-      eventHallDraftFilters.minPrice.trim() &&
-      minPrice === null
-    ) {
-      return t.management.validation.invalidMinimumPrice;
-    }
-
-    if (
-      eventHallDraftFilters.maxPrice.trim() &&
-      maxPrice === null
-    ) {
-      return t.management.validation.invalidMaximumPrice;
-    }
-
-    if (minArea !== null && maxArea !== null && minArea > maxArea) {
-      return t.management.validation.minimumAreaGreaterThanMaximum;
-    }
-
-    if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
-      return t.management.validation.minimumPriceGreaterThanMaximum;
-    }
-
-    return "";
-  }, [eventHallDraftFilters, t]);
-
   const visibleEventHalls = useMemo(() => {
-    const minArea = getOptionalNumber(eventHallFilters.minArea);
-    const maxArea = getOptionalNumber(eventHallFilters.maxArea);
-    const minPrice = getOptionalNumber(eventHallFilters.minPrice);
-    const maxPrice = getOptionalNumber(eventHallFilters.maxPrice);
-    const filteredEventHalls = eventHalls.filter((eventHall) => {
-      const pricePerHour = Number(eventHall.price_per_hour);
-
-      return !(
-        (minArea !== null && eventHall.area < minArea) ||
-        (maxArea !== null && eventHall.area > maxArea) ||
-        (minPrice !== null && pricePerHour < minPrice) ||
-        (maxPrice !== null && pricePerHour > maxPrice)
-      );
-    });
-
     return filterBySearchQuery(
-      filteredEventHalls,
+      eventHallFiltering.eventHalls,
       searchValue,
       (eventHall) => [
         eventHall.id,
@@ -193,7 +101,7 @@ export function ManagementPage() {
         eventHall.price_per_hour,
       ],
     );
-  }, [eventHallFilters, eventHalls, searchValue]);
+  }, [eventHallFiltering.eventHalls, searchValue]);
 
   const searchPlaceholder = isBoothTab
     ? t.management.search.boothsPlaceholder
@@ -210,31 +118,7 @@ export function ManagementPage() {
     setActiveTab(tab);
     hallFiltering.closeFilterPanel();
     boothFiltering.closeFilterPanel();
-    setIsEventHallFilterPanelOpen(false);
-  }
-
-  function toggleEventHallFilterPanel() {
-    if (!isEventHallFilterPanelOpen) {
-      setEventHallDraftFilters(eventHallFilters);
-    }
-
-    setIsEventHallFilterPanelOpen((isOpen) => !isOpen);
-  }
-
-  function applyEventHallFilters() {
-    if (eventHallValidationMessage) {
-      return;
-    }
-
-    setEventHallFilters(eventHallDraftFilters);
-    setIsEventHallFilterPanelOpen(false);
-  }
-
-  function clearEventHallFilters() {
-    const emptyFilters = createEmptyEventHallFilters();
-
-    setEventHallDraftFilters(emptyFilters);
-    setEventHallFilters(emptyFilters);
+    eventHallFiltering.closeFilterPanel();
   }
 
   return (
@@ -271,7 +155,7 @@ export function ManagementPage() {
                     ? hallFiltering.toggleFilterPanel
                     : isBoothTab
                       ? boothFiltering.toggleFilterPanel
-                      : toggleEventHallFilterPanel
+                      : eventHallFiltering.toggleFilterPanel
                 }
                 placeholder={searchPlaceholder}
                 showFilterButton
@@ -298,14 +182,14 @@ export function ManagementPage() {
                 />
               ) : null}
 
-              {isEventHallTab && isEventHallFilterPanelOpen ? (
+              {isEventHallTab && eventHallFiltering.isFilterPanelOpen ? (
                 <ManagementBoothFiltersPanel
-                  filters={eventHallDraftFilters}
+                  filters={eventHallFiltering.draftFilters}
                   mode="eventHall"
-                  onApply={applyEventHallFilters}
-                  onChange={setEventHallDraftFilters}
-                  onClear={clearEventHallFilters}
-                  validationMessage={eventHallValidationMessage}
+                  onApply={eventHallFiltering.applyFilters}
+                  onChange={eventHallFiltering.setDraftFilters}
+                  onClear={eventHallFiltering.clearFilters}
+                  validationMessage={eventHallFiltering.validationMessage}
                 />
               ) : null}
             </div>
@@ -376,20 +260,23 @@ export function ManagementPage() {
             />
           ) : null}
 
-          {isEventHallTab && isEventHallsLoading ? (
+          {isEventHallTab && eventHallFiltering.isLoading ? (
             <p className="management-page__state">
               {t.management.eventHalls.loading}
             </p>
           ) : null}
 
-          {isEventHallTab && !isEventHallsLoading && eventHallsError ? (
+          {isEventHallTab &&
+          !eventHallFiltering.isLoading &&
+          eventHallFiltering.error ? (
             <div className="management-page__state" role="alert">
               <p>
-                {eventHallsError || t.management.eventHalls.errorFallback}
+                {eventHallFiltering.error ||
+                  t.management.eventHalls.errorFallback}
               </p>
               <button
                 type="button"
-                onClick={() => void refetchEventHalls()}
+                onClick={() => void eventHallFiltering.refetch()}
               >
                 {t.common.tryAgain}
               </button>
@@ -397,8 +284,8 @@ export function ManagementPage() {
           ) : null}
 
           {isEventHallTab &&
-          !isEventHallsLoading &&
-          !eventHallsError ? (
+          !eventHallFiltering.isLoading &&
+          !eventHallFiltering.error ? (
             <DataTable
               ariaLabel={t.management.eventHalls.ariaLabel}
               columns={eventHallColumns}

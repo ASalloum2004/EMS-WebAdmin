@@ -224,15 +224,16 @@ export const ar: I18nDictionary = {
     tabs: {
       hall: "قاعة",
       booth: "جناح",
-      all: "الكل",
+      eventHall: "قاعة الفعاليات",
       ariaLabel: "عرض الإدارة",
     },
     search: {
       hallsPlaceholder: "ابحث بالمعرف أو الرقم أو النوع...",
       boothsPlaceholder: "ابحث بالمعرف أو الرقم...",
-      managementPlaceholder: "ابحث في الإدارة...",
+      eventHallsPlaceholder: "البحث في قاعات الفعاليات...",
       hallsAriaLabel: "بحث في القاعات",
       boothsAriaLabel: "بحث في الأجنحة",
+      eventHallsAriaLabel: "البحث في قاعات الفعاليات",
       managementAriaLabel: "بحث في الإدارة",
     },
     halls: {
@@ -255,6 +256,13 @@ export const ar: I18nDictionary = {
         available: "متاح",
       },
       ariaLabel: "الأجنحة",
+    },
+    eventHalls: {
+      empty: "لم يتم العثور على قاعات فعاليات.",
+      number: "رقم القاعة",
+      area: "المساحة",
+      pricePerHour: "السعر لكل ساعة",
+      ariaLabel: "قاعات الفعاليات",
     },
     servicesModal: {
       title: "الخدمات",
@@ -320,6 +328,7 @@ export const ar: I18nDictionary = {
       validationMessage: "يرجى التحقق من قيم التصفية.",
       hallFiltersAriaLabel: "عوامل تصفية القاعات",
       boothFiltersAriaLabel: "عوامل تصفية الأجنحة",
+      eventHallFiltersAriaLabel: "عوامل تصفية قاعات الفعاليات",
     },
     table: {
       id: "المعرف",
@@ -337,6 +346,5 @@ export const ar: I18nDictionary = {
       invalidBoothArea: "يجب أن تكون المساحة رقما صالحا أكبر من أو يساوي 0.",
       invalidBoothPrice: "يجب أن يكون السعر رقما صالحا أكبر من أو يساوي 0.",
     },
-    allItemsPlaceholder: "ستظهر كل عناصر الإدارة هنا.",
   },
 };

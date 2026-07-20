@@ -40,6 +40,20 @@ export type BoothsResponse = {
   data: BoothApiData[];
 };
 
+export type EventHall = {
+  id: number;
+  number: string;
+  area: number;
+  price_per_hour: string;
+};
+
+export type EventHallClientFilters = {
+  maxArea: string;
+  maxPrice: string;
+  minArea: string;
+  minPrice: string;
+};
+
 export type UpdateBoothPayload = {
   number: string;
   area: number;

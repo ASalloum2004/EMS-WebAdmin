@@ -1,6 +1,6 @@
 import type { DataTableColumn } from "../../../components";
 import type { I18nDictionary } from "../../../i18n";
-import type { BoothApiData, HallApiData } from "../types";
+import type { BoothApiData, EventHall, HallApiData } from "../types";
 
 function getBoothBookingStatus(
   booth: BoothApiData,
@@ -86,6 +86,37 @@ export function getBoothColumns(
       key: "id",
       label: t.management.table.id,
       render: (booth) => `#${booth.id}`,
+      variant: "badge",
+    },
+  ];
+}
+
+export function getEventHallColumns(
+  t: I18nDictionary,
+): Array<DataTableColumn<EventHall>> {
+  return [
+    {
+      key: "number",
+      label: t.management.eventHalls.number,
+      render: (eventHall) => eventHall.number,
+      variant: "primary",
+    },
+    {
+      key: "area",
+      label: t.management.eventHalls.area,
+      render: (eventHall) => eventHall.area,
+      variant: "metric",
+    },
+    {
+      key: "pricePerHour",
+      label: t.management.eventHalls.pricePerHour,
+      render: (eventHall) => eventHall.price_per_hour,
+      variant: "metric",
+    },
+    {
+      key: "id",
+      label: t.management.table.id,
+      render: (eventHall) => `#${eventHall.id}`,
       variant: "badge",
     },
   ];

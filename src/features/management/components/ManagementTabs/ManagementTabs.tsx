@@ -1,9 +1,9 @@
 import { useI18n } from "../../../../i18n";
 import "./ManagementTabs.scss";
 
-const tabs = ["Hall", "Booth", "All"] as const;
+export type ManagementTab = "hall" | "booth" | "eventHall";
 
-export type ManagementTab = (typeof tabs)[number];
+const tabs: ManagementTab[] = ["hall", "booth", "eventHall"];
 
 interface ManagementTabsProps {
   activeTab: ManagementTab;
@@ -16,9 +16,9 @@ export function ManagementTabs({
 }: ManagementTabsProps) {
   const { t } = useI18n();
   const tabLabels: Record<ManagementTab, string> = {
-    Hall: t.management.tabs.hall,
-    Booth: t.management.tabs.booth,
-    All: t.management.tabs.all,
+    hall: t.management.tabs.hall,
+    booth: t.management.tabs.booth,
+    eventHall: t.management.tabs.eventHall,
   };
 
   return (

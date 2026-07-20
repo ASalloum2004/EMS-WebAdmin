@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { DataTable, SearchFilterBar } from "../../../components";
+import {
+  DataTable,
+  filterBySearchQuery,
+  SearchFilterBar,
+} from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
@@ -21,17 +25,53 @@ import {
 import {
   getBoothColumns,
   getBoothActions,
+  getEventHallColumns,
   getHallColumns,
 } from "../components/tableColumns";
+import type { EventHall, EventHallClientFilters } from "../types";
 import "./ManagementPage.scss";
+
+const EVENT_HALLS: EventHall[] = [
+  { id: 1, number: "1", area: 100, price_per_hour: "50000.00" },
+  { id: 2, number: "2", area: 150, price_per_hour: "75000.00" },
+  { id: 3, number: "3", area: 100, price_per_hour: "50000.00" },
+  { id: 4, number: "4", area: 200, price_per_hour: "100000.00" },
+];
+
+function createEmptyEventHallFilters(): EventHallClientFilters {
+  return {
+    maxArea: "",
+    maxPrice: "",
+    minArea: "",
+    minPrice: "",
+  };
+}
+
+function getOptionalNumber(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const numericValue = Number(trimmedValue);
+
+  return Number.isFinite(numericValue) ? numericValue : null;
+}
 
 export function ManagementPage() {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<ManagementTab>("Hall");
+  const [activeTab, setActiveTab] = useState<ManagementTab>("hall");
   const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
-  const isHallTab = activeTab === "Hall";
-  const isBoothTab = activeTab === "Booth";
-  const isAllTab = activeTab === "All";
+  const [eventHallFilters, setEventHallFilters] =
+    useState<EventHallClientFilters>(createEmptyEventHallFilters);
+  const [eventHallDraftFilters, setEventHallDraftFilters] =
+    useState<EventHallClientFilters>(createEmptyEventHallFilters);
+  const [isEventHallFilterPanelOpen, setIsEventHallFilterPanelOpen] =
+    useState(false);
+  const isHallTab = activeTab === "hall";
+  const isBoothTab = activeTab === "booth";
+  const isEventHallTab = activeTab === "eventHall";
   const {
     error: hallsError,
     halls,
@@ -70,27 +110,128 @@ export function ManagementPage() {
   const boothColumns = useMemo(() => {
     return getBoothColumns(t);
   }, [t]);
+  const eventHallColumns = useMemo(() => {
+    return getEventHallColumns(t);
+  }, [t]);
   const boothActions = useMemo(() => {
     return getBoothActions(boothEditing.openEditModal, t.common.edit);
   }, [boothEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = boothFiltering.visibleBooths.length > 0;
 
+  const eventHallValidationMessage = useMemo(() => {
+    const minArea = getOptionalNumber(eventHallDraftFilters.minArea);
+    const maxArea = getOptionalNumber(eventHallDraftFilters.maxArea);
+    const minPrice = getOptionalNumber(eventHallDraftFilters.minPrice);
+    const maxPrice = getOptionalNumber(eventHallDraftFilters.maxPrice);
+
+    if (
+      eventHallDraftFilters.minArea.trim() &&
+      minArea === null
+    ) {
+      return t.management.validation.invalidMinimumArea;
+    }
+
+    if (
+      eventHallDraftFilters.maxArea.trim() &&
+      maxArea === null
+    ) {
+      return t.management.validation.invalidMaximumArea;
+    }
+
+    if (
+      eventHallDraftFilters.minPrice.trim() &&
+      minPrice === null
+    ) {
+      return t.management.validation.invalidMinimumPrice;
+    }
+
+    if (
+      eventHallDraftFilters.maxPrice.trim() &&
+      maxPrice === null
+    ) {
+      return t.management.validation.invalidMaximumPrice;
+    }
+
+    if (minArea !== null && maxArea !== null && minArea > maxArea) {
+      return t.management.validation.minimumAreaGreaterThanMaximum;
+    }
+
+    if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
+      return t.management.validation.minimumPriceGreaterThanMaximum;
+    }
+
+    return "";
+  }, [eventHallDraftFilters, t]);
+
+  const visibleEventHalls = useMemo(() => {
+    const minArea = getOptionalNumber(eventHallFilters.minArea);
+    const maxArea = getOptionalNumber(eventHallFilters.maxArea);
+    const minPrice = getOptionalNumber(eventHallFilters.minPrice);
+    const maxPrice = getOptionalNumber(eventHallFilters.maxPrice);
+    const filteredEventHalls = EVENT_HALLS.filter((eventHall) => {
+      const pricePerHour = Number(eventHall.price_per_hour);
+
+      return !(
+        (minArea !== null && eventHall.area < minArea) ||
+        (maxArea !== null && eventHall.area > maxArea) ||
+        (minPrice !== null && pricePerHour < minPrice) ||
+        (maxPrice !== null && pricePerHour > maxPrice)
+      );
+    });
+
+    return filterBySearchQuery(
+      filteredEventHalls,
+      searchValue,
+      (eventHall) => [
+        eventHall.id,
+        eventHall.number,
+        eventHall.area,
+        eventHall.price_per_hour,
+      ],
+    );
+  }, [eventHallFilters, searchValue]);
+
   const searchPlaceholder = isBoothTab
     ? t.management.search.boothsPlaceholder
     : isHallTab
       ? t.management.search.hallsPlaceholder
-      : t.management.search.managementPlaceholder;
+      : t.management.search.eventHallsPlaceholder;
   const searchAriaLabel = isBoothTab
     ? t.management.search.boothsAriaLabel
     : isHallTab
       ? t.management.search.hallsAriaLabel
-      : t.management.search.managementAriaLabel;
+      : t.management.search.eventHallsAriaLabel;
 
   function handleTabChange(tab: ManagementTab) {
     setActiveTab(tab);
     hallFiltering.closeFilterPanel();
     boothFiltering.closeFilterPanel();
+    setIsEventHallFilterPanelOpen(false);
+  }
+
+  function toggleEventHallFilterPanel() {
+    if (!isEventHallFilterPanelOpen) {
+      setEventHallDraftFilters(eventHallFilters);
+    }
+
+    setIsEventHallFilterPanelOpen((isOpen) => !isOpen);
+  }
+
+  function applyEventHallFilters() {
+    if (eventHallValidationMessage) {
+      return;
+    }
+
+    setEventHallFilters(eventHallDraftFilters);
+    setIsEventHallFilterPanelOpen(false);
+  }
+
+  function clearEventHallFilters() {
+    const emptyFilters = createEmptyEventHallFilters();
+
+    setEventHallDraftFilters(emptyFilters);
+    setEventHallFilters(emptyFilters);
   }
 
   return (
@@ -127,10 +268,10 @@ export function ManagementPage() {
                     ? hallFiltering.toggleFilterPanel
                     : isBoothTab
                       ? boothFiltering.toggleFilterPanel
-                      : undefined
+                      : toggleEventHallFilterPanel
                 }
                 placeholder={searchPlaceholder}
-                showFilterButton={isHallTab || isBoothTab}
+                showFilterButton
               />
 
               {isHallTab && hallFiltering.isFilterPanelOpen ? (
@@ -151,6 +292,17 @@ export function ManagementPage() {
                   onChange={boothFiltering.setDraftFilters}
                   onClear={boothFiltering.clearFilters}
                   validationMessage={boothFiltering.validationMessage}
+                />
+              ) : null}
+
+              {isEventHallTab && isEventHallFilterPanelOpen ? (
+                <ManagementBoothFiltersPanel
+                  filters={eventHallDraftFilters}
+                  mode="eventHall"
+                  onApply={applyEventHallFilters}
+                  onChange={setEventHallDraftFilters}
+                  onClear={clearEventHallFilters}
+                  validationMessage={eventHallValidationMessage}
                 />
               ) : null}
             </div>
@@ -221,10 +373,14 @@ export function ManagementPage() {
             />
           ) : null}
 
-          {isAllTab ? (
-            <p className="management-page__state">
-              {t.management.allItemsPlaceholder}
-            </p>
+          {isEventHallTab ? (
+            <DataTable
+              ariaLabel={t.management.eventHalls.ariaLabel}
+              columns={eventHallColumns}
+              emptyMessage={t.management.eventHalls.empty}
+              getItemKey={(eventHall) => eventHall.id}
+              items={visibleEventHalls}
+            />
           ) : null}
         </section>
 

@@ -223,15 +223,16 @@ export const en = {
     tabs: {
       hall: "Hall",
       booth: "Booth",
-      all: "All",
+      eventHall: "Event Hall",
       ariaLabel: "Management view",
     },
     search: {
       hallsPlaceholder: "Search by id, number, or type...",
       boothsPlaceholder: "Search by id or number...",
-      managementPlaceholder: "Search management...",
+      eventHallsPlaceholder: "Search event halls...",
       hallsAriaLabel: "Search halls",
       boothsAriaLabel: "Search booths",
+      eventHallsAriaLabel: "Search event halls",
       managementAriaLabel: "Search management",
     },
     halls: {
@@ -254,6 +255,13 @@ export const en = {
         available: "Available",
       },
       ariaLabel: "Booths",
+    },
+    eventHalls: {
+      empty: "No event halls found.",
+      number: "Hall Number",
+      area: "Area",
+      pricePerHour: "Price Per Hour",
+      ariaLabel: "Event halls",
     },
     servicesModal: {
       title: "Services",
@@ -319,6 +327,7 @@ export const en = {
       validationMessage: "Please check the filter values.",
       hallFiltersAriaLabel: "Hall filters",
       boothFiltersAriaLabel: "Booth filters",
+      eventHallFiltersAriaLabel: "Event Hall filters",
     },
     table: {
       id: "ID",
@@ -338,6 +347,5 @@ export const en = {
       invalidBoothPrice:
         "Price must be a valid number greater than or equal to 0.",
     },
-    allItemsPlaceholder: "All management items will appear here.",
   },
 };

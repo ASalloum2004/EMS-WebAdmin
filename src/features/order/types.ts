@@ -90,6 +90,16 @@ export type BoothRequestActionResponse = {
   data: null;
 };
 
+export type ApproveBoothRequestPayload = {
+  force: false;
+};
+
+export type ApproveBoothRequestResponse = {
+  status: true;
+  message: string;
+  data: null;
+};
+
 export type BoothRequestStatisticsData = {
   total_requests: number;
   pending_requests: number;

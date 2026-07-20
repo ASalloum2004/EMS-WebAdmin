@@ -15,7 +15,10 @@ export {
   normalizeBoothRequestDetailsResponse,
 } from "./boothRequestDetailsApi";
 export {
+  approveBoothRequest,
+  buildApproveBoothRequestPath,
   buildRejectBoothRequestPath,
+  normalizeApproveBoothRequestResponse,
   normalizeBoothRequestActionResponse,
   rejectBoothRequest,
 } from "./boothRequestActionsApi";

@@ -44,7 +44,7 @@ export function OrderPage() {
   );
   const boothRequests = useBoothRequests();
   const boothRequestStatistics = useBoothRequestStatistics();
-  const refreshAfterReject = useCallback(async () => {
+  const refreshAfterRequestAction = useCallback(async () => {
     await Promise.all([
       boothRequestDetails.refetch(),
       boothRequests.refetch(),
@@ -56,7 +56,9 @@ export function OrderPage() {
     boothRequestStatistics.refetch,
   ]);
   const boothRequestActions = useBoothRequestActions({
-    onRejectSuccess: refreshAfterReject,
+    approveFallbackMessage: t.order.approveConfirmation.error,
+    onApproveSuccess: refreshAfterRequestAction,
+    onRejectSuccess: refreshAfterRequestAction,
     rejectFallbackMessage: t.order.rejectConfirmation.error,
   });
   const summaryStatistics = getOrderSummaryStatistics(
@@ -102,9 +104,13 @@ export function OrderPage() {
   ];
 
   const closeRequestDetails = useCallback(() => {
+    boothRequestActions.clearApproveError();
     boothRequestActions.clearRejectError();
     setSelectedRequest(null);
-  }, [boothRequestActions.clearRejectError]);
+  }, [
+    boothRequestActions.clearApproveError,
+    boothRequestActions.clearRejectError,
+  ]);
 
   return (
     <AdminLayout>
@@ -231,10 +237,14 @@ export function OrderPage() {
 
       {selectedRequest ? (
         <BoothRequestDetailsModal
+          approveError={boothRequestActions.approveError}
           details={boothRequestDetails.details}
           error={boothRequestDetails.error}
+          isApproving={boothRequestActions.isApproving}
           isLoading={boothRequestDetails.isLoading}
           isRejecting={boothRequestActions.isRejecting}
+          onApprove={boothRequestActions.approveBoothRequestById}
+          onClearApproveError={boothRequestActions.clearApproveError}
           onClearRejectError={boothRequestActions.clearRejectError}
           onClose={closeRequestDetails}
           onReject={boothRequestActions.rejectBoothRequestById}

@@ -7,10 +7,12 @@ import {
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type {
+  ApproveBoothRequestResponse,
   BoothRequestActionResponse,
   BoothRequestDetailsApiData,
 } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
+import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmModal";
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
 import { BoothRequestDetailsMainColumn } from "./BoothRequestDetailsMainColumn";
@@ -29,10 +31,19 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export interface BoothRequestDetailsModalProps {
+  approveError: string;
   details: BoothRequestDetailsApiData | null;
   error: string;
+  isApproving: boolean;
   isLoading: boolean;
   isRejecting: boolean;
+  onApprove: (
+    boothRequestId: number,
+  ) =>
+    | ApproveBoothRequestResponse
+    | null
+    | Promise<ApproveBoothRequestResponse | null>;
+  onClearApproveError: () => void;
   onClearRejectError: () => void;
   onClose: () => void;
   onReject: (
@@ -46,10 +57,14 @@ export interface BoothRequestDetailsModalProps {
 }
 
 export function BoothRequestDetailsModal({
+  approveError,
   details,
   error,
+  isApproving,
   isLoading,
   isRejecting,
+  onApprove,
+  onClearApproveError,
   onClearRejectError,
   onClose,
   onReject,
@@ -58,7 +73,12 @@ export function BoothRequestDetailsModal({
 }: BoothRequestDetailsModalProps) {
   const { language, t } = useI18n();
   const dialogRef = useRef<HTMLElement>(null);
+  const approveButtonRef = useRef<HTMLButtonElement>(null);
   const rejectButtonRef = useRef<HTMLButtonElement>(null);
+  const [isApproveConfirmationOpen, setIsApproveConfirmationOpen] =
+    useState(false);
+  const [approveConfirmationRequestId, setApproveConfirmationRequestId] =
+    useState<number | null>(null);
   const [isRejectConfirmationOpen, setIsRejectConfirmationOpen] =
     useState(false);
   const [rejectConfirmationRequestId, setRejectConfirmationRequestId] =
@@ -68,29 +88,97 @@ export function BoothRequestDetailsModal({
     isRejectConfirmationOpen &&
     details?.status === "pending" &&
     details.id === rejectConfirmationRequestId;
+  const isApproveConfirmationVisible =
+    isApproveConfirmationOpen &&
+    details?.status === "pending" &&
+    details.id === approveConfirmationRequestId;
+  const isConfirmationVisible =
+    isApproveConfirmationVisible || isRejectConfirmationVisible;
+
+  const closeApproveConfirmation = useCallback(() => {
+    if (isApproving || isRejecting) {
+      return;
+    }
+
+    setIsApproveConfirmationOpen(false);
+    setApproveConfirmationRequestId(null);
+    onClearApproveError();
+  }, [isApproving, isRejecting, onClearApproveError]);
 
   const closeRejectConfirmation = useCallback(() => {
-    if (isRejecting) {
+    if (isRejecting || isApproving) {
       return;
     }
 
     setIsRejectConfirmationOpen(false);
     setRejectConfirmationRequestId(null);
     onClearRejectError();
-  }, [isRejecting, onClearRejectError]);
+  }, [isApproving, isRejecting, onClearRejectError]);
+
+  const openApproveConfirmation = useCallback(() => {
+    if (
+      !details ||
+      details.status !== "pending" ||
+      isApproving ||
+      isRejecting
+    ) {
+      return;
+    }
+
+    onClearApproveError();
+    setIsRejectConfirmationOpen(false);
+    setRejectConfirmationRequestId(null);
+    setApproveConfirmationRequestId(details.id);
+    setIsApproveConfirmationOpen(true);
+  }, [
+    details,
+    isApproving,
+    isRejecting,
+    onClearApproveError,
+  ]);
 
   const openRejectConfirmation = useCallback(() => {
-    if (!details || details.status !== "pending" || isRejecting) {
+    if (
+      !details ||
+      details.status !== "pending" ||
+      isRejecting ||
+      isApproving
+    ) {
       return;
     }
 
     onClearRejectError();
+    setIsApproveConfirmationOpen(false);
+    setApproveConfirmationRequestId(null);
     setRejectConfirmationRequestId(details.id);
     setIsRejectConfirmationOpen(true);
-  }, [details, isRejecting, onClearRejectError]);
+  }, [details, isApproving, isRejecting, onClearRejectError]);
+
+  const confirmApprove = useCallback(async () => {
+    if (
+      !details ||
+      details.status !== "pending" ||
+      isApproving ||
+      isRejecting
+    ) {
+      return;
+    }
+
+    const response = await onApprove(details.id);
+
+    if (response) {
+      setIsApproveConfirmationOpen(false);
+      setApproveConfirmationRequestId(null);
+    }
+  }, [details, isApproving, isRejecting, onApprove]);
 
   const confirmReject = useCallback(async () => {
-    if (!details || details.status !== "pending" || isRejecting) {
+    if (
+      !details ||
+      details.status !== "pending" ||
+      isRejecting ||
+      isApproving
+    ) {
       return;
     }
 
@@ -100,15 +188,19 @@ export function BoothRequestDetailsModal({
       setIsRejectConfirmationOpen(false);
       setRejectConfirmationRequestId(null);
     }
-  }, [details, isRejecting, onReject]);
+  }, [details, isApproving, isRejecting, onReject]);
 
   useEffect(() => {
+    setIsApproveConfirmationOpen(false);
+    setApproveConfirmationRequestId(null);
     setIsRejectConfirmationOpen(false);
     setRejectConfirmationRequestId(null);
   }, [details?.id]);
 
   useEffect(() => {
     if (details?.status !== "pending") {
+      setIsApproveConfirmationOpen(false);
+      setApproveConfirmationRequestId(null);
       setIsRejectConfirmationOpen(false);
       setRejectConfirmationRequestId(null);
     }
@@ -135,7 +227,7 @@ export function BoothRequestDetailsModal({
     const dialog = dialogRef.current;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (isRejectConfirmationVisible) {
+      if (isConfirmationVisible) {
         return;
       }
 
@@ -177,7 +269,7 @@ export function BoothRequestDetailsModal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isRejectConfirmationVisible, onClose]);
+  }, [isConfirmationVisible, onClose]);
 
   return (
     <>
@@ -186,7 +278,7 @@ export function BoothRequestDetailsModal({
         onMouseDown={(event) => {
           if (
             event.target === event.currentTarget &&
-            !isRejectConfirmationVisible
+            !isConfirmationVisible
           ) {
             onClose();
           }
@@ -196,11 +288,11 @@ export function BoothRequestDetailsModal({
         <section
           aria-busy={isLoading}
           aria-describedby="booth-request-details-company-meta"
-          aria-hidden={isRejectConfirmationVisible ? true : undefined}
+          aria-hidden={isConfirmationVisible ? true : undefined}
           aria-labelledby="booth-request-details-title"
           aria-modal="true"
           className="booth-request-details-modal__dialog"
-          inert={isRejectConfirmationVisible ? true : undefined}
+          inert={isConfirmationVisible ? true : undefined}
           ref={dialogRef}
           role="dialog"
           tabIndex={-1}
@@ -301,7 +393,10 @@ export function BoothRequestDetailsModal({
 
         {details ? (
           <BoothRequestDetailsActions
+            approveButtonRef={approveButtonRef}
+            isApproving={isApproving}
             isRejecting={isRejecting}
+            onApproveClick={openApproveConfirmation}
             onRejectClick={openRejectConfirmation}
             rejectButtonRef={rejectButtonRef}
             requestDetails={details}
@@ -310,6 +405,16 @@ export function BoothRequestDetailsModal({
         ) : null}
         </section>
       </div>
+
+      {isApproveConfirmationVisible && details ? (
+        <ApproveBoothRequestConfirmModal
+          error={approveError}
+          isApproving={isApproving}
+          onCancel={closeApproveConfirmation}
+          onConfirm={confirmApprove}
+          requestId={details.id}
+        />
+      ) : null}
 
       {isRejectConfirmationVisible && details ? (
         <RejectBoothRequestConfirmModal

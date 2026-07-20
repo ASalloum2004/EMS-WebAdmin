@@ -28,13 +28,19 @@ function normalizeBoothRequestStatus(
 }
 
 export function BoothRequestDetailsActions({
+  approveButtonRef,
+  isApproving,
   isRejecting,
+  onApproveClick,
   onRejectClick,
   rejectButtonRef,
   requestDetails,
   t,
 }: {
+  approveButtonRef?: Ref<HTMLButtonElement>;
+  isApproving: boolean;
   isRejecting: boolean;
+  onApproveClick: () => void;
   onRejectClick: () => void;
   rejectButtonRef?: Ref<HTMLButtonElement>;
   requestDetails: BoothRequestDetailsApiData;
@@ -73,7 +79,7 @@ export function BoothRequestDetailsActions({
     <footer className="booth-request-details-modal__actions booth-request-details-modal__actions--pending">
       <button
         className="booth-request-details-modal__action booth-request-details-modal__action--reject"
-        disabled={isRejecting}
+        disabled={isRejecting || isApproving}
         onClick={onRejectClick}
         ref={rejectButtonRef}
         type="button"
@@ -85,11 +91,15 @@ export function BoothRequestDetailsActions({
       </button>
       <button
         className="booth-request-details-modal__action booth-request-details-modal__action--approve"
-        disabled={isRejecting}
+        disabled={isRejecting || isApproving}
+        onClick={onApproveClick}
+        ref={approveButtonRef}
         type="button"
       >
         <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
-        {t.order.details.actions.approve}
+        {isApproving
+          ? t.order.approveConfirmation.approving
+          : t.order.details.actions.approve}
       </button>
     </footer>
   );

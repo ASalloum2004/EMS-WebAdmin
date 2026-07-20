@@ -11,6 +11,12 @@ const rejectSuccessResponse: BoothRequestActionResponse = {
   data: null,
 };
 
+const approveSuccessResponse = {
+  status: true as const,
+  message: "request approved successfully",
+  data: null,
+};
+
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -29,12 +35,23 @@ function getRejectResponse() {
   });
 }
 
+function getApproveResponse() {
+  return new Response(JSON.stringify(approveSuccessResponse), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 function BoothRequestActionsHarness({
+  onApproveSuccess,
   onRejectSuccess,
 }: {
+  onApproveSuccess?: () => Promise<unknown> | unknown;
   onRejectSuccess?: () => Promise<unknown> | unknown;
 }) {
   const actions = useBoothRequestActions({
+    approveFallbackMessage: "Localized approval failure.",
+    onApproveSuccess,
     onRejectSuccess,
     rejectFallbackMessage: "Localized rejection failure.",
   });
@@ -42,17 +59,34 @@ function BoothRequestActionsHarness({
   return (
     <div>
       <button
+        onClick={() => void actions.approveBoothRequestById(902)}
+        type="button"
+      >
+        Approve
+      </button>
+      <button
         onClick={() => void actions.rejectBoothRequestById(902)}
         type="button"
       >
         Reject
       </button>
       <button onClick={actions.clearRejectError} type="button">
-        Clear error
+        Clear Reject error
       </button>
+      <button onClick={actions.clearApproveError} type="button">
+        Clear Approve error
+      </button>
+      <output aria-label="Approve state">
+        {actions.isApproving ? "approving" : "idle"}
+      </output>
       <output aria-label="Reject state">
         {actions.isRejecting ? "rejecting" : "idle"}
       </output>
+      {actions.approveError ? (
+        <p aria-label="Approve error" role="alert">
+          {actions.approveError}
+        </p>
+      ) : null}
       {actions.rejectError ? <p role="alert">{actions.rejectError}</p> : null}
     </div>
   );
@@ -173,8 +207,139 @@ test("Reject actions expose API errors and clear them without success orchestrat
   assert.equal(view.getByLabelText("Reject state").textContent, "idle");
   assert.equal(successCalls, 0);
 
-  fireEvent.click(view.getByRole("button", { name: "Clear error" }));
+  fireEvent.click(view.getByRole("button", { name: "Clear Reject error" }));
   assert.equal(view.queryByRole("alert"), null);
+});
+
+test("Approve actions call the API once, use force false, and run success once", async () => {
+  const requestDeferred = createDeferred<Response>();
+  const successDeferred = createDeferred<void>();
+  const requests: Array<{ body: string; method: string; path: string }> = [];
+  let successCalls = 0;
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    requests.push({
+      body: String(init?.body),
+      method: init?.method ?? "",
+      path: url.pathname,
+    });
+    return requestDeferred.promise;
+  };
+
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        successCalls += 1;
+        return successDeferred.promise;
+      }}
+    />,
+  );
+  const approveButton = view.getByRole("button", { name: "Approve" });
+
+  fireEvent.click(approveButton);
+  fireEvent.click(approveButton);
+
+  assert.equal(view.getByLabelText("Approve state").textContent, "approving");
+  assert.deepEqual(requests, [
+    {
+      body: JSON.stringify({ force: false }),
+      method: "POST",
+      path: "/api/v1/admin/booths/requests/approve/902",
+    },
+  ]);
+
+  await act(async () => {
+    requestDeferred.resolve(getApproveResponse());
+    await requestDeferred.promise;
+  });
+
+  await waitFor(() => assert.equal(successCalls, 1));
+  assert.equal(view.getByLabelText("Approve state").textContent, "approving");
+
+  await act(async () => {
+    successDeferred.resolve();
+    await successDeferred.promise;
+  });
+
+  await waitFor(() =>
+    assert.equal(view.getByLabelText("Approve state").textContent, "idle"),
+  );
+  assert.equal(successCalls, 1);
+});
+
+test("Approve errors use backend messages, clear, and skip success", async () => {
+  let successCalls = 0;
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        status: false,
+        message: "Booth is no longer available.",
+        data: null,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        successCalls += 1;
+      }}
+    />,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+
+  assert.equal(
+    (await view.findByLabelText("Approve error")).textContent,
+    "Booth is no longer available.",
+  );
+  assert.equal(view.getByLabelText("Approve state").textContent, "idle");
+  assert.equal(successCalls, 0);
+
+  fireEvent.click(
+    view.getByRole("button", { name: "Clear Approve error" }),
+  );
+  assert.equal(view.queryByLabelText("Approve error"), null);
+});
+
+test("Approve and Reject cannot run at the same time", async () => {
+  const requestDeferred = createDeferred<Response>();
+  const requestedPaths: string[] = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    requestedPaths.push(url.pathname);
+    return requestDeferred.promise;
+  };
+  const view = render(<BoothRequestActionsHarness />);
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+
+  assert.deepEqual(requestedPaths, [
+    "/api/v1/admin/booths/requests/approve/902",
+  ]);
+  assert.equal(view.getByLabelText("Approve state").textContent, "approving");
+  assert.equal(view.getByLabelText("Reject state").textContent, "idle");
+
+  await act(async () => {
+    requestDeferred.resolve(getApproveResponse());
+    await requestDeferred.promise;
+  });
 });
 
 test("Reject actions skip state and success work after unmount", async () => {

@@ -138,6 +138,15 @@ export const ar: I18nDictionary = {
       rejecting: "جارٍ الرفض…",
       error: "تعذر رفض طلب الجناح.",
     },
+    approveConfirmation: {
+      title: "الموافقة على طلب حجز الجناح؟",
+      message:
+        "هل أنت متأكد من رغبتك في الموافقة على طلب حجز هذا الجناح؟ سيتم تخصيص الجناح لهذه الشركة.",
+      requestLabel: "معرّف الطلب",
+      confirm: "الموافقة على الطلب",
+      approving: "جارٍ تنفيذ الموافقة…",
+      error: "تعذر الموافقة على طلب الجناح.",
+    },
     details: {
       title: "تفاصيل الطلب",
       openAriaLabel: "عرض تفاصيل",

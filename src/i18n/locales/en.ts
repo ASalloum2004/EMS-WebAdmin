@@ -137,6 +137,15 @@ export const en = {
       rejecting: "Rejecting…",
       error: "Unable to reject booth request.",
     },
+    approveConfirmation: {
+      title: "Approve booth request?",
+      message:
+        "Are you sure you want to approve this booth request? The booth will be allocated to this company.",
+      requestLabel: "Request ID",
+      confirm: "Approve Request",
+      approving: "Approving…",
+      error: "Unable to approve booth request.",
+    },
     details: {
       title: "Request Details",
       openAriaLabel: "View details for",

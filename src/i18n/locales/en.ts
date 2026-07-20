@@ -146,6 +146,17 @@ export const en = {
       approving: "Approving…",
       error: "Unable to approve booth request.",
     },
+    approveConflict: {
+      title: "Conflicting booth requests",
+      message:
+        "Other pending requests exist for this booth. Approving request #{{id}} will automatically reject the conflicting requests.",
+      count: "{{count}} conflicting requests",
+      approveAnyway: "Approve Anyway",
+      approving: "Approving…",
+      finalPrice: "Final price",
+      loading: "Loading conflicting requests…",
+      loadError: "Unable to load conflicting requests.",
+    },
     details: {
       title: "Request Details",
       openAriaLabel: "View details for",

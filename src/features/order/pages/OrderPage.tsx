@@ -58,6 +58,7 @@ export function OrderPage() {
     boothRequestStatistics.refetch,
   ]);
   const boothRequestActions = useBoothRequestActions({
+    approveConflictFallbackMessage: t.order.approveConflict.loadError,
     approveFallbackMessage: t.order.approveConfirmation.error,
     onApproveSuccess: refreshAfterRequestAction,
     onRejectSuccess: refreshAfterRequestAction,
@@ -106,10 +107,12 @@ export function OrderPage() {
   ];
 
   const closeRequestDetails = useCallback(() => {
+    boothRequestActions.closeApproveConflict();
     boothRequestActions.clearApproveError();
     boothRequestActions.clearRejectError();
     setSelectedRequest(null);
   }, [
+    boothRequestActions.closeApproveConflict,
     boothRequestActions.clearApproveError,
     boothRequestActions.clearRejectError,
   ]);
@@ -239,16 +242,26 @@ export function OrderPage() {
 
       {selectedRequest ? (
         <BoothRequestDetailsModal
+          approveConflict={boothRequestActions.approveConflict}
+          approveConflictError={boothRequestActions.approveConflictError}
           approveError={boothRequestActions.approveError}
           details={boothRequestDetails.details}
           error={boothRequestDetails.error}
           isApproving={boothRequestActions.isApproving}
           isLoading={boothRequestDetails.isLoading}
+          isLoadingApproveConflicts={
+            boothRequestActions.isLoadingApproveConflicts
+          }
           isRejecting={boothRequestActions.isRejecting}
           onApprove={boothRequestActions.approveBoothRequestById}
+          onApproveAnyway={boothRequestActions.approveBoothRequestAnyway}
+          onApproveConflictPageChange={
+            boothRequestActions.loadApproveConflictPage
+          }
           onClearApproveError={boothRequestActions.clearApproveError}
           onClearRejectError={boothRequestActions.clearRejectError}
           onClose={closeRequestDetails}
+          onCloseApproveConflict={boothRequestActions.closeApproveConflict}
           onReject={boothRequestActions.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}
           rejectError={boothRequestActions.rejectError}

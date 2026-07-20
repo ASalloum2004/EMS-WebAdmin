@@ -102,6 +102,11 @@ const approveSuccessResponse = {
   data: null,
 };
 
+const approveSuccessResult = {
+  kind: "approved" as const,
+  response: approveSuccessResponse,
+};
+
 const idleActionProps = {
   isApproving: false,
   isRejecting: false,
@@ -143,6 +148,7 @@ function RequestDetailsHarness({
     ]);
   }, [onListRefresh, onStatisticsRefresh, requestDetails.refetch]);
   const requestActions = useBoothRequestActions({
+    approveConflictFallbackMessage: en.order.approveConflict.loadError,
     approveFallbackMessage: en.order.approveConfirmation.error,
     onApproveSuccess: refreshAfterRequestAction,
     onRejectSuccess: refreshAfterRequestAction,
@@ -150,10 +156,15 @@ function RequestDetailsHarness({
   });
 
   const closeDetails = useCallback(() => {
+    requestActions.closeApproveConflict();
     requestActions.clearApproveError();
     requestActions.clearRejectError();
     setRequest(null);
-  }, [requestActions.clearApproveError, requestActions.clearRejectError]);
+  }, [
+    requestActions.closeApproveConflict,
+    requestActions.clearApproveError,
+    requestActions.clearRejectError,
+  ]);
 
   return (
     <I18nProvider>
@@ -169,16 +180,24 @@ function RequestDetailsHarness({
       />
       {request ? (
         <BoothRequestDetailsModal
+          approveConflict={requestActions.approveConflict}
+          approveConflictError={requestActions.approveConflictError}
           approveError={requestActions.approveError}
           details={requestDetails.details}
           error={requestDetails.error}
           isApproving={requestActions.isApproving}
           isLoading={requestDetails.isLoading}
+          isLoadingApproveConflicts={
+            requestActions.isLoadingApproveConflicts
+          }
           isRejecting={requestActions.isRejecting}
           onApprove={requestActions.approveBoothRequestById}
+          onApproveAnyway={requestActions.approveBoothRequestAnyway}
+          onApproveConflictPageChange={requestActions.loadApproveConflictPage}
           onClearApproveError={requestActions.clearApproveError}
           onClearRejectError={requestActions.clearRejectError}
           onClose={closeDetails}
+          onCloseApproveConflict={requestActions.closeApproveConflict}
           onReject={requestActions.rejectBoothRequestById}
           onRetry={() => void requestDetails.refetch()}
           rejectError={requestActions.rejectError}
@@ -213,6 +232,61 @@ function getApproveResponse() {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function getApproveConflictResponse({
+  currentPage = 1,
+  lastPage = 1,
+  requests = [
+    {
+      id: 5,
+      booth_id: 12,
+      company_id: 37,
+      status: "pending",
+      final_price: 160,
+    },
+    {
+      id: 6,
+      booth_id: 12,
+      company_id: 52,
+      status: "pending",
+      final_price: null,
+    },
+  ],
+  total = requests.length,
+}: {
+  currentPage?: number;
+  lastPage?: number;
+  requests?: Array<{
+    booth_id: number | null;
+    company_id: number | null;
+    final_price: number | null;
+    id: number | null;
+    status: string | null;
+  }>;
+  total?: number;
+} = {}) {
+  return new Response(
+    JSON.stringify({
+      status: false,
+      message: "Conflicting requests retrieved",
+      errors: {
+        data: {
+          data: requests,
+          meta: {
+            current_page: currentPage,
+            per_page: 3,
+            total,
+            last_page: lastPage,
+          },
+        },
+      },
+    }),
+    {
+      status: 409,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
 }
 
 function getRequestedUrl(input: RequestInfo | URL) {
@@ -1150,15 +1224,21 @@ test("Reject confirmation traps focus and starts on the safe action", async () =
 
 test("changing the selected request or status closes Reject confirmation", () => {
   const sharedProps = {
+    approveConflict: null,
+    approveConflictError: "",
     approveError: "",
     error: "",
     isApproving: false,
     isLoading: false,
+    isLoadingApproveConflicts: false,
     isRejecting: false,
-    onApprove: () => approveSuccessResponse,
+    onApprove: () => approveSuccessResult,
+    onApproveAnyway: () => approveSuccessResult,
+    onApproveConflictPageChange: () => null,
     onClearApproveError: () => undefined,
     onClearRejectError: () => undefined,
     onClose: () => undefined,
+    onCloseApproveConflict: () => undefined,
     onReject: () => rejectSuccessResponse,
     onRetry: () => undefined,
     rejectError: "",
@@ -1601,6 +1681,320 @@ test("successful Approve refreshes details, Orders, and statistics", async () =>
   assert.equal(detailsRequests, 2);
   assert.equal(listRequests, 1);
   assert.equal(statisticsRequests, 1);
+});
+
+test("valid Approve conflicts show returned requests and require explicit forced approval", async () => {
+  const approveBodies: Array<{ force: boolean }> = [];
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "POST") {
+      const body = JSON.parse(String(init.body)) as { force: boolean };
+      approveBodies.push(body);
+      return getApproveConflictResponse();
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  const approveButton = view.getByRole("button", { name: "Approve Request" });
+  approveButton.focus();
+  fireEvent.click(approveButton);
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+
+  const conflictModal = await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  assert.match(
+    conflictModal.textContent ?? "",
+    /Other pending requests exist for this booth/,
+  );
+  assert.ok(within(conflictModal).getByText("2 conflicting requests"));
+  assert.ok(within(conflictModal).getByText("#5"));
+  assert.ok(within(conflictModal).getByText("#6"));
+  assert.ok(within(conflictModal).getByText("160"));
+  assert.ok(within(conflictModal).getByText("—"));
+  assert.deepEqual(approveBodies, [{ force: false }]);
+
+  const cancelButton = within(conflictModal).getByRole("button", {
+    name: "Cancel",
+  });
+  assert.equal(document.activeElement, cancelButton);
+  assert.equal(
+    view.getByRole("dialog", { hidden: true }).hasAttribute("inert"),
+    true,
+  );
+
+  fireEvent.click(cancelButton);
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.equal(document.activeElement, approveButton);
+  assert.deepEqual(approveBodies, [{ force: false }]);
+
+  fireEvent.click(approveButton);
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+  await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  fireEvent.keyDown(document, { key: "Escape" });
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.equal(document.activeElement, approveButton);
+
+  fireEvent.click(approveButton);
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+  await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  fireEvent.mouseDown(
+    view.container.querySelector(
+      ".approve-booth-request-conflict-modal",
+    )!,
+  );
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.equal(document.activeElement, approveButton);
+  assert.deepEqual(approveBodies, [
+    { force: false },
+    { force: false },
+    { force: false },
+  ]);
+});
+
+test("forced Approve submits once and refreshes details, Orders, and statistics", async () => {
+  const forcedApprove = createDeferred<Response>();
+  const approveBodies: Array<{ force: boolean }> = [];
+  let detailsRequests = 0;
+  let listRefreshes = 0;
+  let statisticsRefreshes = 0;
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(getRequestedUrl(input));
+
+    if (url.pathname.endsWith("/booths/requests/approve/902")) {
+      const body = JSON.parse(String(init?.body)) as { force: boolean };
+      approveBodies.push(body);
+      return body.force
+        ? forcedApprove.promise
+        : getApproveConflictResponse();
+    }
+
+    if (url.pathname.endsWith("/booths/requests/902")) {
+      detailsRequests += 1;
+      return getResponse(
+        detailsRequests === 1
+          ? secondDetails
+          : { ...secondDetails, status: "approved" },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  };
+  const view = renderHarness([secondRequest], {
+    onListRefresh: () => {
+      listRefreshes += 1;
+    },
+    onStatisticsRefresh: () => {
+      statisticsRefreshes += 1;
+    },
+  });
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Approve Request" }));
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+  const conflictModal = await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  const approveAnywayButton = within(conflictModal).getByRole("button", {
+    name: en.order.approveConflict.approveAnyway,
+  });
+  fireEvent.click(approveAnywayButton);
+
+  const approvingButton = within(conflictModal).getByRole("button", {
+    name: en.order.approveConflict.approving,
+  });
+  const cancelButton = within(conflictModal).getByRole("button", {
+    name: "Cancel",
+  });
+  assert.equal(approvingButton.hasAttribute("disabled"), true);
+  assert.equal(cancelButton.hasAttribute("disabled"), true);
+  fireEvent.click(approvingButton);
+  fireEvent.click(cancelButton);
+  fireEvent.keyDown(document, { key: "Escape" });
+  assert.deepEqual(approveBodies, [{ force: false }, { force: true }]);
+  assert.ok(
+    view.getByRole("alertdialog", {
+      name: en.order.approveConflict.title,
+    }),
+  );
+
+  await act(async () => {
+    forcedApprove.resolve(getApproveResponse());
+    await forcedApprove.promise;
+  });
+
+  assert.ok(await view.findByRole("status", { name: "Approved" }));
+  assert.equal(view.queryByRole("alertdialog"), null);
+  assert.equal(detailsRequests, 2);
+  assert.equal(listRefreshes, 1);
+  assert.equal(statisticsRefreshes, 1);
+});
+
+test("failed forced Approve keeps the conflict modal open with an accessible error", async () => {
+  let approveRequests = 0;
+  let listRefreshes = 0;
+  let statisticsRefreshes = 0;
+  globalThis.fetch = async (_input, init) => {
+    if (init?.method === "POST") {
+      approveRequests += 1;
+
+      return approveRequests === 1
+        ? getApproveConflictResponse()
+        : new Response(
+            JSON.stringify({ message: "Unable to force this approval." }),
+            {
+              status: 422,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest], {
+    onListRefresh: () => {
+      listRefreshes += 1;
+    },
+    onStatisticsRefresh: () => {
+      statisticsRefreshes += 1;
+    },
+  });
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Approve Request" }));
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+  const conflictModal = await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  fireEvent.click(
+    within(conflictModal).getByRole("button", {
+      name: en.order.approveConflict.approveAnyway,
+    }),
+  );
+
+  assert.equal(
+    (await within(conflictModal).findByRole("alert")).textContent,
+    "Unable to force this approval.",
+  );
+  assert.ok(
+    view.getByRole("alertdialog", {
+      name: en.order.approveConflict.title,
+    }),
+  );
+  assert.equal(approveRequests, 2);
+  assert.equal(listRefreshes, 0);
+  assert.equal(statisticsRefreshes, 0);
+  assert.equal(view.queryByRole("status", { name: "Approved" }), null);
+});
+
+test("conflict pagination requests force false with the selected page", async () => {
+  const secondPage = createDeferred<Response>();
+  const approvalRequests: Array<{ force: boolean; page: string | null }> = [];
+  globalThis.fetch = async (input, init) => {
+    if (init?.method === "POST") {
+      const url = new URL(getRequestedUrl(input));
+      const body = JSON.parse(String(init.body)) as { force: boolean };
+      approvalRequests.push({
+        force: body.force,
+        page: url.searchParams.get("page"),
+      });
+
+      return approvalRequests.length === 1
+        ? getApproveConflictResponse({
+            lastPage: 2,
+            requests: [
+              {
+                id: 5,
+                booth_id: 12,
+                company_id: 37,
+                status: "pending",
+                final_price: 160,
+              },
+            ],
+            total: 4,
+          })
+        : secondPage.promise;
+    }
+
+    return getResponse(secondDetails);
+  };
+  const view = renderHarness([secondRequest]);
+
+  openRequestDetails(view, 52);
+  await view.findByRole("heading", { name: "Second Company" });
+  fireEvent.click(view.getByRole("button", { name: "Approve Request" }));
+  fireEvent.click(
+    view.getByRole("button", {
+      name: en.order.approveConfirmation.confirm,
+    }),
+  );
+  const conflictModal = await view.findByRole("alertdialog", {
+    name: en.order.approveConflict.title,
+  });
+  assert.ok(within(conflictModal).getByText("#5"));
+  fireEvent.click(within(conflictModal).getByRole("button", { name: "2" }));
+
+  assert.deepEqual(approvalRequests, [
+    { force: false, page: null },
+    { force: false, page: "2" },
+  ]);
+  assert.ok(within(conflictModal).getByText("#5"));
+  assert.equal(
+    within(conflictModal).getByRole("status").textContent,
+    en.order.approveConflict.loading,
+  );
+
+  await act(async () => {
+    secondPage.resolve(
+      getApproveConflictResponse({
+        currentPage: 2,
+        lastPage: 2,
+        requests: [
+          {
+            id: 8,
+            booth_id: 12,
+            company_id: 61,
+            status: "pending",
+            final_price: 200,
+          },
+        ],
+        total: 4,
+      }),
+    );
+    await secondPage.promise;
+  });
+
+  assert.ok(await within(conflictModal).findByText("#8"));
+  assert.equal(within(conflictModal).queryByText("#5"), null);
 });
 
 test("Approve confirmation renders localized English and Arabic text", () => {

@@ -91,13 +91,52 @@ export type BoothRequestActionResponse = {
 };
 
 export type ApproveBoothRequestPayload = {
-  force: false;
+  force: boolean;
 };
 
 export type ApproveBoothRequestResponse = {
   status: true;
   message: string;
   data: null;
+};
+
+export type ApproveBoothRequestOptions = {
+  force: boolean;
+  page?: number;
+};
+
+export type BoothRequestConflict = {
+  booth_id: number | null;
+  company_id: number | null;
+  final_price: number | null;
+  id: number | null;
+  status: BoothRequestStatus | null;
+};
+
+export type BoothRequestConflictMeta = {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+};
+
+export type ApproveBoothRequestResult =
+  | {
+      kind: "approved";
+      response: ApproveBoothRequestResponse;
+    }
+  | {
+      kind: "conflict";
+      message: string;
+      requests: BoothRequestConflict[];
+      meta: BoothRequestConflictMeta;
+    };
+
+export type ApproveBoothRequestConflictState = {
+  message: string;
+  meta: BoothRequestConflictMeta;
+  requestId: number;
+  requests: BoothRequestConflict[];
 };
 
 export type BoothRequestStatisticsData = {

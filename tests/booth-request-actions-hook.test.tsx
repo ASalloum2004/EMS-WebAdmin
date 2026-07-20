@@ -42,6 +42,48 @@ function getApproveResponse() {
   });
 }
 
+function getApproveConflictResponse({
+  currentPage = 1,
+  lastPage = 2,
+  requestId = 5,
+  total = 4,
+}: {
+  currentPage?: number;
+  lastPage?: number;
+  requestId?: number;
+  total?: number;
+} = {}) {
+  return new Response(
+    JSON.stringify({
+      status: false,
+      message: "Conflicting requests retrieved",
+      errors: {
+        data: {
+          data: [
+            {
+              id: requestId,
+              booth_id: 8,
+              company_id: 2,
+              status: "pending",
+              final_price: 160,
+            },
+          ],
+          meta: {
+            current_page: currentPage,
+            per_page: 3,
+            total,
+            last_page: lastPage,
+          },
+        },
+      },
+    }),
+    {
+      status: 409,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+}
+
 function BoothRequestActionsHarness({
   onApproveSuccess,
   onRejectSuccess,
@@ -50,6 +92,7 @@ function BoothRequestActionsHarness({
   onRejectSuccess?: () => Promise<unknown> | unknown;
 }) {
   const actions = useBoothRequestActions({
+    approveConflictFallbackMessage: "Localized conflict loading failure.",
     approveFallbackMessage: "Localized approval failure.",
     onApproveSuccess,
     onRejectSuccess,
@@ -76,12 +119,40 @@ function BoothRequestActionsHarness({
       <button onClick={actions.clearApproveError} type="button">
         Clear Approve error
       </button>
+      <button
+        onClick={() => void actions.approveBoothRequestAnyway()}
+        type="button"
+      >
+        Approve Anyway
+      </button>
+      <button
+        onClick={() => void actions.loadApproveConflictPage(2)}
+        type="button"
+      >
+        Conflict page 2
+      </button>
+      <button onClick={actions.closeApproveConflict} type="button">
+        Close conflict
+      </button>
       <output aria-label="Approve state">
         {actions.isApproving ? "approving" : "idle"}
       </output>
       <output aria-label="Reject state">
         {actions.isRejecting ? "rejecting" : "idle"}
       </output>
+      <output aria-label="Conflict page state">
+        {actions.isLoadingApproveConflicts ? "loading" : "idle"}
+      </output>
+      {actions.approveConflict ? (
+        <output aria-label="Approve conflict">
+          {`${actions.approveConflict.meta.current_page}:${actions.approveConflict.meta.total}:${actions.approveConflict.requests[0]?.id ?? "missing"}`}
+        </output>
+      ) : null}
+      {actions.approveConflictError ? (
+        <p aria-label="Approve conflict error" role="alert">
+          {actions.approveConflictError}
+        </p>
+      ) : null}
       {actions.approveError ? (
         <p aria-label="Approve error" role="alert">
           {actions.approveError}
@@ -339,6 +410,169 @@ test("Approve conflicts do not run the statistics refresh callback", async () =>
   );
   assert.equal(statisticsRefreshes, 0);
   assert.equal(view.getByLabelText("Approve state").textContent, "idle");
+});
+
+test("valid Approve conflicts populate conflict state without a generic error", async () => {
+  let successCalls = 0;
+  globalThis.fetch = async () => getApproveConflictResponse();
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        successCalls += 1;
+      }}
+    />,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+
+  assert.equal(
+    (await view.findByLabelText("Approve conflict")).textContent,
+    "1:4:5",
+  );
+  assert.equal(view.queryByLabelText("Approve error"), null);
+  assert.equal(successCalls, 0);
+});
+
+test("forced Approve runs exactly once and invokes success once", async () => {
+  const forceRequest = createDeferred<Response>();
+  const requests: Array<{ body: string; page: string | null }> = [];
+  let successCalls = 0;
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    requests.push({
+      body: String(init?.body),
+      page: url.searchParams.get("page"),
+    });
+
+    return requests.length === 1
+      ? getApproveConflictResponse()
+      : forceRequest.promise;
+  };
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        successCalls += 1;
+      }}
+    />,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  await view.findByLabelText("Approve conflict");
+
+  const approveAnywayButton = view.getByRole("button", {
+    name: "Approve Anyway",
+  });
+  fireEvent.click(approveAnywayButton);
+  fireEvent.click(approveAnywayButton);
+
+  assert.equal(view.getByLabelText("Approve state").textContent, "approving");
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests.map(({ body }) => JSON.parse(body)), [
+    { force: false },
+    { force: true },
+  ]);
+  assert.deepEqual(requests.map(({ page }) => page), [null, null]);
+
+  await act(async () => {
+    forceRequest.resolve(getApproveResponse());
+    await forceRequest.promise;
+  });
+
+  await waitFor(() =>
+    assert.equal(view.getByLabelText("Approve state").textContent, "idle"),
+  );
+  assert.equal(successCalls, 1);
+  assert.equal(view.queryByLabelText("Approve conflict"), null);
+});
+
+test("failed forced Approve keeps conflict state and exposes the error", async () => {
+  let requestCount = 0;
+  let successCalls = 0;
+  globalThis.fetch = async () => {
+    requestCount += 1;
+
+    return requestCount === 1
+      ? getApproveConflictResponse()
+      : new Response(
+          JSON.stringify({ message: "Forced approval was not completed." }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+  };
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        successCalls += 1;
+      }}
+    />,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  await view.findByLabelText("Approve conflict");
+  fireEvent.click(view.getByRole("button", { name: "Approve Anyway" }));
+
+  assert.equal(
+    (await view.findByLabelText("Approve conflict error")).textContent,
+    "Forced approval was not completed.",
+  );
+  assert.equal(view.getByLabelText("Approve conflict").textContent, "1:4:5");
+  assert.equal(view.getByLabelText("Approve state").textContent, "idle");
+  assert.equal(successCalls, 0);
+});
+
+test("conflict pagination keeps current data while loading and requests the selected page", async () => {
+  const pageRequest = createDeferred<Response>();
+  const requestedPages: Array<string | null> = [];
+  globalThis.fetch = async (input) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    requestedPages.push(url.searchParams.get("page"));
+
+    return requestedPages.length === 1
+      ? getApproveConflictResponse()
+      : pageRequest.promise;
+  };
+  const view = render(<BoothRequestActionsHarness />);
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  await view.findByLabelText("Approve conflict");
+  fireEvent.click(view.getByRole("button", { name: "Conflict page 2" }));
+
+  assert.deepEqual(requestedPages, [null, "2"]);
+  assert.equal(
+    view.getByLabelText("Conflict page state").textContent,
+    "loading",
+  );
+  assert.equal(view.getByLabelText("Approve conflict").textContent, "1:4:5");
+
+  await act(async () => {
+    pageRequest.resolve(
+      getApproveConflictResponse({ currentPage: 2, requestId: 8 }),
+    );
+    await pageRequest.promise;
+  });
+
+  await waitFor(() =>
+    assert.equal(
+      view.getByLabelText("Conflict page state").textContent,
+      "idle",
+    ),
+  );
+  assert.equal(view.getByLabelText("Approve conflict").textContent, "2:4:8");
 });
 
 test("Approve and Reject cannot run at the same time", async () => {

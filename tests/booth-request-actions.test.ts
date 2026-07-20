@@ -27,6 +27,10 @@ test("builds the Approve endpoint with the booth request id", () => {
     buildApproveBoothRequestPath(901),
     "booths/requests/approve/901",
   );
+  assert.equal(
+    buildApproveBoothRequestPath(901, 2),
+    "booths/requests/approve/901?page=2",
+  );
 });
 
 test("builds the Reject endpoint with the booth request id", () => {
@@ -45,6 +49,13 @@ test("rejects invalid booth request ids before sending a request", () => {
     assert.throws(
       () => buildApproveBoothRequestPath(invalidId),
       /valid booth request ID/i,
+    );
+  }
+
+  for (const invalidPage of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.throws(
+      () => buildApproveBoothRequestPath(901, invalidPage),
+      /valid conflict page/i,
     );
   }
 });
@@ -189,7 +200,10 @@ test("sends authenticated Approve POST with force false", async () => {
     const response = await approveBoothRequest(901);
     const url = new URL(requestedUrl);
 
-    assert.deepEqual(response, approveSuccessResponse);
+    assert.deepEqual(response, {
+      kind: "approved",
+      response: approveSuccessResponse,
+    });
     assert.equal(
       url.pathname,
       "/api/v1/admin/booths/requests/approve/901",
@@ -201,6 +215,122 @@ test("sends authenticated Approve POST with force false", async () => {
       "Bearer approve-test-token",
     );
     assert.equal(requestHeaders.get("Content-Type"), "application/json");
+  } finally {
+    globalThis.fetch = originalFetch;
+
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(
+        globalThis,
+        "sessionStorage",
+        sessionStorageDescriptor,
+      );
+    } else {
+      Reflect.deleteProperty(globalThis, "sessionStorage");
+    }
+  }
+});
+
+test("normalizes a valid 409 Approve conflict and requests conflict pages safely", async () => {
+  const originalFetch = globalThis.fetch;
+  const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "sessionStorage",
+  );
+  let requestedUrl = "";
+  let requestBody: BodyInit | null | undefined;
+
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    value: {
+      getItem: (key: string) =>
+        key === "auth_session"
+          ? JSON.stringify({ token: "approve-conflict-test-token" })
+          : null,
+    } as Storage,
+  });
+
+  globalThis.fetch = async (input, init) => {
+    requestedUrl =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+    requestBody = init?.body;
+
+    return new Response(
+      JSON.stringify({
+        status: false,
+        message: "Conflicting requests retrieved",
+        errors: {
+          data: {
+            data: [
+              {
+                id: 5,
+                booth_id: 8,
+                company_id: 2,
+                status: "pending",
+                final_price: 160,
+              },
+              {
+                id: null,
+                booth_id: null,
+                company_id: null,
+                status: null,
+                final_price: null,
+              },
+            ],
+            meta: {
+              current_page: 2,
+              per_page: 3,
+              total: 5,
+              last_page: 2,
+            },
+          },
+        },
+      }),
+      {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  };
+
+  try {
+    const result = await approveBoothRequest(901, {
+      force: false,
+      page: 2,
+    });
+    const url = new URL(requestedUrl);
+
+    assert.deepEqual(result, {
+      kind: "conflict",
+      message: "Conflicting requests retrieved",
+      requests: [
+        {
+          id: 5,
+          booth_id: 8,
+          company_id: 2,
+          status: "pending",
+          final_price: 160,
+        },
+        {
+          id: null,
+          booth_id: null,
+          company_id: null,
+          status: null,
+          final_price: null,
+        },
+      ],
+      meta: {
+        current_page: 2,
+        per_page: 3,
+        total: 5,
+        last_page: 2,
+      },
+    });
+    assert.equal(url.searchParams.get("page"), "2");
+    assert.deepEqual(JSON.parse(String(requestBody)), { force: false });
   } finally {
     globalThis.fetch = originalFetch;
 

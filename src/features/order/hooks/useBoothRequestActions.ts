@@ -4,7 +4,8 @@ import {
   rejectBoothRequest,
 } from "../api/boothRequestActionsApi";
 import type {
-  ApproveBoothRequestResponse,
+  ApproveBoothRequestConflictState,
+  ApproveBoothRequestResult,
   BoothRequestActionResponse,
 } from "../types";
 
@@ -13,6 +14,7 @@ function getErrorMessage(error: unknown, fallbackMessage: string) {
 }
 
 export type UseBoothRequestActionsOptions = {
+  approveConflictFallbackMessage?: string;
   approveFallbackMessage?: string;
   onApproveSuccess?: () => Promise<unknown> | unknown;
   onRejectSuccess?: () => Promise<unknown> | unknown;
@@ -20,17 +22,24 @@ export type UseBoothRequestActionsOptions = {
 };
 
 export function useBoothRequestActions({
+  approveConflictFallbackMessage = "Unable to load conflicting requests.",
   approveFallbackMessage = "Unable to approve booth request.",
   onApproveSuccess,
   onRejectSuccess,
   rejectFallbackMessage = "Unable to reject booth request.",
 }: UseBoothRequestActionsOptions = {}) {
+  const [approveConflict, setApproveConflict] =
+    useState<ApproveBoothRequestConflictState | null>(null);
+  const [approveConflictError, setApproveConflictError] = useState("");
   const [isApproving, setIsApproving] = useState(false);
   const [approveError, setApproveError] = useState("");
+  const [isLoadingApproveConflicts, setIsLoadingApproveConflicts] =
+    useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectError, setRejectError] = useState("");
   const isMountedRef = useRef(false);
   const isApprovingRef = useRef(false);
+  const isLoadingApproveConflictsRef = useRef(false);
   const isRejectingRef = useRef(false);
 
   useEffect(() => {
@@ -39,6 +48,7 @@ export function useBoothRequestActions({
     return () => {
       isMountedRef.current = false;
       isApprovingRef.current = false;
+      isLoadingApproveConflictsRef.current = false;
       isRejectingRef.current = false;
     };
   }, []);
@@ -46,10 +56,11 @@ export function useBoothRequestActions({
   const approveBoothRequestById = useCallback(
     async (
       boothRequestId: number,
-    ): Promise<ApproveBoothRequestResponse | null> => {
+    ): Promise<ApproveBoothRequestResult | null> => {
       if (
         !isMountedRef.current ||
         isApprovingRef.current ||
+        isLoadingApproveConflictsRef.current ||
         isRejectingRef.current
       ) {
         return null;
@@ -58,20 +69,35 @@ export function useBoothRequestActions({
       isApprovingRef.current = true;
 
       if (isMountedRef.current) {
+        setApproveConflict(null);
+        setApproveConflictError("");
         setApproveError("");
         setIsApproving(true);
       }
 
       try {
-        const response = await approveBoothRequest(boothRequestId);
+        const result = await approveBoothRequest(boothRequestId, {
+          force: false,
+        });
 
         if (!isMountedRef.current) {
           return null;
         }
 
+        if (result.kind === "conflict") {
+          setApproveConflict({
+            message: result.message,
+            meta: result.meta,
+            requestId: boothRequestId,
+            requests: result.requests,
+          });
+
+          return result;
+        }
+
         await onApproveSuccess?.();
 
-        return isMountedRef.current ? response : null;
+        return isMountedRef.current ? result : null;
       } catch (requestError) {
         if (isMountedRef.current) {
           setApproveError(getErrorMessage(requestError, approveFallbackMessage));
@@ -89,6 +115,143 @@ export function useBoothRequestActions({
     [approveFallbackMessage, onApproveSuccess],
   );
 
+  const approveBoothRequestAnyway = useCallback(async () => {
+    if (
+      !isMountedRef.current ||
+      !approveConflict ||
+      isApprovingRef.current ||
+      isLoadingApproveConflictsRef.current ||
+      isRejectingRef.current
+    ) {
+      return null;
+    }
+
+    const boothRequestId = approveConflict.requestId;
+    isApprovingRef.current = true;
+    setApproveConflictError("");
+    setIsApproving(true);
+
+    try {
+      const result = await approveBoothRequest(boothRequestId, {
+        force: true,
+      });
+
+      if (!isMountedRef.current) {
+        return null;
+      }
+
+      if (result.kind !== "approved") {
+        setApproveConflictError(result.message || approveFallbackMessage);
+        return null;
+      }
+
+      await onApproveSuccess?.();
+
+      if (!isMountedRef.current) {
+        return null;
+      }
+
+      setApproveConflict(null);
+      setApproveConflictError("");
+
+      return result;
+    } catch (requestError) {
+      if (isMountedRef.current) {
+        setApproveConflictError(
+          getErrorMessage(requestError, approveFallbackMessage),
+        );
+      }
+
+      return null;
+    } finally {
+      isApprovingRef.current = false;
+
+      if (isMountedRef.current) {
+        setIsApproving(false);
+      }
+    }
+  }, [approveConflict, approveFallbackMessage, onApproveSuccess]);
+
+  const loadApproveConflictPage = useCallback(
+    async (page: number): Promise<ApproveBoothRequestResult | null> => {
+      if (
+        !isMountedRef.current ||
+        !approveConflict ||
+        page === approveConflict.meta.current_page ||
+        isApprovingRef.current ||
+        isLoadingApproveConflictsRef.current ||
+        isRejectingRef.current
+      ) {
+        return null;
+      }
+
+      const boothRequestId = approveConflict.requestId;
+      isLoadingApproveConflictsRef.current = true;
+      setApproveConflictError("");
+      setIsLoadingApproveConflicts(true);
+
+      try {
+        const result = await approveBoothRequest(boothRequestId, {
+          force: false,
+          page,
+        });
+
+        if (!isMountedRef.current) {
+          return null;
+        }
+
+        if (result.kind === "conflict") {
+          setApproveConflict({
+            message: result.message,
+            meta: result.meta,
+            requestId: boothRequestId,
+            requests: result.requests,
+          });
+
+          return result;
+        }
+
+        await onApproveSuccess?.();
+
+        if (!isMountedRef.current) {
+          return null;
+        }
+
+        setApproveConflict(null);
+
+        return result;
+      } catch (requestError) {
+        if (isMountedRef.current) {
+          setApproveConflictError(
+            getErrorMessage(requestError, approveConflictFallbackMessage),
+          );
+        }
+
+        return null;
+      } finally {
+        isLoadingApproveConflictsRef.current = false;
+
+        if (isMountedRef.current) {
+          setIsLoadingApproveConflicts(false);
+        }
+      }
+    },
+    [approveConflict, approveConflictFallbackMessage, onApproveSuccess],
+  );
+
+  const closeApproveConflict = useCallback(() => {
+    if (
+      !isMountedRef.current ||
+      isApprovingRef.current ||
+      isLoadingApproveConflictsRef.current
+    ) {
+      return;
+    }
+
+    setApproveConflict(null);
+    setApproveConflictError("");
+  }, []);
+
   const rejectBoothRequestById = useCallback(
     async (
       boothRequestId: number,
@@ -96,7 +259,8 @@ export function useBoothRequestActions({
       if (
         !isMountedRef.current ||
         isRejectingRef.current ||
-        isApprovingRef.current
+        isApprovingRef.current ||
+        isLoadingApproveConflictsRef.current
       ) {
         return null;
       }
@@ -148,12 +312,18 @@ export function useBoothRequestActions({
   }, []);
 
   return {
+    approveBoothRequestAnyway,
     approveBoothRequestById,
+    approveConflict,
+    approveConflictError,
     approveError,
+    closeApproveConflict,
     clearApproveError,
     clearRejectError,
     isApproving,
+    isLoadingApproveConflicts,
     isRejecting,
+    loadApproveConflictPage,
     rejectBoothRequestById,
     rejectError,
   };

@@ -7,11 +7,13 @@ import {
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type {
-  ApproveBoothRequestResponse,
+  ApproveBoothRequestConflictState,
+  ApproveBoothRequestResult,
   BoothRequestActionResponse,
   BoothRequestDetailsApiData,
 } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
+import { ApproveBoothRequestConflictModal } from "../ApproveBoothRequestConflictModal";
 import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmModal";
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
@@ -31,21 +33,35 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export interface BoothRequestDetailsModalProps {
+  approveConflict: ApproveBoothRequestConflictState | null;
+  approveConflictError: string;
   approveError: string;
   details: BoothRequestDetailsApiData | null;
   error: string;
   isApproving: boolean;
   isLoading: boolean;
+  isLoadingApproveConflicts: boolean;
   isRejecting: boolean;
   onApprove: (
     boothRequestId: number,
   ) =>
-    | ApproveBoothRequestResponse
+    | ApproveBoothRequestResult
     | null
-    | Promise<ApproveBoothRequestResponse | null>;
+    | Promise<ApproveBoothRequestResult | null>;
+  onApproveAnyway: () =>
+    | ApproveBoothRequestResult
+    | null
+    | Promise<ApproveBoothRequestResult | null>;
+  onApproveConflictPageChange: (
+    page: number,
+  ) =>
+    | ApproveBoothRequestResult
+    | null
+    | Promise<ApproveBoothRequestResult | null>;
   onClearApproveError: () => void;
   onClearRejectError: () => void;
   onClose: () => void;
+  onCloseApproveConflict: () => void;
   onReject: (
     boothRequestId: number,
   ) =>
@@ -57,16 +73,22 @@ export interface BoothRequestDetailsModalProps {
 }
 
 export function BoothRequestDetailsModal({
+  approveConflict,
+  approveConflictError,
   approveError,
   details,
   error,
   isApproving,
   isLoading,
+  isLoadingApproveConflicts,
   isRejecting,
   onApprove,
+  onApproveAnyway,
+  onApproveConflictPageChange,
   onClearApproveError,
   onClearRejectError,
   onClose,
+  onCloseApproveConflict,
   onReject,
   onRetry,
   rejectError,
@@ -84,16 +106,24 @@ export function BoothRequestDetailsModal({
   const [rejectConfirmationRequestId, setRejectConfirmationRequestId] =
     useState<number | null>(null);
   const statusLabel = details ? t.order.status[details.status] : "";
+  const isApproveConflictVisible = Boolean(
+    approveConflict &&
+      details?.status === "pending" &&
+      details.id === approveConflict.requestId,
+  );
   const isRejectConfirmationVisible =
     isRejectConfirmationOpen &&
     details?.status === "pending" &&
     details.id === rejectConfirmationRequestId;
   const isApproveConfirmationVisible =
     isApproveConfirmationOpen &&
+    !isApproveConflictVisible &&
     details?.status === "pending" &&
     details.id === approveConfirmationRequestId;
   const isConfirmationVisible =
-    isApproveConfirmationVisible || isRejectConfirmationVisible;
+    isApproveConflictVisible ||
+    isApproveConfirmationVisible ||
+    isRejectConfirmationVisible;
 
   const closeApproveConfirmation = useCallback(() => {
     if (isApproving || isRejecting) {
@@ -413,6 +443,18 @@ export function BoothRequestDetailsModal({
           onCancel={closeApproveConfirmation}
           onConfirm={confirmApprove}
           requestId={details.id}
+        />
+      ) : null}
+
+      {isApproveConflictVisible && approveConflict ? (
+        <ApproveBoothRequestConflictModal
+          conflict={approveConflict}
+          error={approveConflictError}
+          isApproving={isApproving}
+          isPageLoading={isLoadingApproveConflicts}
+          onCancel={onCloseApproveConflict}
+          onConfirm={onApproveAnyway}
+          onPageChange={onApproveConflictPageChange}
         />
       ) : null}
 

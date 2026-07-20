@@ -311,6 +311,36 @@ test("Approve errors use backend messages, clear, and skip success", async () =>
   assert.equal(view.queryByLabelText("Approve error"), null);
 });
 
+test("Approve conflicts do not run the statistics refresh callback", async () => {
+  let statisticsRefreshes = 0;
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        message: "Booth approval conflicts with another request.",
+      }),
+      {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  const view = render(
+    <BoothRequestActionsHarness
+      onApproveSuccess={() => {
+        statisticsRefreshes += 1;
+      }}
+    />,
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+
+  assert.equal(
+    (await view.findByLabelText("Approve error")).textContent,
+    "Booth approval conflicts with another request.",
+  );
+  assert.equal(statisticsRefreshes, 0);
+  assert.equal(view.getByLabelText("Approve state").textContent, "idle");
+});
+
 test("Approve and Reject cannot run at the same time", async () => {
   const requestDeferred = createDeferred<Response>();
   const requestedPaths: string[] = [];

@@ -32,6 +32,7 @@ export async function getBoothRequestStatistics(): Promise<BoothRequestStatistic
   const response = await apiRequest<BoothRequestStatisticsResponse>(
     BOOTH_REQUEST_STATISTICS_PATH,
     {
+      cache: "no-store",
       method: "GET",
       requiresAuth: true,
     },

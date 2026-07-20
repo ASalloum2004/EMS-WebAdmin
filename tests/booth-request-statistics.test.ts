@@ -4,15 +4,15 @@ import {
   getBoothRequestStatistics,
   normalizeBoothRequestStatisticsResponse,
 } from "../src/features/order/api/boothRequestStatisticsApi.js";
-import { getOrderSummaryStatistics } from "../src/features/order/data/orderSummaryStatistics.js";
 import {
   getBoothRequestStatisticsFailureState,
   getBoothRequestStatisticsLoadingState,
   getBoothRequestStatisticsSuccessState,
 } from "../src/features/order/hooks/useBoothRequestStatistics.js";
-import type {
-  BoothRequestStatisticsData,
-  BoothRequestStatisticsResponse,
+import {
+  getOrderSummaryStatistics,
+  type BoothRequestStatisticsData,
+  type BoothRequestStatisticsResponse,
 } from "../src/features/order/types.js";
 
 const statisticsResponse: BoothRequestStatisticsResponse = {
@@ -58,6 +58,7 @@ test("calls the authenticated booth request statistics endpoint", async () => {
   const originalFetch = globalThis.fetch;
   const restoreSession = installAuthenticatedSession();
   let requestedUrl = "";
+  let requestCache: RequestCache | undefined;
   let requestHeaders = new Headers();
   let requestMethod = "";
 
@@ -69,6 +70,7 @@ test("calls the authenticated booth request statistics endpoint", async () => {
           ? input.toString()
           : input.url;
     requestHeaders = new Headers(init?.headers);
+    requestCache = init?.cache;
     requestMethod = init?.method ?? "";
 
     return new Response(JSON.stringify(statisticsResponse), {
@@ -84,6 +86,7 @@ test("calls the authenticated booth request statistics endpoint", async () => {
     assert.equal(url.pathname, "/api/v1/admin/booths/requests/stats");
     assert.equal(url.search, "");
     assert.equal(requestMethod, "GET");
+    assert.equal(requestCache, "no-store");
     assert.equal(
       requestHeaders.get("Authorization"),
       "Bearer statistics-test-token",
@@ -119,6 +122,32 @@ test("maps every statistics API field to its correct summary card", () => {
       pending: 14,
       approved: 38,
     },
+  );
+});
+
+test("summary cards are not derived from the current request page", () => {
+  const currentPage = [
+    { status: "approved" },
+    { status: "approved" },
+    { status: "approved" },
+  ];
+  const backendStatistics: BoothRequestStatisticsData = {
+    total_requests: 10,
+    pending_requests: 4,
+    approved_requests: 5,
+  };
+
+  const summary = getOrderSummaryStatistics(backendStatistics);
+
+  assert.deepEqual(summary, {
+    total: 10,
+    pending: 4,
+    approved: 5,
+  });
+  assert.notEqual(summary.total, currentPage.length);
+  assert.notEqual(
+    summary.approved,
+    currentPage.filter((request) => request.status === "approved").length,
   );
 });
 

@@ -17,14 +17,16 @@ import {
   getBoothRequestColumns,
   OrderFiltersPanel,
 } from "../components";
-import { getOrderSummaryStatistics } from "../data";
 import {
   useBoothRequestDetails,
   useBoothRequestActions,
   useBoothRequests,
   useBoothRequestStatistics,
 } from "../hooks";
-import type { BoothRequestApiData } from "../types";
+import {
+  getOrderSummaryStatistics,
+  type BoothRequestApiData,
+} from "../types";
 import "./OrderPage.scss";
 
 type SummaryCard = {

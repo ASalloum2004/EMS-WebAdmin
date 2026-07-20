@@ -258,7 +258,9 @@ export const ar: I18nDictionary = {
       ariaLabel: "الأجنحة",
     },
     eventHalls: {
+      loading: "جار تحميل قاعات الفعاليات...",
       empty: "لم يتم العثور على قاعات فعاليات.",
+      errorFallback: "تعذر تحميل قاعات الفعاليات.",
       number: "رقم القاعة",
       area: "المساحة",
       pricePerHour: "السعر لكل ساعة",

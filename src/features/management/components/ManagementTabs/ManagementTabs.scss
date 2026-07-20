@@ -1,5 +1,5 @@
 .management-tabs {
-  width: min(100%, 252px);
+  width: min(100%, 300px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
@@ -24,6 +24,7 @@
   font-weight: 600;
   line-height: 20px;
   letter-spacing: 0;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background-color 160ms ease,

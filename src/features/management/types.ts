@@ -47,6 +47,12 @@ export type EventHall = {
   price_per_hour: string;
 };
 
+export type EventHallsResponse = {
+  status: boolean;
+  message: string;
+  data: EventHall[];
+};
+
 export type EventHallClientFilters = {
   maxArea: string;
   maxPrice: string;

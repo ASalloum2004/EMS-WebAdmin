@@ -19,6 +19,7 @@ import {
   useBoothEditing,
   useBoothFiltering,
   useBooths,
+  useEventHalls,
   useHallFiltering,
   useHalls,
 } from "../hooks";
@@ -28,15 +29,8 @@ import {
   getEventHallColumns,
   getHallColumns,
 } from "../components/tableColumns";
-import type { EventHall, EventHallClientFilters } from "../types";
+import type { EventHallClientFilters } from "../types";
 import "./ManagementPage.scss";
-
-const EVENT_HALLS: EventHall[] = [
-  { id: 1, number: "1", area: 100, price_per_hour: "50000.00" },
-  { id: 2, number: "2", area: 150, price_per_hour: "75000.00" },
-  { id: 3, number: "3", area: 100, price_per_hour: "50000.00" },
-  { id: 4, number: "4", area: 200, price_per_hour: "100000.00" },
-];
 
 function createEmptyEventHallFilters(): EventHallClientFilters {
   return {
@@ -88,6 +82,15 @@ export function ManagementPage() {
     updateBoothById,
     updateError: boothUpdateError,
   } = useBooths({ enabled: isBoothTab });
+  const {
+    error: eventHallsError,
+    eventHalls,
+    isLoading: isEventHallsLoading,
+    refetch: refetchEventHalls,
+  } = useEventHalls({
+    enabled: isEventHallTab,
+    errorFallback: t.management.eventHalls.errorFallback,
+  });
   const [searchValue, setSearchValue] = useState("");
   const hallFiltering = useHallFiltering({
     halls,
@@ -169,7 +172,7 @@ export function ManagementPage() {
     const maxArea = getOptionalNumber(eventHallFilters.maxArea);
     const minPrice = getOptionalNumber(eventHallFilters.minPrice);
     const maxPrice = getOptionalNumber(eventHallFilters.maxPrice);
-    const filteredEventHalls = EVENT_HALLS.filter((eventHall) => {
+    const filteredEventHalls = eventHalls.filter((eventHall) => {
       const pricePerHour = Number(eventHall.price_per_hour);
 
       return !(
@@ -190,7 +193,7 @@ export function ManagementPage() {
         eventHall.price_per_hour,
       ],
     );
-  }, [eventHallFilters, searchValue]);
+  }, [eventHallFilters, eventHalls, searchValue]);
 
   const searchPlaceholder = isBoothTab
     ? t.management.search.boothsPlaceholder
@@ -373,7 +376,29 @@ export function ManagementPage() {
             />
           ) : null}
 
-          {isEventHallTab ? (
+          {isEventHallTab && isEventHallsLoading ? (
+            <p className="management-page__state">
+              {t.management.eventHalls.loading}
+            </p>
+          ) : null}
+
+          {isEventHallTab && !isEventHallsLoading && eventHallsError ? (
+            <div className="management-page__state" role="alert">
+              <p>
+                {eventHallsError || t.management.eventHalls.errorFallback}
+              </p>
+              <button
+                type="button"
+                onClick={() => void refetchEventHalls()}
+              >
+                {t.common.tryAgain}
+              </button>
+            </div>
+          ) : null}
+
+          {isEventHallTab &&
+          !isEventHallsLoading &&
+          !eventHallsError ? (
             <DataTable
               ariaLabel={t.management.eventHalls.ariaLabel}
               columns={eventHallColumns}

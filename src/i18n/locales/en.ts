@@ -257,7 +257,9 @@ export const en = {
       ariaLabel: "Booths",
     },
     eventHalls: {
+      loading: "Loading event halls...",
       empty: "No event halls found.",
+      errorFallback: "Unable to load event halls.",
       number: "Hall Number",
       area: "Area",
       pricePerHour: "Price Per Hour",

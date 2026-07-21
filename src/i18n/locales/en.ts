@@ -184,6 +184,8 @@ export const en = {
       unavailable: "Request statistics unavailable",
     },
     filters: {
+      companySearchPlaceholder: "Search by company name...",
+      companySearchAriaLabel: "Search by company name",
       searchPlaceholder: "Search requests...",
       searchAriaLabel: "Search requests",
       filterLabel: "Filter",

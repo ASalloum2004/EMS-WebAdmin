@@ -358,17 +358,16 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
     name: "View details for Company #37",
   });
   await waitFor(() =>
-    assert.equal(
+    assert.ok(
       pageFetch.requestedUrls.filter((url) =>
         url.pathname.endsWith("/booths/requests"),
-      ).length,
-      1,
+      ).length >= 1,
     ),
   );
   assert.equal(pageFetch.eventRequestCount(), 0);
 
   const boothSearch = view.getByRole("searchbox", {
-    name: "Search requests",
+    name: "Search by company name",
   }) as HTMLInputElement;
   fireEvent.change(boothSearch, { target: { value: "preserved search" } });
   fireEvent.click(eventTab);
@@ -465,10 +464,33 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
   );
   assert.equal(latestEventUrl?.searchParams.get("sort"), "created_at");
 
+  await waitFor(
+    () =>
+      assert.equal(
+        pageFetch.requestedUrls.filter((url) =>
+          url.pathname.endsWith("/booths/requests"),
+        ).length,
+        2,
+      ),
+    { timeout: 1200 },
+  );
+  const latestBoothUrl = pageFetch.requestedUrls.filter((url) =>
+    url.pathname.endsWith("/booths/requests"),
+  ).at(-1);
+  assert.equal(
+    latestBoothUrl?.searchParams.get("filter[company.name]"),
+    "preserved search",
+  );
+  for (const eventUrl of pageFetch.requestedUrls.filter((url) =>
+    url.pathname.endsWith("/events/requests"),
+  )) {
+    assert.equal(eventUrl.searchParams.has("filter[company.name]"), false);
+  }
+
   fireEvent.click(boothTab);
   assert.equal(
     (view.getByRole("searchbox", {
-      name: "Search requests",
+      name: "Search by company name",
     }) as HTMLInputElement).value,
     "preserved search",
   );
@@ -476,7 +498,7 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
     pageFetch.requestedUrls.filter((url) =>
       url.pathname.endsWith("/booths/requests"),
     ).length,
-    1,
+    2,
   );
 
   fireEvent.click(

@@ -84,6 +84,26 @@ test("uses five booth requests per page by default", () => {
   assert.equal(searchParams.get("per_page"), "5");
 });
 
+test("uses the trimmed company-name filter parameter", () => {
+  const searchParams = getPathSearchParams(
+    buildBoothRequestsPath({ companyName: "  GreenFoods  " }),
+  );
+
+  assert.equal(searchParams.get("filter[company.name]"), "GreenFoods");
+  assert.equal(searchParams.has("filter[name]"), false);
+  assert.equal(searchParams.has("filter[company_name]"), false);
+});
+
+test("omits the company-name filter for empty search values", () => {
+  for (const companyName of ["", "   "]) {
+    const searchParams = getPathSearchParams(
+      buildBoothRequestsPath({ companyName }),
+    );
+
+    assert.equal(searchParams.has("filter[company.name]"), false);
+  }
+});
+
 test("builds page-one and page-two booth request paths", () => {
   assert.equal(
     buildBoothRequestsPath({ page: 1, perPage: 5 }),
@@ -299,6 +319,7 @@ test("applying or clearing filters resets pagination to page one", () => {
 test("filters work together with page and per_page", () => {
   const searchParams = getPathSearchParams(
     buildBoothRequestsPath({
+      companyName: "GreenFoods",
       createdDate: "2026-07-14",
       page: 2,
       perPage: 5,
@@ -309,15 +330,16 @@ test("filters work together with page and per_page", () => {
 
   assert.equal(searchParams.get("page"), "2");
   assert.equal(searchParams.get("per_page"), "5");
+  assert.equal(searchParams.get("filter[company.name]"), "GreenFoods");
   assert.equal(searchParams.get("filter[status]"), "pending");
   assert.equal(searchParams.get("filter[created_date]"), "2026-07-14");
   assert.equal(searchParams.get("sort"), "-created_at");
 });
 
-test("booth request paths never contain filter[name]", () => {
+test("booth request paths never use unsupported company search filters", () => {
   const paths = [
     buildBoothRequestsPath(),
-    buildBoothRequestsPath({ status: "pending" }),
+    buildBoothRequestsPath({ companyName: "GreenFoods", status: "pending" }),
     buildBoothRequestsPath({
       createdDate: "2026-07-14",
       page: 2,
@@ -329,24 +351,21 @@ test("booth request paths never contain filter[name]", () => {
 
   for (const path of paths) {
     assert.equal(getPathSearchParams(path).has("filter[name]"), false);
+    assert.equal(
+      getPathSearchParams(path).has("filter[company_name]"),
+      false,
+    );
   }
 });
 
-test("changing the local order search value does not add filter[name]", () => {
-  let searchValue = "";
-  const initialPath = buildBoothRequestsPath({ page: 2, perPage: 5 });
-
-  searchValue = "Request 42";
-  const pathAfterSearchChange = buildBoothRequestsPath({
+test("company search uses the documented backend filter", () => {
+  const path = buildBoothRequestsPath({
+    companyName: "GreenFoods",
     page: 2,
     perPage: 5,
   });
+  const searchParams = getPathSearchParams(path);
 
-  assert.equal(searchValue, "Request 42");
-  assert.equal(pathAfterSearchChange, initialPath);
-  assert.equal(
-    getPathSearchParams(pathAfterSearchChange).has("filter[name]"),
-    false,
-  );
-  assert.equal(getPathSearchParams(pathAfterSearchChange).get("page"), "2");
+  assert.equal(searchParams.get("filter[company.name]"), "GreenFoods");
+  assert.equal(searchParams.get("page"), "2");
 });

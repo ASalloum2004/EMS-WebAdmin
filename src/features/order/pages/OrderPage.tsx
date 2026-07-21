@@ -48,7 +48,6 @@ export function OrderPage() {
   const [activeTab, setActiveTab] = useState<OrderTab>("booth");
   const isBoothTab = activeTab === "booth";
   const isEventTab = activeTab === "event";
-  const [searchValue, setSearchValue] = useState("");
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
   const [selectedEventRequestId, setSelectedEventRequestId] = useState<
@@ -214,12 +213,12 @@ export function OrderPage() {
                 <SearchFilterBar
                   filterAriaLabel={t.order.filters.filterAriaLabel}
                   filterLabel={t.order.filters.filterLabel}
-                  inputAriaLabel={t.order.filters.searchAriaLabel}
-                  onChange={setSearchValue}
+                  inputAriaLabel={t.order.filters.companySearchAriaLabel}
+                  onChange={boothRequests.setSearchValue}
                   onFilterClick={boothRequests.filters.toggleFilterPanel}
-                  placeholder={t.order.filters.searchPlaceholder}
+                  placeholder={t.order.filters.companySearchPlaceholder}
                   showFilterButton
-                  value={searchValue}
+                  value={boothRequests.searchValue}
                 />
 
                 {boothRequests.filters.isFilterPanelOpen ? (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DEFAULT_BOOTH_REQUESTS_PER_PAGE,
   getBoothRequests,
@@ -6,6 +6,7 @@ import {
 import type {
   BoothRequestApiData,
   BoothRequestsPagination,
+  GetBoothRequestsParams,
   GetBoothRequestsResult,
 } from "../types";
 import {
@@ -25,12 +26,18 @@ function clampPositiveInteger(value: number) {
   return Math.max(1, Math.trunc(value));
 }
 
+function getRequestKey(params: GetBoothRequestsParams) {
+  return JSON.stringify(params);
+}
+
 export function isLatestBoothRequestsRequest(
   requestId: number,
   latestRequestId: number,
 ) {
   return requestId === latestRequestId;
 }
+
+export const BOOTH_REQUEST_SEARCH_DEBOUNCE_MS = 400;
 
 const initialPagination: BoothRequestsPagination = {
   currentPage: 1,
@@ -45,7 +52,11 @@ export function useBoothRequests() {
     useState<BoothRequestsPagination>(initialPagination);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedCompanyName, setDebouncedCompanyName] = useState("");
   const requestIdRef = useRef(0);
+  const automaticRequestKeyRef = useRef<string | null>(null);
+  const requestParamsRef = useRef<GetBoothRequestsParams>({});
   const currentPage = pagination.currentPage;
   const perPage = pagination.perPage;
 
@@ -63,57 +74,101 @@ export function useBoothRequests() {
   const sort = filterParams.sort;
   const status = filterParams.status;
 
-  const refetch = useCallback(async () => {
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
+  useEffect(() => {
+    const nextCompanyName = searchValue.trim();
 
-    setError("");
-    setIsLoading(true);
-
-    try {
-      const result = await getBoothRequests({
-        createdDate,
-        page: currentPage,
-        perPage,
-        sort,
-        status,
-      });
-
-      if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
-        setRequests(result.requests);
-        setPagination(result.pagination);
-      }
-
-      return result;
-    } catch (requestError) {
-      const preservedResult = {
-        requests: [],
-        pagination: {
-          currentPage,
-          perPage,
-          totalItems: 0,
-          totalPages: 1,
-        },
-      } satisfies GetBoothRequestsResult;
-
-      if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
-        setError(
-          getErrorMessage(requestError, "Failed to load booth requests."),
-        );
-        setRequests([]);
-      }
-
-      return preservedResult;
-    } finally {
-      if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
-        setIsLoading(false);
-      }
+    if (nextCompanyName === debouncedCompanyName) {
+      return;
     }
-  }, [createdDate, currentPage, perPage, sort, status]);
+
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedCompanyName(nextCompanyName);
+      resetPagination();
+    }, BOOTH_REQUEST_SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [debouncedCompanyName, resetPagination, searchValue]);
+
+  const requestParams = useMemo<GetBoothRequestsParams>(
+    () => ({
+      companyName: debouncedCompanyName || undefined,
+      createdDate,
+      page: currentPage,
+      perPage,
+      sort,
+      status,
+    }),
+    [
+      createdDate,
+      currentPage,
+      debouncedCompanyName,
+      perPage,
+      sort,
+      status,
+    ],
+  );
+  requestParamsRef.current = requestParams;
+
+  const requestBoothRequests = useCallback(
+    async (params: GetBoothRequestsParams) => {
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+
+      setError("");
+      setIsLoading(true);
+
+      try {
+        const result = await getBoothRequests(params);
+
+        if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
+          setRequests(result.requests);
+          setPagination(result.pagination);
+        }
+
+        return result;
+      } catch (requestError) {
+        const preservedResult = {
+          requests: [],
+          pagination: {
+            currentPage: params.page ?? 1,
+            perPage: params.perPage ?? DEFAULT_BOOTH_REQUESTS_PER_PAGE,
+            totalItems: 0,
+            totalPages: 1,
+          },
+        } satisfies GetBoothRequestsResult;
+
+        if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
+          setError(
+            getErrorMessage(requestError, "Failed to load booth requests."),
+          );
+          setRequests([]);
+        }
+
+        return preservedResult;
+      } finally {
+        if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [],
+  );
+
+  const refetch = useCallback(
+    () => requestBoothRequests(requestParamsRef.current),
+    [requestBoothRequests],
+  );
 
   useEffect(() => {
-    void refetch();
-  }, [refetch]);
+    const requestKey = getRequestKey(requestParams);
+
+    if (automaticRequestKeyRef.current === requestKey) {
+      return;
+    }
+
+    automaticRequestKeyRef.current = requestKey;
+    void requestBoothRequests(requestParams);
+  }, [requestBoothRequests, requestParams]);
 
   const setCurrentPage = useCallback(
     (page: number) => {
@@ -139,6 +194,8 @@ export function useBoothRequests() {
     refetch,
     requests,
     setCurrentPage,
+    searchValue,
+    setSearchValue,
     totalItems: pagination.totalItems,
     totalPages: pagination.totalPages,
   };

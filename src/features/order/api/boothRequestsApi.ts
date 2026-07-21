@@ -42,6 +42,12 @@ export function buildBoothRequestsPath(
   queryParams.set("page", String(page));
   queryParams.set("per_page", String(perPage));
 
+  const companyName = params.companyName?.trim();
+
+  if (companyName) {
+    queryParams.set("filter[company.name]", companyName);
+  }
+
   if (
     params.status === "pending" ||
     params.status === "approved" ||

@@ -335,6 +335,7 @@ export type GetBoothRequestsResult = {
 };
 
 export type GetBoothRequestsParams = {
+  companyName?: string;
   createdDate?: string;
   page?: number;
   perPage?: number;

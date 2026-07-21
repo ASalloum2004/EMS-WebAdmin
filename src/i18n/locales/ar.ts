@@ -185,6 +185,8 @@ export const ar: I18nDictionary = {
       unavailable: "إحصاءات الطلبات غير متاحة",
     },
     filters: {
+      companySearchPlaceholder: "ابحث باسم الشركة...",
+      companySearchAriaLabel: "البحث باسم الشركة",
       searchPlaceholder: "ابحث في الطلبات...",
       searchAriaLabel: "بحث في الطلبات",
       filterLabel: "تصفية",

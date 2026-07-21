@@ -7,7 +7,6 @@ import {
 import {
   Card,
   DataTable,
-  filterBySearchQuery,
   SearchFilterBar,
   TableFooter,
 } from "../../../components";
@@ -17,20 +16,16 @@ import {
   BoothRequestDetailsModal,
   getBoothRequestColumns,
   getEventRequestColumns,
-  getEventRequestSearchValues,
   OrderFiltersPanel,
   OrderTabs,
   type OrderTab,
 } from "../components";
 import {
-  EVENT_REQUEST_UI_PREVIEW_ITEMS,
-  EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
-} from "../data";
-import {
   useBoothRequestDetails,
   useBoothRequestActions,
   useBoothRequests,
   useBoothRequestStatistics,
+  useEventRequests,
 } from "../hooks";
 import {
   getOrderSummaryStatistics,
@@ -48,9 +43,9 @@ type SummaryCard = {
 export function OrderPage() {
   const { language, t } = useI18n();
   const [activeTab, setActiveTab] = useState<OrderTab>("booth");
+  const isBoothTab = activeTab === "booth";
+  const isEventTab = activeTab === "event";
   const [searchValue, setSearchValue] = useState("");
-  const [eventSearchValue, setEventSearchValue] = useState("");
-  const [eventCurrentPage, setEventCurrentPage] = useState(1);
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
   const boothRequestDetails = useBoothRequestDetails(
@@ -58,6 +53,10 @@ export function OrderPage() {
   );
   const boothRequests = useBoothRequests();
   const boothRequestStatistics = useBoothRequestStatistics();
+  const eventRequests = useEventRequests({
+    enabled: isEventTab,
+    errorFallback: t.order.eventRequests.table.loadError,
+  });
   const refreshAfterRequestAction = useCallback(async () => {
     await Promise.all([
       boothRequestDetails.refetch(),
@@ -87,30 +86,6 @@ export function OrderPage() {
     () => getEventRequestColumns(t, language),
     [language, t],
   );
-  const visibleEventRequests = useMemo(
-    () =>
-      filterBySearchQuery(
-        EVENT_REQUEST_UI_PREVIEW_ITEMS,
-        eventSearchValue,
-        (request) => getEventRequestSearchValues(request, t),
-      ),
-    [eventSearchValue, t],
-  );
-  const eventTotalPages = Math.max(
-    1,
-    Math.ceil(
-      visibleEventRequests.length / EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
-    ),
-  );
-  const paginatedEventRequests = useMemo(() => {
-    const startIndex =
-      (eventCurrentPage - 1) * EVENT_REQUEST_UI_PREVIEW_PER_PAGE;
-
-    return visibleEventRequests.slice(
-      startIndex,
-      startIndex + EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
-    );
-  }, [eventCurrentPage, visibleEventRequests]);
   const summaryCards: SummaryCard[] = [
     {
       icon: (
@@ -145,9 +120,6 @@ export function OrderPage() {
       value: summaryStatistics.approved,
     },
   ];
-  const isBoothTab = activeTab === "booth";
-  const isEventTab = activeTab === "event";
-
   const closeRequestDetails = useCallback(() => {
     boothRequestActions.closeApproveConflict();
     boothRequestActions.clearApproveError();
@@ -312,35 +284,70 @@ export function OrderPage() {
                   inputAriaLabel={
                     t.order.eventRequests.filters.searchAriaLabel
                   }
-                  onChange={(nextSearchValue) => {
-                    setEventSearchValue(nextSearchValue);
-                    setEventCurrentPage(1);
-                  }}
+                  onChange={eventRequests.setSearchValue}
+                  onFilterClick={eventRequests.filters.toggleFilterPanel}
                   placeholder={
                     t.order.eventRequests.filters.searchPlaceholder
                   }
                   showFilterButton
-                  value={eventSearchValue}
+                  value={eventRequests.searchValue}
                 />
 
-                <DataTable
-                  ariaLabel={t.order.eventRequests.table.ariaLabel}
-                  className="order-page__table event-request-table"
-                  columns={eventColumns}
-                  emptyMessage={t.order.eventRequests.table.empty}
-                  getItemKey={(request) => request.id}
-                  items={paginatedEventRequests}
-                />
+                {eventRequests.filters.isFilterPanelOpen ? (
+                  <OrderFiltersPanel
+                    ariaLabel={
+                      t.order.eventRequests.filters.panelAriaLabel
+                    }
+                    filters={eventRequests.filters.draftFilters}
+                    onApply={eventRequests.filters.applyFilters}
+                    onChange={eventRequests.filters.setDraftFilters}
+                    onClear={eventRequests.filters.clearFilters}
+                  />
+                ) : null}
 
-                {visibleEventRequests.length ? (
+                {eventRequests.isLoading ? (
+                  <p className="order-page__state">
+                    {t.order.eventRequests.table.loading}
+                  </p>
+                ) : null}
+
+                {!eventRequests.isLoading && eventRequests.error ? (
+                  <div className="order-page__state" role="alert">
+                    <p>
+                      {eventRequests.error ||
+                        t.order.eventRequests.table.loadError}
+                    </p>
+                    <button
+                      onClick={() => void eventRequests.refetch()}
+                      type="button"
+                    >
+                      {t.common.tryAgain}
+                    </button>
+                  </div>
+                ) : null}
+
+                {!eventRequests.isLoading && !eventRequests.error ? (
+                  <DataTable
+                    ariaLabel={t.order.eventRequests.table.ariaLabel}
+                    className="order-page__table event-request-table"
+                    columns={eventColumns}
+                    emptyMessage={t.order.eventRequests.table.empty}
+                    getItemKey={(request) => request.id}
+                    items={eventRequests.requests}
+                  />
+                ) : null}
+
+                {!eventRequests.isLoading &&
+                !eventRequests.error &&
+                eventRequests.requests.length ? (
                   <TableFooter
                     className="order-page__footer"
-                    currentPage={eventCurrentPage}
-                    onPageChange={setEventCurrentPage}
-                    perPage={EVENT_REQUEST_UI_PREVIEW_PER_PAGE}
+                    currentPage={eventRequests.currentPage}
+                    onPageChange={eventRequests.setCurrentPage}
+                    perPage={eventRequests.perPage}
                     showSinglePage
-                    totalItems={visibleEventRequests.length}
-                    totalPages={eventTotalPages}
+                    totalItems={eventRequests.totalItems}
+                    totalPages={eventRequests.totalPages}
                   />
                 ) : null}
               </div>

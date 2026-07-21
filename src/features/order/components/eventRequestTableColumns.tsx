@@ -5,11 +5,17 @@ import { formatRequestDate } from "./orderTableColumns";
 import "./eventRequestTableColumns.scss";
 
 const knownStatuses = ["approved", "pending", "rejected"] as const;
+const knownTypes = ["conference", "lecture", "workshop", "other"] as const;
 
 type KnownStatus = (typeof knownStatuses)[number];
+type KnownType = (typeof knownTypes)[number];
 
 function isKnownStatus(status: string): status is KnownStatus {
   return knownStatuses.some((knownStatus) => knownStatus === status);
+}
+
+function isKnownType(type: string): type is KnownType {
+  return knownTypes.some((knownType) => knownType === type);
 }
 
 function formatBackendValue(value: string, fallback: string) {
@@ -54,8 +60,10 @@ export function formatEventRequestCreatedDate(
 }
 
 function getEventTypeLabel(type: string, t: I18nDictionary) {
-  return type.trim().toLowerCase() === "conference"
-    ? t.order.eventRequests.table.types.conference
+  const normalizedType = type.trim().toLowerCase();
+
+  return isKnownType(normalizedType)
+    ? t.order.eventRequests.table.types[normalizedType]
     : formatBackendValue(type, t.order.eventRequests.table.unknownValue);
 }
 
@@ -73,21 +81,6 @@ function getEventStatusClassName(status: string) {
   return isKnownStatus(normalizedStatus)
     ? `order-status order-status--${normalizedStatus}`
     : "order-status order-status--unknown";
-}
-
-export function getEventRequestSearchValues(
-  request: EventRequestUiItem,
-  t: I18nDictionary,
-) {
-  return [
-    request.id,
-    request.title,
-    request.event_hall_id,
-    request.type,
-    getEventTypeLabel(request.type, t),
-    request.status,
-    getEventStatusLabel(request.status, t),
-  ];
 }
 
 export function getEventRequestColumns(

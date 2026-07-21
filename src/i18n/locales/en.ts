@@ -97,6 +97,7 @@ export const en = {
         searchPlaceholder: "Search event requests...",
         searchAriaLabel: "Search event requests",
         filterAriaLabel: "Open event request filters",
+        panelAriaLabel: "Event request filters",
       },
       table: {
         ariaLabel: "Event requests",
@@ -111,10 +112,15 @@ export const en = {
         endTime: "End time",
         createdAt: "Created At",
         empty: "No event requests found.",
+        loading: "Loading event requests...",
+        loadError: "Unable to load event requests.",
         invalidDate: "Invalid date",
         unknownValue: "Not available",
         types: {
           conference: "Conference",
+          lecture: "Lecture",
+          workshop: "Workshop",
+          other: "Other",
         },
       },
     },

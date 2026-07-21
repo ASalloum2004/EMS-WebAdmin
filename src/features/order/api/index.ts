@@ -22,3 +22,9 @@ export {
   normalizeBoothRequestActionResponse,
   rejectBoothRequest,
 } from "./boothRequestActionsApi";
+export {
+  DEFAULT_EVENT_REQUESTS_PER_PAGE,
+  buildEventRequestsPath,
+  getEventRequests,
+  normalizeEventRequestsResponse,
+} from "./eventRequestsApi";

@@ -98,6 +98,7 @@ export const ar: I18nDictionary = {
         searchPlaceholder: "ابحث في طلبات الفعاليات...",
         searchAriaLabel: "بحث في طلبات الفعاليات",
         filterAriaLabel: "فتح عوامل تصفية طلبات الفعاليات",
+        panelAriaLabel: "عوامل تصفية طلبات الفعاليات",
       },
       table: {
         ariaLabel: "جدول طلبات الفعاليات",
@@ -112,10 +113,15 @@ export const ar: I18nDictionary = {
         endTime: "وقت الانتهاء",
         createdAt: "تاريخ الإنشاء",
         empty: "لا توجد طلبات فعاليات.",
+        loading: "جارٍ تحميل طلبات الفعاليات...",
+        loadError: "تعذر تحميل طلبات الفعاليات.",
         invalidDate: "تاريخ غير صالح",
         unknownValue: "غير متاح",
         types: {
           conference: "مؤتمر",
+          lecture: "محاضرة",
+          workshop: "ورشة عمل",
+          other: "أخرى",
         },
       },
     },

@@ -3,6 +3,7 @@ import type { BoothRequestFilters } from "../../types";
 import "./OrderFiltersPanel.scss";
 
 interface OrderFiltersPanelProps {
+  ariaLabel?: string;
   filters: BoothRequestFilters;
   onApply: () => void;
   onChange: (filters: BoothRequestFilters) => void;
@@ -10,6 +11,7 @@ interface OrderFiltersPanelProps {
 }
 
 export function OrderFiltersPanel({
+  ariaLabel,
   filters,
   onApply,
   onChange,
@@ -29,7 +31,7 @@ export function OrderFiltersPanel({
 
   return (
     <div
-      aria-label={t.order.filters.panelAriaLabel}
+      aria-label={ariaLabel ?? t.order.filters.panelAriaLabel}
       className="order-filters-panel"
       role="dialog"
     >

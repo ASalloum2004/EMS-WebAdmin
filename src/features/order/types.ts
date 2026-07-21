@@ -20,7 +20,19 @@ export type BoothRequestApiData = {
   created_at: string;
 };
 
-export type EventRequestUiItem = {
+export type EventRequestStatus = BoothRequestStatus;
+
+export type EventRequestSort = BoothRequestSort;
+
+export type EventRequestStatusFilter = "" | EventRequestStatus;
+
+export type EventRequestFilters = {
+  createdDate: string;
+  sort: EventRequestSort;
+  status: EventRequestStatusFilter;
+};
+
+export type EventRequestApiData = {
   id: number;
   title: string;
   event_hall_id: number;
@@ -29,8 +41,23 @@ export type EventRequestUiItem = {
   start_at: string;
   end_at: string;
   duration: number;
+  description: string;
+  qr_token: string | null;
   created_at: string;
+  logo: string | null;
 };
+
+export type EventRequestUiItem = Pick<
+  EventRequestApiData,
+  | "id"
+  | "title"
+  | "event_hall_id"
+  | "type"
+  | "status"
+  | "start_at"
+  | "end_at"
+  | "created_at"
+>;
 
 export type BoothRequestCompanySocialLinks = {
   linkedin: string;
@@ -209,4 +236,37 @@ export type GetBoothRequestsParams = {
   perPage?: number;
   sort?: Exclude<BoothRequestSort, "">;
   status?: BoothRequestStatus;
+};
+
+export type EventRequestsResponse = {
+  status: boolean;
+  message: string;
+  data: {
+    data: EventRequestApiData[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+};
+
+export type EventRequestsPagination = {
+  currentPage: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type GetEventRequestsResult = {
+  requests: EventRequestUiItem[];
+  pagination: EventRequestsPagination;
+};
+
+export type GetEventRequestsParams = {
+  createdDate?: string;
+  page?: number;
+  perPage?: number;
+  sort?: Exclude<EventRequestSort, "">;
+  status?: EventRequestStatus;
+  title?: string;
 };

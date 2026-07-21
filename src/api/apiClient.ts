@@ -6,7 +6,7 @@ export const API_BASE_URL =
 type ApiErrorBody = {
   error?: string;
   errors?: Record<string, unknown>;
-  message?: string;
+  message?: string | null;
 };
 
 type ApiRequestOptions = RequestInit & {
@@ -17,16 +17,19 @@ type JsonRecord = Record<string, unknown>;
 
 export class ApiRequestError extends Error {
   errors?: Record<string, unknown>;
+  responseMessage?: string | null;
   status: number;
 
   constructor(
     message: string,
     status: number,
     errors?: Record<string, unknown>,
+    responseMessage?: string | null,
   ) {
     super(message);
     this.name = "ApiRequestError";
     this.errors = errors;
+    this.responseMessage = responseMessage;
     this.status = status;
   }
 }
@@ -128,16 +131,26 @@ export async function apiRequest<TResponse>(
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`;
     let errors: Record<string, unknown> | undefined;
+    let responseMessage: string | null | undefined;
 
     try {
       const errorBody = await readJsonResponse<ApiErrorBody>(response);
+      responseMessage =
+        typeof errorBody.message === "string" || errorBody.message === null
+          ? errorBody.message
+          : undefined;
       message = errorBody.message ?? errorBody.error ?? message;
       errors = isJsonRecord(errorBody.errors) ? errorBody.errors : undefined;
     } catch {
       // Keep the fallback message when the API does not return JSON.
     }
 
-    throw new ApiRequestError(message, response.status, errors);
+    throw new ApiRequestError(
+      message,
+      response.status,
+      errors,
+      responseMessage,
+    );
   }
 
   return readJsonResponse<TResponse>(response);

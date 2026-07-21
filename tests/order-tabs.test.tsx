@@ -422,7 +422,7 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
   assert.equal(latestEventUrl?.searchParams.get("page"), "2");
 
   const eventSearch = within(eventPanel).getByRole("searchbox", {
-    name: "Search event requests",
+    name: "Search event titles",
   });
   fireEvent.change(eventSearch, { target: { value: "Publishing" } });
   await waitFor(() => assert.equal(pageFetch.eventRequestCount(), 3), {
@@ -545,7 +545,7 @@ test("Event tab displays loading, empty, error, and Retry states", async () => {
   assert.equal(pageFetch.eventRequestCount(), 1);
 
   fireEvent.change(
-    view.getByRole("searchbox", { name: "Search event requests" }),
+    view.getByRole("searchbox", { name: "Search event titles" }),
     { target: { value: "unavailable" } },
   );
   await waitFor(() => assert.equal(pageFetch.eventRequestCount(), 2), {

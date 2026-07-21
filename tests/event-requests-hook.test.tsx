@@ -255,8 +255,14 @@ test("debounces title search and resets pagination for search and filters", asyn
     const url = new URL(getRequestUrl(input));
     requestedUrls.push(url.toString());
     const page = Number(url.searchParams.get("page"));
+    const title = url.searchParams.get("filter[title]");
 
-    return getEventRequestsResponse([firstEvent], page, 30, 2);
+    return getEventRequestsResponse(
+      title ? [secondEvent] : [firstEvent],
+      page,
+      30,
+      2,
+    );
   };
   const view = renderHarness(true);
 
@@ -266,7 +272,7 @@ test("debounces title search and resets pagination for search and filters", asyn
   assert.equal(new URL(requestedUrls[1]).searchParams.get("page"), "2");
 
   fireEvent.change(view.getByLabelText("Event title search"), {
-    target: { value: "Publishing" },
+    target: { value: "  Publishing  " },
   });
   await act(async () => Promise.resolve());
   assert.equal(requestedUrls.length, 2);
@@ -277,6 +283,12 @@ test("debounces title search and resets pagination for search and filters", asyn
   let latestUrl = new URL(requestedUrls[2]);
   assert.equal(latestUrl.searchParams.get("page"), "1");
   assert.equal(latestUrl.searchParams.get("filter[title]"), "Publishing");
+  await waitFor(() =>
+    assert.match(
+      view.getByLabelText("Event values").textContent ?? "",
+      /Modern Exhibition Design/,
+    ),
+  );
 
   fireEvent.click(view.getByRole("button", { name: "Toggle filters" }));
   const panel = view.getByRole("dialog", {
@@ -312,6 +324,26 @@ test("debounces title search and resets pagination for search and filters", asyn
   assert.equal(latestUrl.searchParams.has("filter[status]"), false);
   assert.equal(latestUrl.searchParams.has("filter[created_date]"), false);
   assert.equal(latestUrl.searchParams.has("sort"), false);
+
+  fireEvent.change(view.getByLabelText("Event title search"), {
+    target: { value: "" },
+  });
+
+  await waitFor(() => assert.equal(requestedUrls.length, 6), {
+    timeout: 1200,
+  });
+  latestUrl = new URL(requestedUrls[5]);
+  assert.equal(latestUrl.searchParams.get("page"), "1");
+  assert.equal(latestUrl.searchParams.has("filter[title]"), false);
+  assert.equal(latestUrl.searchParams.has("filter[status]"), false);
+  assert.equal(latestUrl.searchParams.has("filter[created_date]"), false);
+  assert.equal(latestUrl.searchParams.has("sort"), false);
+  await waitFor(() =>
+    assert.match(
+      view.getByLabelText("Event values").textContent ?? "",
+      /Future of Publishing/,
+    ),
+  );
 });
 
 test("Retry preserves current parameters and stale searches cannot win", async () => {

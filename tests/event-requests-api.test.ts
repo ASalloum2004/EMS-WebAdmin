@@ -99,7 +99,7 @@ test("builds Event Request paths with documented pagination, filters, and sort",
     perPage: 15,
     sort: "-created_at",
     status: "approved",
-    title: "Publishing & Exhibitions",
+    title: "  Publishing & Exhibitions  ",
   });
 
   assert.equal(searchParams.get("page"), "3");
@@ -111,6 +111,9 @@ test("builds Event Request paths with documented pagination, filters, and sort",
   assert.equal(searchParams.get("filter[status]"), "approved");
   assert.equal(searchParams.get("filter[created_date]"), "2026-07-21");
   assert.equal(searchParams.get("sort"), "-created_at");
+  assert.equal(searchParams.has("search"), false);
+  assert.equal(searchParams.has("title"), false);
+  assert.equal(searchParams.has("filter[name]"), false);
 });
 
 test("omits empty and unsupported Event Request parameters", () => {

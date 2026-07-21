@@ -33,3 +33,11 @@ export {
   getEventRequestDetails,
   normalizeEventRequestDetailsResponse,
 } from "./eventRequestDetailsApi";
+export {
+  approveEventRequest,
+  buildApproveEventRequestPath,
+  buildRejectEventRequestPath,
+  normalizeApproveEventRequestConflict,
+  normalizeEventRequestActionResponse,
+  rejectEventRequest,
+} from "./eventRequestActionsApi";

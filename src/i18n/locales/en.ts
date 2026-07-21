@@ -93,9 +93,43 @@ export const en = {
       ariaLabel: "Order request categories",
     },
     eventRequests: {
+      actions: {
+        invalidStatus:
+          "This Event Request is no longer pending. The latest status has been refreshed.",
+      },
+      approveConfirmation: {
+        title: "Approve Event Request?",
+        message: "Are you sure you want to approve this Event Request?",
+        eventLabel: "Event",
+        requestLabel: "Request ID",
+        confirm: "Approve Request",
+        loading: "Approving…",
+        error: "Unable to approve Event Request.",
+      },
+      rejectConfirmation: {
+        title: "Reject Event Request?",
+        message:
+          "Are you sure you want to reject this Event Request? This action cannot be undone.",
+        eventLabel: "Event",
+        requestLabel: "Request ID",
+        confirm: "Reject Request",
+        loading: "Rejecting…",
+        error: "Unable to reject Event Request.",
+      },
+      approveConflict: {
+        title: "Conflicting Event Requests",
+        message:
+          "Other pending Event Requests overlap with request #{{id}} in the same hall and schedule. Review them before approving anyway.",
+        count: "{{count}} conflicting Event Requests",
+        approveAnyway: "Approve Anyway",
+        approving: "Approving…",
+        loading: "Loading conflicting Event Requests…",
+        loadError: "Unable to load conflicting Event Requests.",
+        organizer: "Organizer",
+      },
       filters: {
-        searchPlaceholder: "Search event requests...",
-        searchAriaLabel: "Search event requests",
+        searchPlaceholder: "Search event titles...",
+        searchAriaLabel: "Search event titles",
         filterAriaLabel: "Open event request filters",
         panelAriaLabel: "Event request filters",
       },

@@ -38,9 +38,9 @@ export type BoothRequestApiData = BoothRequestBaseApiData & {
   company?: BoothRequestListCompanyApiData | null;
 };
 
-export type EventRequestStatus = BoothRequestStatus;
+export type EventRequestStatus = "pending" | "approved" | "rejected";
 
-export type EventRequestSort = BoothRequestSort;
+export type EventRequestSort = "" | "-created_at" | "created_at";
 
 export type EventRequestStatusFilter = "" | EventRequestStatus;
 
@@ -161,6 +161,64 @@ export type EventRequestDetailsResponse = {
   status: boolean;
   message: string;
   data: EventRequestDetailsApiData;
+};
+
+export type EventRequestActionResponse = {
+  status: true;
+  message: string;
+  data: null;
+};
+
+export type ApproveEventRequestPayload = {
+  force: boolean;
+};
+
+export type ApproveEventRequestOptions = {
+  force: boolean;
+  page?: number;
+};
+
+export type EventRequestConflictOrganizer = {
+  name: string | null;
+};
+
+export type EventRequestConflict = {
+  id: number;
+  title: string | null;
+  event_hall_id: number | null;
+  type: string | null;
+  status: EventRequestStatus | null;
+  start_at: string | null;
+  end_at: string | null;
+  duration: number | null;
+  created_at: string | null;
+  eventable: EventRequestConflictOrganizer | null;
+};
+
+export type EventRequestConflictMeta = {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+};
+
+export type ApproveEventRequestResult =
+  | {
+      kind: "approved";
+      response: EventRequestActionResponse;
+    }
+  | {
+      kind: "conflict";
+      message: string | null;
+      requests: EventRequestConflict[];
+      meta: EventRequestConflictMeta;
+    };
+
+export type ApproveEventRequestConflictState = {
+  message: string | null;
+  meta: EventRequestConflictMeta;
+  requestId: number;
+  requests: EventRequestConflict[];
 };
 
 export type BoothRequestCompanySocialLinks = {

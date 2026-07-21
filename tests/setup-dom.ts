@@ -31,3 +31,4 @@ Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", {
 });
 
 require.extensions[".scss"] = () => undefined;
+require.extensions[".svg"] = () => undefined;

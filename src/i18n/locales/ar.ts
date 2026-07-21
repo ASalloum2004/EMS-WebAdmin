@@ -88,6 +88,12 @@ export const ar: I18nDictionary = {
     description:
       "إدارة طلبات حجز الشركات وطلبات الخدمات ومسارات الموافقة.",
     panelAriaLabel: "قائمة الطلبات وأدوات التحكم",
+    tabs: {
+      booth: "الجناح",
+      event: "الفعالية",
+      ariaLabel: "فئات طلبات الحجز",
+    },
+    eventPlaceholder: "طلبات الفعاليات غير مرتبطة بالنظام بعد.",
     summary: {
       totalRequests: "إجمالي الطلبات",
       pendingRequest: "الطلبات المعلقة",

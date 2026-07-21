@@ -16,6 +16,8 @@ import {
   BoothRequestDetailsModal,
   getBoothRequestColumns,
   OrderFiltersPanel,
+  OrderTabs,
+  type OrderTab,
 } from "../components";
 import {
   useBoothRequestDetails,
@@ -38,6 +40,7 @@ type SummaryCard = {
 
 export function OrderPage() {
   const { language, t } = useI18n();
+  const [activeTab, setActiveTab] = useState<OrderTab>("booth");
   const [searchValue, setSearchValue] = useState("");
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
@@ -105,6 +108,8 @@ export function OrderPage() {
       value: summaryStatistics.approved,
     },
   ];
+  const isBoothTab = activeTab === "booth";
+  const isEventTab = activeTab === "event";
 
   const closeRequestDetails = useCallback(() => {
     boothRequestActions.closeApproveConflict();
@@ -126,35 +131,37 @@ export function OrderPage() {
             <p>{t.order.description}</p>
           </header>
 
-          <div className="order-page__summary">
-            {summaryCards.map((summaryCard) => (
-              <Card
-                className={`order-page__summary-card order-page__summary-card--${summaryCard.key}`}
-                icon={summaryCard.icon}
-                iconClassName="order-page__summary-icon"
-                key={summaryCard.key}
-                title={summaryCard.label}
-                titleClassName="order-page__summary-label"
-              >
-                <strong
-                  aria-busy={boothRequestStatistics.isLoading}
-                  aria-label={
-                    summaryCard.value === null
-                      ? boothRequestStatistics.isLoading
-                        ? t.order.summary.loading
-                        : t.order.summary.unavailable
-                      : undefined
-                  }
-                  aria-live="polite"
-                  className="order-page__summary-value"
+          {isBoothTab ? (
+            <div className="order-page__summary">
+              {summaryCards.map((summaryCard) => (
+                <Card
+                  className={`order-page__summary-card order-page__summary-card--${summaryCard.key}`}
+                  icon={summaryCard.icon}
+                  iconClassName="order-page__summary-icon"
+                  key={summaryCard.key}
+                  title={summaryCard.label}
+                  titleClassName="order-page__summary-label"
                 >
-                  {summaryCard.value ?? "—"}
-                </strong>
-              </Card>
-            ))}
-          </div>
+                  <strong
+                    aria-busy={boothRequestStatistics.isLoading}
+                    aria-label={
+                      summaryCard.value === null
+                        ? boothRequestStatistics.isLoading
+                          ? t.order.summary.loading
+                          : t.order.summary.unavailable
+                        : undefined
+                    }
+                    aria-live="polite"
+                    className="order-page__summary-value"
+                  >
+                    {summaryCard.value ?? "—"}
+                  </strong>
+                </Card>
+              ))}
+            </div>
+          ) : null}
 
-          {boothRequestStatistics.error ? (
+          {isBoothTab && boothRequestStatistics.error ? (
             <div className="order-page__state" role="alert">
               <p>
                 {boothRequestStatistics.error || t.order.summary.loadError}
@@ -173,68 +180,97 @@ export function OrderPage() {
             bodyClassName="order-page__panel-body"
             className="order-page__panel"
           >
-            <SearchFilterBar
-              filterAriaLabel={t.order.filters.filterAriaLabel}
-              filterLabel={t.order.filters.filterLabel}
-              inputAriaLabel={t.order.filters.searchAriaLabel}
-              onChange={setSearchValue}
-              onFilterClick={boothRequests.filters.toggleFilterPanel}
-              placeholder={t.order.filters.searchPlaceholder}
-              showFilterButton
-              value={searchValue}
+            <OrderTabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
             />
 
-            {boothRequests.filters.isFilterPanelOpen ? (
-              <OrderFiltersPanel
-                filters={boothRequests.filters.draftFilters}
-                onApply={boothRequests.filters.applyFilters}
-                onChange={boothRequests.filters.setDraftFilters}
-                onClear={boothRequests.filters.clearFilters}
-              />
-            ) : null}
+            {isBoothTab ? (
+              <div
+                aria-labelledby="orders-booth-tab"
+                className="order-page__tabpanel"
+                id="orders-booth-panel"
+                role="tabpanel"
+              >
+                <SearchFilterBar
+                  filterAriaLabel={t.order.filters.filterAriaLabel}
+                  filterLabel={t.order.filters.filterLabel}
+                  inputAriaLabel={t.order.filters.searchAriaLabel}
+                  onChange={setSearchValue}
+                  onFilterClick={boothRequests.filters.toggleFilterPanel}
+                  placeholder={t.order.filters.searchPlaceholder}
+                  showFilterButton
+                  value={searchValue}
+                />
 
-            {boothRequests.isLoading ? (
-              <p className="order-page__state">{t.order.table.loading}</p>
-            ) : null}
+                {boothRequests.filters.isFilterPanelOpen ? (
+                  <OrderFiltersPanel
+                    filters={boothRequests.filters.draftFilters}
+                    onApply={boothRequests.filters.applyFilters}
+                    onChange={boothRequests.filters.setDraftFilters}
+                    onClear={boothRequests.filters.clearFilters}
+                  />
+                ) : null}
 
-            {!boothRequests.isLoading && boothRequests.error ? (
-              <div className="order-page__state" role="alert">
-                <p>{boothRequests.error || t.order.table.loadError}</p>
-                <button
-                  type="button"
-                  onClick={() => void boothRequests.refetch()}
-                >
-                  {t.common.tryAgain}
-                </button>
+                {boothRequests.isLoading ? (
+                  <p className="order-page__state">
+                    {t.order.table.loading}
+                  </p>
+                ) : null}
+
+                {!boothRequests.isLoading && boothRequests.error ? (
+                  <div className="order-page__state" role="alert">
+                    <p>{boothRequests.error || t.order.table.loadError}</p>
+                    <button
+                      type="button"
+                      onClick={() => void boothRequests.refetch()}
+                    >
+                      {t.common.tryAgain}
+                    </button>
+                  </div>
+                ) : null}
+
+                {!boothRequests.isLoading && !boothRequests.error ? (
+                  <DataTable
+                    ariaLabel={t.order.table.ariaLabel}
+                    className="order-page__table"
+                    columns={columns}
+                    emptyMessage={t.order.table.empty}
+                    getItemAriaLabel={(request) =>
+                      `${t.order.details.openAriaLabel} ${t.order.table.companyPrefix} #${request.company_id}`
+                    }
+                    getItemKey={(request) => request.id}
+                    items={boothRequests.requests}
+                    onItemClick={setSelectedRequest}
+                  />
+                ) : null}
+
+                {!boothRequests.isLoading &&
+                !boothRequests.error &&
+                boothRequests.requests.length ? (
+                  <TableFooter
+                    className="order-page__footer"
+                    currentPage={boothRequests.currentPage}
+                    onPageChange={boothRequests.setCurrentPage}
+                    perPage={boothRequests.perPage}
+                    totalItems={boothRequests.totalItems}
+                    totalPages={boothRequests.totalPages}
+                  />
+                ) : null}
               </div>
             ) : null}
 
-            {!boothRequests.isLoading && !boothRequests.error ? (
-              <DataTable
-                ariaLabel={t.order.table.ariaLabel}
-                className="order-page__table"
-                columns={columns}
-                emptyMessage={t.order.table.empty}
-                getItemAriaLabel={(request) =>
-                  `${t.order.details.openAriaLabel} ${t.order.table.companyPrefix} #${request.company_id}`
-                }
-                getItemKey={(request) => request.id}
-                items={boothRequests.requests}
-                onItemClick={setSelectedRequest}
-              />
-            ) : null}
-
-            {!boothRequests.isLoading &&
-            !boothRequests.error &&
-            boothRequests.requests.length ? (
-              <TableFooter
-                className="order-page__footer"
-                currentPage={boothRequests.currentPage}
-                onPageChange={boothRequests.setCurrentPage}
-                perPage={boothRequests.perPage}
-                totalItems={boothRequests.totalItems}
-                totalPages={boothRequests.totalPages}
-              />
+            {isEventTab ? (
+              <div
+                aria-labelledby="orders-event-tab"
+                className="order-page__tabpanel"
+                id="orders-event-panel"
+                role="tabpanel"
+              >
+                <p className="order-page__state order-page__event-placeholder">
+                  {t.order.eventPlaceholder}
+                </p>
+              </div>
             ) : null}
           </Card>
         </div>

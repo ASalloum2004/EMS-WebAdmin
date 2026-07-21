@@ -8,16 +8,16 @@ const { dirname, join, relative } = require("node:path");
 
 const TEST_BUILD_DIRECTORY = ".codex-temp/test-build";
 
-function createStyleStubs(directory) {
+function createImportStubs(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const sourcePath = join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      createStyleStubs(sourcePath);
+      createImportStubs(sourcePath);
       continue;
     }
 
-    if (!entry.name.endsWith(".scss")) {
+    if (!entry.name.endsWith(".scss") && !entry.name.endsWith(".svg")) {
       continue;
     }
 
@@ -33,4 +33,4 @@ writeFileSync(
   `${TEST_BUILD_DIRECTORY}/package.json`,
   JSON.stringify({ type: "commonjs" }),
 );
-createStyleStubs("src");
+createImportStubs("src");

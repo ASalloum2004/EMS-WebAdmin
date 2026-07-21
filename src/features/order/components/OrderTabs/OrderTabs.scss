@@ -1,0 +1,55 @@
+.order-tabs {
+  width: min(100%, 300px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.order-tabs__tab {
+  min-width: 0;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: var(--ems-radius-sm);
+  background-color: transparent;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.order-tabs__tab:hover {
+  background-color: var(--ems-color-admin-hover);
+  color: var(--ems-color-primary);
+}
+
+.order-tabs__tab:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.order-tabs__tab--active,
+.order-tabs__tab--active:hover {
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  box-shadow: var(--ems-shadow-button);
+}
+
+@media (max-width: 640px) {
+  .order-tabs {
+    width: 100%;
+  }
+}

@@ -111,7 +111,21 @@
 }
 
 .order-page__panel-body {
+  gap: 14px;
+}
+
+.order-page__tabpanel {
+  display: flex;
+  flex-direction: column;
   gap: 20px;
+}
+
+.order-page__event-placeholder {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .order-page__table.data-table {

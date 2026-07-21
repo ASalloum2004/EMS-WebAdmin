@@ -87,6 +87,12 @@ export const en = {
     description:
       "Manage company booking requests, service orders, and approval workflows.",
     panelAriaLabel: "Orders list and controls",
+    tabs: {
+      booth: "Booth",
+      event: "Event",
+      ariaLabel: "Order request categories",
+    },
+    eventPlaceholder: "Event requests are not connected yet.",
     summary: {
       totalRequests: "Total Requests",
       pendingRequest: "Pending Request",

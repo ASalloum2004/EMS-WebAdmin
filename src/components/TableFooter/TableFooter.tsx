@@ -9,6 +9,7 @@ export type TableFooterProps = {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   className?: string;
+  showSinglePage?: boolean;
 };
 
 function classNames(...classes: Array<string | false | null | undefined>) {
@@ -57,6 +58,7 @@ export function TableFooter({
   totalPages,
   onPageChange,
   className,
+  showSinglePage = false,
 }: TableFooterProps) {
   const { t } = useI18n();
   const safeTotalItems =
@@ -90,7 +92,7 @@ export function TableFooter({
     onPageChange?.(nextPage);
   }
 
-  if (safeTotalPages <= 1) {
+  if (safeTotalPages <= 1 && !showSinglePage) {
     return null;
   }
 

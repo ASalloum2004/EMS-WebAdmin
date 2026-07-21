@@ -1,0 +1,106 @@
+.order-page__table.event-request-table .data-table__row {
+  min-height: 108px;
+  display: grid;
+  grid-template-areas: "title event start end created status";
+  grid-template-columns:
+    minmax(210px, 1.4fr)
+    minmax(135px, 0.8fr)
+    repeat(2, minmax(175px, 1fr))
+    minmax(120px, 0.7fr)
+    auto;
+  align-items: center;
+}
+
+.event-request-table .data-table__cell--primary {
+  grid-area: title;
+}
+
+.event-request-table__cell--event {
+  grid-area: event;
+}
+
+.event-request-table__cell--start {
+  grid-area: start;
+}
+
+.event-request-table__cell--end {
+  grid-area: end;
+}
+
+.event-request-table__cell--created {
+  grid-area: created;
+}
+
+.event-request-table .event-request-table__cell--status {
+  grid-area: status;
+  align-items: center;
+}
+
+.event-request-table__stack {
+  min-width: 0;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-request-table__type-badge {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.event-request-table__cell--start .data-table__value,
+.event-request-table__cell--end .data-table__value,
+.event-request-table__cell--created .data-table__value {
+  color: var(--ems-color-text);
+}
+
+@media (max-width: 1180px) {
+  .order-page__table.event-request-table .data-table__row {
+    grid-template-areas:
+      "title title status"
+      "event start end"
+      "created created created";
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .order-page__table.event-request-table .data-table__row {
+    grid-template-areas:
+      "title title"
+      "event status"
+      "start end"
+      "created created";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .order-page__table.event-request-table .data-table__row {
+    grid-template-areas:
+      "title"
+      "event"
+      "start"
+      "end"
+      "created"
+      "status";
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .event-request-table .event-request-table__cell--status {
+    align-items: flex-start;
+  }
+}

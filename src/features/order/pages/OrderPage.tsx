@@ -7,6 +7,7 @@ import {
 import {
   Card,
   DataTable,
+  filterBySearchQuery,
   SearchFilterBar,
   TableFooter,
 } from "../../../components";
@@ -15,10 +16,16 @@ import { AdminLayout } from "../../../layouts";
 import {
   BoothRequestDetailsModal,
   getBoothRequestColumns,
+  getEventRequestColumns,
+  getEventRequestSearchValues,
   OrderFiltersPanel,
   OrderTabs,
   type OrderTab,
 } from "../components";
+import {
+  EVENT_REQUEST_UI_PREVIEW_ITEMS,
+  EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
+} from "../data";
 import {
   useBoothRequestDetails,
   useBoothRequestActions,
@@ -42,6 +49,8 @@ export function OrderPage() {
   const { language, t } = useI18n();
   const [activeTab, setActiveTab] = useState<OrderTab>("booth");
   const [searchValue, setSearchValue] = useState("");
+  const [eventSearchValue, setEventSearchValue] = useState("");
+  const [eventCurrentPage, setEventCurrentPage] = useState(1);
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
   const boothRequestDetails = useBoothRequestDetails(
@@ -74,6 +83,34 @@ export function OrderPage() {
     () => getBoothRequestColumns(t, language),
     [language, t],
   );
+  const eventColumns = useMemo(
+    () => getEventRequestColumns(t, language),
+    [language, t],
+  );
+  const visibleEventRequests = useMemo(
+    () =>
+      filterBySearchQuery(
+        EVENT_REQUEST_UI_PREVIEW_ITEMS,
+        eventSearchValue,
+        (request) => getEventRequestSearchValues(request, t),
+      ),
+    [eventSearchValue, t],
+  );
+  const eventTotalPages = Math.max(
+    1,
+    Math.ceil(
+      visibleEventRequests.length / EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
+    ),
+  );
+  const paginatedEventRequests = useMemo(() => {
+    const startIndex =
+      (eventCurrentPage - 1) * EVENT_REQUEST_UI_PREVIEW_PER_PAGE;
+
+    return visibleEventRequests.slice(
+      startIndex,
+      startIndex + EVENT_REQUEST_UI_PREVIEW_PER_PAGE,
+    );
+  }, [eventCurrentPage, visibleEventRequests]);
   const summaryCards: SummaryCard[] = [
     {
       icon: (
@@ -267,9 +304,45 @@ export function OrderPage() {
                 id="orders-event-panel"
                 role="tabpanel"
               >
-                <p className="order-page__state order-page__event-placeholder">
-                  {t.order.eventPlaceholder}
-                </p>
+                <SearchFilterBar
+                  filterAriaLabel={
+                    t.order.eventRequests.filters.filterAriaLabel
+                  }
+                  filterLabel={t.order.filters.filterLabel}
+                  inputAriaLabel={
+                    t.order.eventRequests.filters.searchAriaLabel
+                  }
+                  onChange={(nextSearchValue) => {
+                    setEventSearchValue(nextSearchValue);
+                    setEventCurrentPage(1);
+                  }}
+                  placeholder={
+                    t.order.eventRequests.filters.searchPlaceholder
+                  }
+                  showFilterButton
+                  value={eventSearchValue}
+                />
+
+                <DataTable
+                  ariaLabel={t.order.eventRequests.table.ariaLabel}
+                  className="order-page__table event-request-table"
+                  columns={eventColumns}
+                  emptyMessage={t.order.eventRequests.table.empty}
+                  getItemKey={(request) => request.id}
+                  items={paginatedEventRequests}
+                />
+
+                {visibleEventRequests.length ? (
+                  <TableFooter
+                    className="order-page__footer"
+                    currentPage={eventCurrentPage}
+                    onPageChange={setEventCurrentPage}
+                    perPage={EVENT_REQUEST_UI_PREVIEW_PER_PAGE}
+                    showSinglePage
+                    totalItems={visibleEventRequests.length}
+                    totalPages={eventTotalPages}
+                  />
+                ) : null}
               </div>
             ) : null}
           </Card>

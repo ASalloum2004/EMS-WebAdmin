@@ -20,6 +20,18 @@ export type BoothRequestApiData = {
   created_at: string;
 };
 
+export type EventRequestUiItem = {
+  id: number;
+  title: string;
+  event_hall_id: number;
+  type: string;
+  status: string;
+  start_at: string;
+  end_at: string;
+  duration: number;
+  created_at: string;
+};
+
 export type BoothRequestCompanySocialLinks = {
   linkedin: string;
   website: string;

@@ -93,7 +93,32 @@ export const ar: I18nDictionary = {
       event: "الفعالية",
       ariaLabel: "فئات طلبات الحجز",
     },
-    eventPlaceholder: "طلبات الفعاليات غير مرتبطة بالنظام بعد.",
+    eventRequests: {
+      filters: {
+        searchPlaceholder: "ابحث في طلبات الفعاليات...",
+        searchAriaLabel: "بحث في طلبات الفعاليات",
+        filterAriaLabel: "فتح عوامل تصفية طلبات الفعاليات",
+      },
+      table: {
+        ariaLabel: "جدول طلبات الفعاليات",
+        requestId: "معرّف طلب الفعالية",
+        requestPrefix: "طلب",
+        eventTitle: "عنوان الفعالية",
+        eventHall: "قاعة الفعاليات",
+        eventHallPrefix: "قاعة الفعاليات",
+        eventType: "نوع الفعالية",
+        eventStatus: "حالة الفعالية",
+        startTime: "وقت البدء",
+        endTime: "وقت الانتهاء",
+        createdAt: "تاريخ الإنشاء",
+        empty: "لا توجد طلبات فعاليات.",
+        invalidDate: "تاريخ غير صالح",
+        unknownValue: "غير متاح",
+        types: {
+          conference: "مؤتمر",
+        },
+      },
+    },
     summary: {
       totalRequests: "إجمالي الطلبات",
       pendingRequest: "الطلبات المعلقة",

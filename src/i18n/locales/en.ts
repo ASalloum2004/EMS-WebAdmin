@@ -92,7 +92,32 @@ export const en = {
       event: "Event",
       ariaLabel: "Order request categories",
     },
-    eventPlaceholder: "Event requests are not connected yet.",
+    eventRequests: {
+      filters: {
+        searchPlaceholder: "Search event requests...",
+        searchAriaLabel: "Search event requests",
+        filterAriaLabel: "Open event request filters",
+      },
+      table: {
+        ariaLabel: "Event requests",
+        requestId: "Event Request ID",
+        requestPrefix: "Request",
+        eventTitle: "Event title",
+        eventHall: "Event Hall",
+        eventHallPrefix: "Event Hall",
+        eventType: "Event type",
+        eventStatus: "Event status",
+        startTime: "Start time",
+        endTime: "End time",
+        createdAt: "Created At",
+        empty: "No event requests found.",
+        invalidDate: "Invalid date",
+        unknownValue: "Not available",
+        types: {
+          conference: "Conference",
+        },
+      },
+    },
     summary: {
       totalRequests: "Total Requests",
       pendingRequest: "Pending Request",

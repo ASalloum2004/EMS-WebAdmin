@@ -10,7 +10,10 @@ import {
   within,
 } from "@testing-library/react";
 import { OrderPage } from "../src/features/order/pages/OrderPage.js";
-import type { EventRequestApiData } from "../src/features/order/types.js";
+import type {
+  EventRequestApiData,
+  EventRequestDetailsApiData,
+} from "../src/features/order/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
 import { ar } from "../src/i18n/locales/ar.js";
 
@@ -188,6 +191,36 @@ function getEventRequestsResponse(
   });
 }
 
+function getEventRequestDetailsResponse(eventRequestId: number) {
+  const listItem = eventRequests.find((item) => item.id === eventRequestId);
+
+  if (!listItem) {
+    return jsonResponse({ message: "Event Request not found." }, 404);
+  }
+
+  const details: EventRequestDetailsApiData = {
+    id: listItem.id,
+    title: `Detailed ${listItem.title}`,
+    event_hall_id: listItem.event_hall_id,
+    type: listItem.type,
+    status: listItem.status,
+    start_at: listItem.start_at,
+    end_at: listItem.end_at,
+    duration: listItem.duration,
+    description: `Detailed description for ${listItem.title}.`,
+    qr_token: null,
+    eventable: null,
+    speakers: [],
+    average_rating: null,
+    qr_scans_count: 0,
+    saved_count: 0,
+    created_at: listItem.created_at,
+    logo: null,
+  };
+
+  return jsonResponse({ status: true, message: "Success", data: details });
+}
+
 function getRequestedUrl(input: RequestInfo | URL) {
   return typeof input === "string"
     ? input
@@ -205,6 +238,7 @@ function installPageFetch(eventResponder?: EventResponder) {
   const requestedUrls: URL[] = [];
   let wasRejected = false;
   let eventRequestCount = 0;
+  let eventDetailsRequestCount = 0;
 
   globalThis.fetch = async (input, init) => {
     const url = new URL(getRequestedUrl(input));
@@ -236,6 +270,15 @@ function installPageFetch(eventResponder?: EventResponder) {
       return getBoothRequestsResponse();
     }
 
+    const eventDetailsMatch = url.pathname.match(
+      /\/events\/requests\/(\d+)$/,
+    );
+
+    if (eventDetailsMatch) {
+      eventDetailsRequestCount += 1;
+      return getEventRequestDetailsResponse(Number(eventDetailsMatch[1]));
+    }
+
     if (url.pathname.endsWith("/events/requests")) {
       eventRequestCount += 1;
 
@@ -251,6 +294,7 @@ function installPageFetch(eventResponder?: EventResponder) {
   };
 
   return {
+    eventDetailsRequestCount: () => eventDetailsRequestCount,
     eventRequestCount: () => eventRequestCount,
     requestedUrls,
     wasRejected: () => wasRejected,
@@ -558,4 +602,58 @@ test("Event requests render valid Arabic controls and localized backend values",
       `${ar.order.eventRequests.table.eventStatus}: ${ar.order.status.rejected}`,
     ),
   );
+});
+
+test("Event rows open the correct details with mouse and keyboard without changing Booth details", async () => {
+  const pageFetch = installPageFetch();
+  const view = render(
+    <I18nProvider>
+      <OrderPage />
+    </I18nProvider>,
+  );
+
+  fireEvent.click(view.getByRole("tab", { name: "Event" }));
+  const firstRow = await view.findByRole("button", {
+    name: "Open details for Backend Publishing Forum",
+  });
+  fireEvent.click(firstRow);
+
+  assert.ok(view.getByRole("dialog"));
+  assert.ok(await view.findByRole("heading", {
+    name: "Detailed Backend Publishing Forum",
+  }));
+  assert.equal(pageFetch.eventDetailsRequestCount(), 1);
+  assert.equal(
+    pageFetch.requestedUrls.at(-1)?.pathname,
+    "/api/v1/admin/events/requests/301",
+  );
+  fireEvent.click(
+    view.getByRole("button", { name: "Close Event Request details" }),
+  );
+
+  const secondRow = view.getByRole("button", {
+    name: "Open details for Backend Author Lecture",
+  });
+  secondRow.focus();
+  fireEvent.keyDown(secondRow, { key: "Enter" });
+
+  assert.ok(await view.findByRole("heading", {
+    name: "Detailed Backend Author Lecture",
+  }));
+  assert.equal(pageFetch.eventDetailsRequestCount(), 2);
+  assert.equal(
+    pageFetch.requestedUrls.at(-1)?.pathname,
+    "/api/v1/admin/events/requests/302",
+  );
+  fireEvent.click(
+    view.getByRole("button", { name: "Close Event Request details" }),
+  );
+
+  fireEvent.click(view.getByRole("tab", { name: "Booth" }));
+  fireEvent.click(
+    view.getByRole("button", {
+      name: "View details for Company #37",
+    }),
+  );
+  assert.ok(await view.findByRole("heading", { name: "Damascus Expo" }));
 });

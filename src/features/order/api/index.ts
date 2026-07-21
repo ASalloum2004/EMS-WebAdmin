@@ -28,3 +28,8 @@ export {
   getEventRequests,
   normalizeEventRequestsResponse,
 } from "./eventRequestsApi";
+export {
+  buildEventRequestDetailsPath,
+  getEventRequestDetails,
+  normalizeEventRequestDetailsResponse,
+} from "./eventRequestDetailsApi";

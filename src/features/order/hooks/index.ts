@@ -32,3 +32,7 @@ export {
   isLatestEventRequestsRequest,
   useEventRequests,
 } from "./useEventRequests";
+export {
+  isLatestEventRequestDetailsRequest,
+  useEventRequestDetails,
+} from "./useEventRequestDetails";

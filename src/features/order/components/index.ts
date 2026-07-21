@@ -1,4 +1,5 @@
 export * from "./BoothRequestDetailsModal";
+export * from "./EventRequestDetailsModal";
 export * from "./ApproveBoothRequestConflictModal";
 export * from "./ApproveBoothRequestConfirmModal";
 export * from "./RejectBoothRequestConfirmModal";

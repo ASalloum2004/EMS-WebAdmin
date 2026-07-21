@@ -14,6 +14,7 @@ import { useI18n } from "../../../i18n";
 import { AdminLayout } from "../../../layouts";
 import {
   BoothRequestDetailsModal,
+  EventRequestDetailsModal,
   getBoothRequestColumns,
   getEventRequestColumns,
   OrderFiltersPanel,
@@ -25,6 +26,7 @@ import {
   useBoothRequestActions,
   useBoothRequests,
   useBoothRequestStatistics,
+  useEventRequestDetails,
   useEventRequests,
 } from "../hooks";
 import {
@@ -48,6 +50,9 @@ export function OrderPage() {
   const [searchValue, setSearchValue] = useState("");
   const [selectedRequest, setSelectedRequest] =
     useState<BoothRequestApiData | null>(null);
+  const [selectedEventRequestId, setSelectedEventRequestId] = useState<
+    number | null
+  >(null);
   const boothRequestDetails = useBoothRequestDetails(
     selectedRequest?.id ?? null,
   );
@@ -57,6 +62,10 @@ export function OrderPage() {
     enabled: isEventTab,
     errorFallback: t.order.eventRequests.table.loadError,
   });
+  const eventRequestDetails = useEventRequestDetails(
+    selectedEventRequestId,
+    t.order.eventRequests.details.loadError,
+  );
   const refreshAfterRequestAction = useCallback(async () => {
     await Promise.all([
       boothRequestDetails.refetch(),
@@ -332,8 +341,14 @@ export function OrderPage() {
                     className="order-page__table event-request-table"
                     columns={eventColumns}
                     emptyMessage={t.order.eventRequests.table.empty}
+                    getItemAriaLabel={(request) =>
+                      `${t.order.eventRequests.details.openAriaLabel} ${request.title}`
+                    }
                     getItemKey={(request) => request.id}
                     items={eventRequests.requests}
+                    onItemClick={(request) =>
+                      setSelectedEventRequestId(request.id)
+                    }
                   />
                 ) : null}
 
@@ -381,6 +396,16 @@ export function OrderPage() {
           onReject={boothRequestActions.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}
           rejectError={boothRequestActions.rejectError}
+        />
+      ) : null}
+
+      {selectedEventRequestId !== null ? (
+        <EventRequestDetailsModal
+          details={eventRequestDetails.details}
+          error={eventRequestDetails.error}
+          isLoading={eventRequestDetails.isLoading}
+          onClose={() => setSelectedEventRequestId(null)}
+          onRetry={() => void eventRequestDetails.refetch()}
         />
       ) : null}
     </AdminLayout>

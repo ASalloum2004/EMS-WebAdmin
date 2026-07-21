@@ -59,6 +59,67 @@ export type EventRequestUiItem = Pick<
   | "created_at"
 >;
 
+export type EventRequestSocialLinksApiData = {
+  linkedin?: string | null;
+  website?: string | null;
+};
+
+export type EventRequestOrganizerApiData = {
+  id: number;
+  name: string | null;
+  business_sector: string | null;
+  phone: string | null;
+  description: string | null;
+  year_founded: number | null;
+  social_links?: EventRequestSocialLinksApiData | null;
+  headquarters_lat: number | null;
+  headquarters_lng: number | null;
+  status: string | null;
+};
+
+export type EventRequestOrganizerDetails = Omit<
+  EventRequestOrganizerApiData,
+  "headquarters_lat" | "headquarters_lng"
+>;
+
+export type EventRequestSpeakerApiData = {
+  id: number;
+  name: string | null;
+};
+
+export type EventRequestDetailsApiData = {
+  id: number;
+  title: string | null;
+  event_hall_id: number | null;
+  type: string | null;
+  status: string | null;
+  start_at: string | null;
+  end_at: string | null;
+  duration: number | null;
+  description: string | null;
+  qr_token: string | null;
+  eventable: EventRequestOrganizerApiData | null;
+  speakers: EventRequestSpeakerApiData[];
+  average_rating: number | null;
+  qr_scans_count: number | null;
+  saved_count: number | null;
+  created_at: string | null;
+  logo: string | null;
+};
+
+export type EventRequestDetails = Omit<
+  EventRequestDetailsApiData,
+  "eventable"
+> & {
+  eventable: EventRequestOrganizerDetails | null;
+};
+
+export type EventRequestDetailsResponse = {
+  status: boolean;
+  message: string;
+  data: EventRequestDetailsApiData;
+};
+
 export type BoothRequestCompanySocialLinks = {
   linkedin: string;
   website: string;

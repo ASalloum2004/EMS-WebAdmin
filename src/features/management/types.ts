@@ -47,6 +47,40 @@ export type EventHall = {
   price_per_hour: string;
 };
 
+export type EventHallEventApiData = {
+  id: number;
+  title: string;
+  event_hall_id: number;
+  type: string;
+  status: string;
+  start_at: string;
+  end_at: string;
+  duration: number;
+  description: string;
+  qr_token: string;
+  created_at: string;
+  logo: string | null;
+};
+
+export type EventHallEventDetails = Omit<
+  EventHallEventApiData,
+  "qr_token" | "logo"
+>;
+
+export type EventHallDetailsApiData = EventHall & {
+  events: EventHallEventApiData[];
+};
+
+export type EventHallDetails = EventHall & {
+  events: EventHallEventDetails[];
+};
+
+export type EventHallDetailsResponse = {
+  status: boolean;
+  message: string;
+  data: EventHallDetailsApiData;
+};
+
 export type EventHallsResponse = {
   status: boolean;
   message: string;

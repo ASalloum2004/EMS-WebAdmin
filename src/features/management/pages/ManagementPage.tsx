@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   DataTable,
   filterBySearchQuery,
@@ -8,6 +8,7 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
 import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
+import { ManagementEventHallDetailsModal } from "../components/ManagementEventHallDetailsModal";
 import { ManagementEventHallEditModal } from "../components/ManagementEventHallEditModal";
 import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
 import { ManagementHeader } from "../components/ManagementHeader";
@@ -20,6 +21,7 @@ import {
   useBoothEditing,
   useBoothFiltering,
   useBooths,
+  useEventHallDetails,
   useEventHallEditing,
   useEventHalls,
   useHallFiltering,
@@ -32,6 +34,7 @@ import {
   getEventHallActions,
   getHallColumns,
 } from "../components/tableColumns";
+import type { UpdateEventHallPricePayload } from "../types";
 import "./ManagementPage.scss";
 
 export function ManagementPage() {
@@ -63,6 +66,9 @@ export function ManagementPage() {
     updateErrorFallback: t.management.eventHalls.updateErrorFallback,
     validationMessages: t.management.validation,
   });
+  const eventHallDetails = useEventHallDetails({
+    errorFallback: t.management.eventHalls.details.errorFallback,
+  });
   const [searchValue, setSearchValue] = useState("");
   const hallFiltering = useHallFiltering({
     halls,
@@ -73,9 +79,37 @@ export function ManagementPage() {
     clearUpdateError,
     updateBoothById,
   });
+  const updateEventHallPriceForEditing = useCallback(
+    async (
+      eventHallId: number,
+      payload: UpdateEventHallPricePayload,
+    ) => {
+      const updatedEventHall =
+        await eventHallFiltering.updateEventHallPriceById(
+          eventHallId,
+          payload,
+        );
+
+      if (
+        updatedEventHall &&
+        eventHallDetails.isOpen &&
+        eventHallDetails.selectedEventHallId === eventHallId
+      ) {
+        void eventHallDetails.retry();
+      }
+
+      return updatedEventHall;
+    },
+    [
+      eventHallDetails.isOpen,
+      eventHallDetails.retry,
+      eventHallDetails.selectedEventHallId,
+      eventHallFiltering.updateEventHallPriceById,
+    ],
+  );
   const eventHallEditing = useEventHallEditing({
     clearUpdateError: eventHallFiltering.clearUpdateError,
-    updateEventHallPriceById: eventHallFiltering.updateEventHallPriceById,
+    updateEventHallPriceById: updateEventHallPriceForEditing,
   });
   const boothFiltering = useBoothFiltering({
     booths,
@@ -133,6 +167,7 @@ export function ManagementPage() {
     hallFiltering.closeFilterPanel();
     boothFiltering.closeFilterPanel();
     eventHallFiltering.closeFilterPanel();
+    eventHallDetails.closeDetails();
   }
 
   return (
@@ -305,8 +340,14 @@ export function ManagementPage() {
               ariaLabel={t.management.eventHalls.ariaLabel}
               columns={eventHallColumns}
               emptyMessage={t.management.eventHalls.empty}
+              getItemAriaLabel={(eventHall) =>
+                `${t.management.eventHalls.details.openAriaLabel} #${eventHall.id}`
+              }
               getItemKey={(eventHall) => eventHall.id}
               items={visibleEventHalls}
+              onItemClick={(eventHall) =>
+                eventHallDetails.openDetails(eventHall.id)
+              }
             />
           ) : null}
         </section>
@@ -328,6 +369,18 @@ export function ManagementPage() {
             isSubmitting={eventHallFiltering.isUpdating}
             onCancel={eventHallEditing.closeEditModal}
             onSave={eventHallEditing.saveEventHallPrice}
+          />
+        ) : null}
+
+        {eventHallDetails.isOpen &&
+        eventHallDetails.selectedEventHallId !== null ? (
+          <ManagementEventHallDetailsModal
+            details={eventHallDetails.eventHallDetails}
+            error={eventHallDetails.error}
+            eventHallId={eventHallDetails.selectedEventHallId}
+            isLoading={eventHallDetails.isLoading}
+            onClose={eventHallDetails.closeDetails}
+            onRetry={() => void eventHallDetails.retry()}
           />
         ) : null}
 

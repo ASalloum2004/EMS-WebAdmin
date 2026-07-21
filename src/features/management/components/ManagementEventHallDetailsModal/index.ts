@@ -1,0 +1,1 @@
+export { ManagementEventHallDetailsModal } from "./ManagementEventHallDetailsModal";

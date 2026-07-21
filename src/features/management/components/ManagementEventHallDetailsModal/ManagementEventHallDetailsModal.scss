@@ -1,0 +1,429 @@
+.management-event-hall-details {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.management-event-hall-details__dialog {
+  width: min(100%, 960px);
+  max-height: calc(100vh - 48px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: var(--ems-radius-md);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  box-shadow: var(--ems-shadow-modal);
+  outline: none;
+}
+
+.management-event-hall-details__header {
+  min-height: 86px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--ems-color-border-soft);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+}
+
+.management-event-hall-details__header-copy {
+  min-width: 0;
+}
+
+.management-event-hall-details__header-copy h2,
+.management-event-hall-details__header-copy p {
+  margin: 0;
+  font-family: var(--ems-font-body);
+}
+
+.management-event-hall-details__header-copy h2 {
+  color: var(--ems-color-heading);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.management-event-hall-details__header-copy p {
+  margin-top: 3px;
+  color: var(--ems-color-muted-light);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+}
+
+.management-event-hall-details__id-badge {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 9999px;
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.management-event-hall-details__close {
+  flex: 0 0 auto;
+}
+
+.management-event-hall-details__scroll-area {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px 28px;
+  background-color: var(
+    --ems-color-page-background,
+    var(--ems-color-admin-background)
+  );
+}
+
+.management-event-hall-details__section {
+  padding: 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+}
+
+.management-event-hall-details__section +
+  .management-event-hall-details__section {
+  margin-top: 20px;
+}
+
+.management-event-hall-details__section h3 {
+  margin: 0;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.management-event-hall-details__summary-grid,
+.management-event-hall-details__event-grid {
+  display: grid;
+  margin: 0;
+}
+
+.management-event-hall-details__summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.management-event-hall-details__summary-grid > div,
+.management-event-hall-details__event-grid > div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+}
+
+.management-event-hall-details dt,
+.management-event-hall-details dd {
+  font-family: var(--ems-font-body);
+  overflow-wrap: anywhere;
+}
+
+.management-event-hall-details dt {
+  color: var(--ems-color-muted-light);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.management-event-hall-details dd {
+  margin: 4px 0 0;
+  color: var(--ems-color-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.management-event-hall-details__section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.management-event-hall-details__section-heading > span {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.management-event-hall-details__events {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.management-event-hall-details__event-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-page-background,
+    var(--ems-color-admin-background)
+  );
+}
+
+.management-event-hall-details__event-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.management-event-hall-details__event-heading h4 {
+  min-width: 0;
+  margin: 0;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
+.management-event-hall-details__badges {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.management-event-hall-details__badge {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-family: var(--ems-font-body);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 16px;
+}
+
+.management-event-hall-details__badge--type,
+.management-event-hall-details__badge--pending {
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
+}
+
+.management-event-hall-details__badge--approved {
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.management-event-hall-details__badge--rejected {
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.management-event-hall-details__badge--neutral {
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-muted);
+}
+
+.management-event-hall-details__description {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ems-color-border-soft);
+}
+
+.management-event-hall-details__description span {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.management-event-hall-details__description p {
+  margin: 5px 0 0;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 21px;
+  overflow-wrap: anywhere;
+}
+
+.management-event-hall-details__event-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.management-event-hall-details__state,
+.management-event-hall-details__empty-events {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  text-align: center;
+}
+
+.management-event-hall-details__state {
+  min-height: 360px;
+  padding: 24px;
+}
+
+.management-event-hall-details__empty-events {
+  min-height: 150px;
+  margin-top: 16px;
+  padding: 20px;
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+}
+
+.management-event-hall-details__state p,
+.management-event-hall-details__empty-events p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.management-event-hall-details__state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.management-event-hall-details__state button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .management-event-hall-details__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .management-event-hall-details {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .management-event-hall-details__dialog {
+    max-height: calc(100vh - 24px);
+  }
+
+  .management-event-hall-details__header {
+    min-height: 76px;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .management-event-hall-details__header-copy h2 {
+    font-size: 18px;
+    line-height: 26px;
+  }
+
+  .management-event-hall-details__scroll-area {
+    padding: 16px;
+  }
+
+  .management-event-hall-details__section {
+    padding: 16px;
+  }
+
+  .management-event-hall-details__event-heading {
+    flex-direction: column;
+  }
+
+  .management-event-hall-details__badges {
+    justify-content: flex-start;
+  }
+
+  .management-event-hall-details__event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .management-event-hall-details__state {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 440px) {
+  .management-event-hall-details__summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .management-event-hall-details__section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

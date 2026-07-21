@@ -145,7 +145,11 @@ export function getEventHallActions(
     <button
       className="data-table__action-button"
       type="button"
-      onClick={() => onEditEventHall(eventHall)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onEditEventHall(eventHall);
+      }}
+      onKeyDown={(event) => event.stopPropagation()}
     >
       {editLabel}
     </button>

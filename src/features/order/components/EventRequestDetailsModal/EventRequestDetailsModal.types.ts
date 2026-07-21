@@ -1,19 +1,52 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { I18nDictionary, SupportedLanguage } from "../../../../i18n";
 import type {
+  ApproveEventRequestConflictState,
+  ApproveEventRequestResult,
+  EventRequestActionResponse,
   EventRequestDetails,
   EventRequestOrganizerDetails,
   EventRequestSpeakerApiData,
 } from "../../types";
 
 export interface EventRequestDetailsModalProps {
+  approveConflict: ApproveEventRequestConflictState | null;
+  approveConflictError: string;
+  approveError: string;
   details: EventRequestDetails | null;
   error: string;
+  isApproving: boolean;
   isLoading: boolean;
-  onApprove?: () => void;
+  isLoadingApproveConflicts: boolean;
+  isRejecting: boolean;
+  onApprove: (
+    eventRequestId: number,
+  ) =>
+    | Promise<ApproveEventRequestResult | null>
+    | ApproveEventRequestResult
+    | null;
+  onApproveAnyway: () =>
+    | Promise<ApproveEventRequestResult | null>
+    | ApproveEventRequestResult
+    | null;
+  onApproveConflictPageChange: (
+    page: number,
+  ) =>
+    | Promise<ApproveEventRequestResult | null>
+    | ApproveEventRequestResult
+    | null;
+  onClearApproveError: () => void;
+  onClearRejectError: () => void;
   onClose: () => void;
-  onReject?: () => void;
+  onCloseApproveConflict: () => boolean | void;
+  onReject: (
+    eventRequestId: number,
+  ) =>
+    | Promise<EventRequestActionResponse | null>
+    | EventRequestActionResponse
+    | null;
   onRetry: () => void;
+  rejectError: string;
 }
 
 export interface EventRequestDetailsHeaderProps {
@@ -61,8 +94,12 @@ export interface EventRequestEngagementSectionProps {
 }
 
 export interface EventRequestDetailsFooterProps {
-  onApprove?: () => void;
-  onReject?: () => void;
+  approveButtonRef: RefObject<HTMLButtonElement | null>;
+  isApproving: boolean;
+  isRejecting: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+  rejectButtonRef: RefObject<HTMLButtonElement | null>;
   status: string | null;
   t: I18nDictionary;
 }

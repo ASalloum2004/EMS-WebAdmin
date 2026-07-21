@@ -11,8 +11,12 @@ import {
 } from "./EventRequestDetailsModal.utils";
 
 export function EventRequestDetailsFooter({
+  approveButtonRef,
+  isApproving,
+  isRejecting,
   onApprove,
   onReject,
+  rejectButtonRef,
   status,
   t,
 }: EventRequestDetailsFooterProps) {
@@ -24,7 +28,9 @@ export function EventRequestDetailsFooter({
       <footer className="event-request-details-modal__actions event-request-details-modal__actions--pending">
         <button
           className="event-request-details-modal__action event-request-details-modal__action--reject"
+          disabled={isApproving || isRejecting}
           onClick={onReject}
+          ref={rejectButtonRef}
           type="button"
         >
           <RejectRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
@@ -32,7 +38,9 @@ export function EventRequestDetailsFooter({
         </button>
         <button
           className="event-request-details-modal__action event-request-details-modal__action--approve"
+          disabled={isApproving || isRejecting}
           onClick={onApprove}
+          ref={approveButtonRef}
           type="button"
         >
           <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} />

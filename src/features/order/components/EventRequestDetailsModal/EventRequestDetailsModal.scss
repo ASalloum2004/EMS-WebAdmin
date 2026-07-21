@@ -84,6 +84,18 @@
   outline-offset: 2px;
 }
 
+.event-request-details-modal__action-error {
+  margin: 0;
+  padding: 10px 24px;
+  border-top: 1px solid var(--ems-color-border-soft);
+  background-color: var(--ems-color-danger-surface);
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
 @media (max-width: 900px) {
   .event-request-details-modal__content-grid {
     grid-template-columns: 1fr;
@@ -109,6 +121,10 @@
 
   .event-request-details-modal__scroll-area {
     padding: 16px;
+  }
+
+  .event-request-details-modal__action-error {
+    padding-inline: 16px;
   }
 
   .event-request-details-modal__content-grid,

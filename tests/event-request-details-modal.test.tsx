@@ -2,7 +2,13 @@ import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, test } from "node:test";
-import { cleanup, fireEvent, render, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import {
   EventRequestDetailsModal,
   type EventRequestDetailsModalProps,
@@ -48,14 +54,25 @@ const fullDetails: EventRequestDetails = {
   logo: null,
 };
 
-const defaultProps: Pick<
-  EventRequestDetailsModalProps,
-  "error" | "isLoading" | "onClose" | "onRetry"
-> = {
+const defaultProps: Omit<EventRequestDetailsModalProps, "details"> = {
+  approveConflict: null,
+  approveConflictError: "",
+  approveError: "",
   error: "",
+  isApproving: false,
   isLoading: false,
+  isLoadingApproveConflicts: false,
+  isRejecting: false,
+  onApprove: () => null,
+  onApproveAnyway: () => null,
+  onApproveConflictPageChange: () => null,
+  onClearApproveError: () => undefined,
+  onClearRejectError: () => undefined,
   onClose: () => undefined,
+  onCloseApproveConflict: () => undefined,
+  onReject: () => null,
   onRetry: () => undefined,
+  rejectError: "",
 };
 const originalFetch = globalThis.fetch;
 
@@ -443,6 +460,161 @@ test("pending actions are presentational while terminal and unknown states are n
 
 });
 
+test("opens Event-specific confirmation dialogs before Approve or Reject mutations", async () => {
+  let approveCalls = 0;
+  let rejectCalls = 0;
+  const pendingDetails = { ...fullDetails, status: "pending" };
+  const view = renderModal(pendingDetails, {
+    onApprove: (eventRequestId) => {
+      approveCalls += 1;
+      assert.equal(eventRequestId, pendingDetails.id);
+      return {
+        kind: "approved",
+        response: { status: true, message: "Success", data: null },
+      };
+    },
+    onReject: (eventRequestId) => {
+      rejectCalls += 1;
+      assert.equal(eventRequestId, pendingDetails.id);
+      return { status: true, message: "Success", data: null };
+    },
+  });
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  assert.equal(approveCalls, 0);
+  let confirmation = view.getByRole("alertdialog", {
+    name: "Approve Event Request?",
+  });
+  assert.ok(within(confirmation).getByText("The Future of Publishing"));
+  assert.ok(within(confirmation).getByText("#3"));
+  const detailsDialog = view.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__dialog",
+  );
+  assert.ok(detailsDialog);
+  assert.equal(detailsDialog.getAttribute("aria-hidden"), "true");
+  assert.equal(detailsDialog.hasAttribute("inert"), true);
+
+  fireEvent.click(
+    within(confirmation).getByRole("button", { name: "Approve Request" }),
+  );
+  assert.equal(approveCalls, 1);
+  await waitFor(() => assert.equal(view.queryByRole("alertdialog"), null));
+
+  fireEvent.click(view.getByRole("button", { name: "Reject" }));
+  assert.equal(rejectCalls, 0);
+  confirmation = view.getByRole("alertdialog", {
+    name: "Reject Event Request?",
+  });
+  assert.ok(
+    within(confirmation).getByText(
+      "Are you sure you want to reject this Event Request? This action cannot be undone.",
+    ),
+  );
+  fireEvent.click(
+    within(confirmation).getByRole("button", { name: "Reject Request" }),
+  );
+  assert.equal(rejectCalls, 1);
+});
+
+test("confirmation loading states disable cancellation and duplicate submission", () => {
+  const pendingDetails = { ...fullDetails, status: "pending" };
+  const view = renderModal(pendingDetails);
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  view.rerender(
+    <I18nProvider>
+      <EventRequestDetailsModal
+        {...defaultProps}
+        details={pendingDetails}
+        isApproving
+      />
+    </I18nProvider>,
+  );
+
+  const approvingDialog = view.getByRole("alertdialog", {
+    name: "Approve Event Request?",
+  });
+  const approvingButton = within(approvingDialog).getByRole("button", {
+    name: "Approving…",
+  }) as HTMLButtonElement;
+  const cancelButton = within(approvingDialog).getByRole("button", {
+    name: "Cancel",
+  }) as HTMLButtonElement;
+
+  assert.equal(approvingButton.disabled, true);
+  assert.equal(cancelButton.disabled, true);
+  fireEvent.keyDown(window, { key: "Escape" });
+  assert.ok(view.getByRole("alertdialog", { name: "Approve Event Request?" }));
+});
+
+test("renders Event approval conflicts with translated null-message fallback and safe fields", () => {
+  let forceApproveCalls = 0;
+  let requestedPage = 0;
+  const view = renderModal(
+    { ...fullDetails, status: "pending" },
+    {
+      approveConflict: {
+        message: null,
+        meta: {
+          current_page: 1,
+          per_page: 3,
+          total: 4,
+          last_page: 2,
+        },
+        requestId: fullDetails.id,
+        requests: [
+          {
+            id: 9,
+            title: "Approval Conflict Pair B",
+            event_hall_id: 3,
+            type: "conference",
+            status: "pending",
+            start_at: "2026-08-12T10:00:00.000000Z",
+            end_at: "2026-08-12T12:00:00.000000Z",
+            duration: 2,
+            created_at: "2026-07-21T14:05:08.000000Z",
+            eventable: { name: "Dar Al feker" },
+          },
+        ],
+      },
+      onApproveAnyway: () => {
+        forceApproveCalls += 1;
+        return null;
+      },
+      onApproveConflictPageChange: (page) => {
+        requestedPage = page;
+        return null;
+      },
+    },
+  );
+  const conflictDialog = view.getByRole("alertdialog", {
+    name: "Conflicting Event Requests",
+  });
+
+  assert.ok(
+    within(conflictDialog).getByText(
+      "Other pending Event Requests overlap with request #3 in the same hall and schedule. Review them before approving anyway.",
+    ),
+  );
+  assert.ok(within(conflictDialog).getByText("Approval Conflict Pair B"));
+  assert.ok(within(conflictDialog).getByText("Dar Al feker"));
+  assert.ok(within(conflictDialog).getByText("Conference"));
+  assert.ok(within(conflictDialog).getByText("2 hours"));
+  assert.equal(within(conflictDialog).queryByText("qr_token"), null);
+  assert.equal(within(conflictDialog).queryByText("logo"), null);
+
+  fireEvent.click(
+    within(conflictDialog).getByRole("button", { name: "2" }),
+  );
+  assert.equal(requestedPage, 2);
+  assert.equal(forceApproveCalls, 0);
+
+  fireEvent.click(
+    within(conflictDialog).getByRole("button", { name: "Approve Anyway" }),
+  );
+  assert.equal(forceApproveCalls, 1);
+});
+
 test("supports loading, errors, Retry, Close, Escape, and backdrop dismissal", () => {
   let closeCount = 0;
   let retryCount = 0;
@@ -472,6 +644,7 @@ test("supports loading, errors, Retry, Close, Escape, and backdrop dismissal", (
   view.rerender(
     <I18nProvider>
       <EventRequestDetailsModal
+        {...defaultProps}
         details={null}
         error="Backend details error."
         isLoading={false}

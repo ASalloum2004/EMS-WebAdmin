@@ -47,6 +47,15 @@
   transform: scale(0.98);
 }
 
+.event-request-details-modal__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.event-request-details-modal__action:disabled:active {
+  transform: none;
+}
+
 .event-request-details-modal__action--reject {
   border-color: var(--ems-color-danger);
   background-color: var(
@@ -56,7 +65,7 @@
   color: var(--ems-color-danger);
 }
 
-.event-request-details-modal__action--reject:hover {
+.event-request-details-modal__action--reject:hover:not(:disabled) {
   background-color: var(--ems-color-danger-surface);
 }
 
@@ -66,7 +75,7 @@
   color: var(--ems-color-primary-text);
 }
 
-.event-request-details-modal__action--approve:hover {
+.event-request-details-modal__action--approve:hover:not(:disabled) {
   border-color: var(--ems-color-primary-dark);
   background-color: var(--ems-color-primary-dark);
 }

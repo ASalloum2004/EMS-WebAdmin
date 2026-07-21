@@ -27,6 +27,7 @@ import {
   useBoothRequestActions,
   useBoothRequests,
   useBoothRequestStatistics,
+  useEventRequestActions,
   useEventRequestDetails,
   useEventRequests,
 } from "../hooks";
@@ -84,6 +85,24 @@ export function OrderPage() {
     onRejectSuccess: refreshAfterRequestAction,
     rejectFallbackMessage: t.order.rejectConfirmation.error,
   });
+  const refreshAfterEventRequestAction = useCallback(async () => {
+    await Promise.all([
+      eventRequestDetails.refetch(),
+      eventRequests.refetch(),
+    ]);
+  }, [eventRequestDetails.refetch, eventRequests.refetch]);
+  const eventRequestActions = useEventRequestActions({
+    approveConflictFallbackMessage:
+      t.order.eventRequests.approveConflict.loadError,
+    approveFallbackMessage: t.order.eventRequests.approveConfirmation.error,
+    invalidStatusMessage: t.order.eventRequests.actions.invalidStatus,
+    onApproveSuccess: refreshAfterEventRequestAction,
+    onInvalidStatus: refreshAfterEventRequestAction,
+    onRejectSuccess: refreshAfterEventRequestAction,
+    rejectFallbackMessage: t.order.eventRequests.rejectConfirmation.error,
+    selectedRequestId: selectedEventRequestId,
+    selectedRequestStatus: eventRequestDetails.details?.status ?? null,
+  });
   const summaryStatistics = getOrderSummaryStatistics(
     boothRequestStatistics.statistics,
   );
@@ -138,6 +157,16 @@ export function OrderPage() {
     boothRequestActions.closeApproveConflict,
     boothRequestActions.clearApproveError,
     boothRequestActions.clearRejectError,
+  ]);
+  const closeEventRequestDetails = useCallback(() => {
+    eventRequestActions.clearApproveError();
+    eventRequestActions.clearRejectError();
+    eventRequestActions.closeApproveConflict();
+    setSelectedEventRequestId(null);
+  }, [
+    eventRequestActions.clearApproveError,
+    eventRequestActions.clearRejectError,
+    eventRequestActions.closeApproveConflict,
   ]);
 
   return (
@@ -401,11 +430,29 @@ export function OrderPage() {
 
       {selectedEventRequestId !== null ? (
         <EventRequestDetailsModal
+          approveConflict={eventRequestActions.approveConflict}
+          approveConflictError={eventRequestActions.approveConflictError}
+          approveError={eventRequestActions.approveError}
           details={eventRequestDetails.details}
           error={eventRequestDetails.error}
+          isApproving={eventRequestActions.isApproving}
           isLoading={eventRequestDetails.isLoading}
-          onClose={() => setSelectedEventRequestId(null)}
+          isLoadingApproveConflicts={
+            eventRequestActions.isLoadingApproveConflicts
+          }
+          isRejecting={eventRequestActions.isRejecting}
+          onApprove={eventRequestActions.approveEventRequestById}
+          onApproveAnyway={eventRequestActions.approveEventRequestAnyway}
+          onApproveConflictPageChange={
+            eventRequestActions.loadApproveConflictPage
+          }
+          onClearApproveError={eventRequestActions.clearApproveError}
+          onClearRejectError={eventRequestActions.clearRejectError}
+          onClose={closeEventRequestDetails}
+          onCloseApproveConflict={eventRequestActions.closeApproveConflict}
+          onReject={eventRequestActions.rejectEventRequestById}
           onRetry={() => void eventRequestDetails.refetch()}
+          rejectError={eventRequestActions.rejectError}
         />
       ) : null}
     </AdminLayout>

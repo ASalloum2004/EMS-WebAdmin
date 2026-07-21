@@ -1,0 +1,180 @@
+.approve-event-request-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.approve-event-request-confirm-modal__dialog {
+  width: min(100%, 480px);
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: 16px;
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  box-shadow: var(--ems-shadow-modal);
+  outline: none;
+}
+
+.approve-event-request-confirm-modal__icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-block-end: 18px;
+  border-radius: 50%;
+  background-color: var(--ems-color-primary-soft, var(--ems-color-success-surface));
+  color: var(--ems-color-primary);
+}
+
+.approve-event-request-confirm-modal__content {
+  margin-block-end: 28px;
+}
+
+.approve-event-request-confirm-modal__title {
+  margin: 0 0 10px;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.approve-event-request-confirm-modal__message {
+  margin: 0;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.approve-event-request-confirm-modal__summary {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 12px;
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface);
+}
+
+.approve-event-request-confirm-modal__summary > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.approve-event-request-confirm-modal__summary dt,
+.approve-event-request-confirm-modal__summary dd {
+  margin: 0;
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.approve-event-request-confirm-modal__summary dt {
+  color: var(--ems-color-muted);
+}
+
+.approve-event-request-confirm-modal__summary dd {
+  color: var(--ems-color-text);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.approve-event-request-confirm-modal__error {
+  margin: 14px 0 0;
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.approve-event-request-confirm-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.approve-event-request-confirm-modal__button {
+  min-width: 128px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 120ms ease;
+}
+
+.approve-event-request-confirm-modal__button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.approve-event-request-confirm-modal__button:active {
+  transform: scale(0.98);
+}
+
+.approve-event-request-confirm-modal__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.approve-event-request-confirm-modal__button:disabled:active {
+  transform: none;
+}
+
+.approve-event-request-confirm-modal__button--cancel {
+  border: 1px solid var(--ems-color-border-soft);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-muted);
+}
+
+.approve-event-request-confirm-modal__button--cancel:hover:not(:disabled) {
+  border-color: var(--ems-color-border);
+  background-color: var(--ems-color-surface);
+}
+
+.approve-event-request-confirm-modal__button--confirm {
+  border: 1px solid var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+.approve-event-request-confirm-modal__button--confirm:hover:not(:disabled) {
+  border-color: var(--ems-color-primary-dark);
+  background-color: var(--ems-color-primary-dark);
+}
+
+@media (max-width: 520px) {
+  .approve-event-request-confirm-modal {
+    padding: 16px;
+  }
+
+  .approve-event-request-confirm-modal__dialog {
+    padding: 24px;
+  }
+
+  .approve-event-request-confirm-modal__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .approve-event-request-confirm-modal__button {
+    width: 100%;
+  }
+}

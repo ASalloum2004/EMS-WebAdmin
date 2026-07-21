@@ -1,7 +1,7 @@
-import type { DataTableColumn } from "../../../components";
-import type { I18nDictionary, SupportedLanguage } from "../../../i18n";
-import type { EventRequestUiItem } from "../types";
-import { formatRequestDate } from "./orderTableColumns";
+import type { DataTableColumn } from "../../../../components";
+import type { I18nDictionary, SupportedLanguage } from "../../../../i18n";
+import type { EventRequestUiItem } from "../../types";
+import { formatRequestDate } from "../orderTableColumns";
 import "./eventRequestTableColumns.scss";
 
 const knownStatuses = ["approved", "pending", "rejected"] as const;

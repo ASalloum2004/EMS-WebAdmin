@@ -1,0 +1,108 @@
+.event-request-details-modal__actions {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  padding: 16px 24px;
+  direction: ltr;
+  border-top: 1px solid var(--ems-color-border-soft);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+}
+
+.event-request-details-modal__actions--pending {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.event-request-details-modal__action,
+.event-request-details-modal__final-status {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.event-request-details-modal__action {
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.event-request-details-modal__action:active {
+  transform: scale(0.98);
+}
+
+.event-request-details-modal__action--reject {
+  border-color: var(--ems-color-danger);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-danger);
+}
+
+.event-request-details-modal__action--reject:hover {
+  background-color: var(--ems-color-danger-surface);
+}
+
+.event-request-details-modal__action--approve {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+.event-request-details-modal__action--approve:hover {
+  border-color: var(--ems-color-primary-dark);
+  background-color: var(--ems-color-primary-dark);
+}
+
+.event-request-details-modal__final-status {
+  cursor: default;
+  user-select: none;
+}
+
+.event-request-details-modal__final-status--approved {
+  border-color: var(--ems-color-status-positive-text);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.event-request-details-modal__final-status--rejected {
+  border-color: var(--ems-color-status-negative-text);
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.event-request-details-modal__final-status--unknown {
+  border-color: var(--ems-color-border-soft);
+  background-color: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+  color: var(--ems-color-muted);
+}
+
+@media (max-width: 640px) {
+  .event-request-details-modal__actions {
+    padding: 14px 16px;
+  }
+}
+
+[dir="rtl"] .event-request-details-modal__action {
+  direction: rtl;
+}

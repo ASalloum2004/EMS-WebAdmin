@@ -1,0 +1,48 @@
+.event-request-details-modal__request-state {
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  text-align: center;
+}
+
+.event-request-details-modal__request-state p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.event-request-details-modal__request-state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-card-background,
+    var(--ems-color-white)
+  );
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .event-request-details-modal__request-state {
+    min-height: 320px;
+  }
+}

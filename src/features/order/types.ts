@@ -70,6 +70,7 @@ export type EventRequestOrganizerSocialLinks = Required<
 
 export type EventRequestOrganizerApiData = {
   id: number;
+  avatar?: string | null;
   name?: string | null;
   business_sector?: string | null;
   phone?: string | null;
@@ -83,6 +84,7 @@ export type EventRequestOrganizerApiData = {
 
 export type EventRequestOrganizerDetails = {
   id: number;
+  avatar: string | null;
   name: string | null;
   business_sector: string | null;
   phone: string | null;

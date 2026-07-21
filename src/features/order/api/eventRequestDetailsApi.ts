@@ -85,6 +85,7 @@ function isValidOrganizer(value: unknown): value is EventRequestOrganizerApiData
   return (
     isRecord(value) &&
     isPositiveInteger(value.id) &&
+    isOptionalNullableString(value.avatar) &&
     isOptionalNullableString(value.name) &&
     isOptionalNullableString(value.business_sector) &&
     isOptionalNullableString(value.phone) &&
@@ -154,6 +155,7 @@ function normalizeOrganizer(
 ): EventRequestOrganizerDetails {
   return {
     id: rawOrganizer.id,
+    avatar: resolveEventRequestLogoUrl(rawOrganizer.avatar),
     name: rawOrganizer.name ?? null,
     business_sector: rawOrganizer.business_sector ?? null,
     phone: rawOrganizer.phone ?? null,

@@ -163,6 +163,11 @@ export const en = {
         hour: "hour",
         hours: "hours",
         logoAlt: "Event logo",
+        logoShowcase: {
+          title: "Event logo",
+          description: "The Event logo will appear here when available.",
+          alt: "Event logo",
+        },
         visitWebsite: "Visit website",
         viewLinkedin: "View LinkedIn",
         unknownStatus: "Unknown status",

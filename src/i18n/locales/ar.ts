@@ -164,6 +164,11 @@ export const ar: I18nDictionary = {
         hour: "ساعة",
         hours: "ساعات",
         logoAlt: "شعار الفعالية",
+        logoShowcase: {
+          title: "شعار الفعالية",
+          description: "سيظهر شعار الفعالية هنا عند توفره.",
+          alt: "شعار الفعالية",
+        },
         visitWebsite: "زيارة الموقع",
         viewLinkedin: "عرض لينكدإن",
         unknownStatus: "حالة غير معروفة",

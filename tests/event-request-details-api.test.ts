@@ -25,6 +25,7 @@ const rawDetails: EventRequestDetailsApiData = {
   qr_token: "QR_METADATA_VALUE",
   eventable: {
     id: 1,
+    avatar: null,
     name: "Dar Al feker",
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
@@ -132,6 +133,7 @@ test("normalizes all Event details while removing organizer coordinates", () => 
   assert.deepEqual(details.speakers, rawDetails.speakers);
   assert.deepEqual(details.eventable, {
     id: 1,
+    avatar: null,
     name: "Dar Al feker",
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
@@ -193,6 +195,22 @@ test("normalizes absolute, relative, empty, missing, and unsafe Event logos", ()
     relativeLogoDetails.logo,
     `${apiOrigin}/storage/events/logo.png`,
   );
+
+  const organizerAvatarDetails = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      eventable: {
+        ...rawDetails.eventable!,
+        avatar: "/storage/organizers/avatar.png",
+      },
+      logo: absoluteLogo,
+    }),
+  );
+  assert.equal(
+    organizerAvatarDetails.eventable?.avatar,
+    `${apiOrigin}/storage/organizers/avatar.png`,
+  );
+  assert.equal(organizerAvatarDetails.logo, absoluteLogo);
 });
 
 test("normalizes the sparse Request #2 details response", () => {
@@ -205,6 +223,7 @@ test("normalizes the sparse Request #2 details response", () => {
   assert.deepEqual(details.speakers, []);
   assert.deepEqual(details.eventable, {
     id: 2,
+    avatar: null,
     name: null,
     business_sector: null,
     phone: null,

@@ -25,6 +25,7 @@ const fullDetails: EventRequestDetails = {
   qr_token: "QR_METADATA_VALUE",
   eventable: {
     id: 1,
+    avatar: null,
     name: "Dar Al feker",
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
@@ -149,9 +150,36 @@ test("renders every Event detail section and excludes organizer coordinates", ()
   );
 });
 
+test("renders the Event logo placeholder above the details content grid", () => {
+  const view = renderModal({ ...fullDetails, logo: null });
+  const placeholder = view.getByRole("img", { name: "Event logo" });
+  const scrollArea = view.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__scroll-area",
+  );
+  const contentGrid = view.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__content-grid",
+  );
+
+  assert.ok(scrollArea);
+  assert.ok(contentGrid);
+  assert.match(placeholder.className, /__logo-showcase/);
+  assert.equal(scrollArea.firstElementChild, placeholder);
+  assert.equal(placeholder.nextElementSibling, contentGrid);
+  assert.ok(view.getByText("The Event logo will appear here when available."));
+  assert.equal(placeholder.querySelector("img"), null);
+});
+
 test("renders the organizer identity with the Booth large-avatar contract", () => {
   const eventLogoUrl = "https://events.example/event-logo.png";
-  const view = renderModal({ ...fullDetails, logo: eventLogoUrl });
+  const organizerAvatarUrl = "https://organizers.example/avatar.png";
+  const view = renderModal({
+    ...fullDetails,
+    eventable: {
+      ...fullDetails.eventable!,
+      avatar: organizerAvatarUrl,
+    },
+    logo: eventLogoUrl,
+  });
   assert.equal(
     view
       .getByRole("img", {
@@ -182,9 +210,12 @@ test("renders the organizer identity with the Booth large-avatar contract", () =
   assert.ok(copy);
   assert.equal(identity.firstElementChild, avatar);
   assert.equal(identity.lastElementChild, copy);
-  assert.equal(avatar.textContent, "DA");
   assert.equal(avatar.getAttribute("aria-hidden"), "true");
-  assert.equal(within(organizerCard).queryByRole("img"), null);
+  const organizerLogo = avatar.querySelector<HTMLImageElement>("img");
+  assert.ok(organizerLogo);
+  assert.equal(organizerLogo.getAttribute("src"), organizerAvatarUrl);
+  assert.notEqual(organizerLogo.getAttribute("src"), eventLogoUrl);
+  assert.equal(organizerLogo.getAttribute("alt"), "");
   assert.ok(within(copy).getByText("Dar Al feker"));
 
   const status = within(copy).getByText("Pending");
@@ -223,6 +254,62 @@ test("renders the organizer identity with the Booth large-avatar contract", () =
   );
 });
 
+test("falls back to organizer initials without reusing the Event logo", () => {
+  const eventLogoUrl = "https://events.example/event-logo.png";
+  const nullLogoView = renderModal({
+    ...fullDetails,
+    eventable: { ...fullDetails.eventable!, avatar: null },
+    logo: eventLogoUrl,
+  });
+  const nullLogoAvatar = nullLogoView.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__organizer-avatar",
+  );
+
+  assert.ok(nullLogoAvatar);
+  assert.equal(nullLogoAvatar.textContent, "DA");
+  assert.equal(nullLogoAvatar.querySelector("img"), null);
+  nullLogoView.unmount();
+
+  const invalidLogoView = renderModal({
+    ...fullDetails,
+    eventable: {
+      ...fullDetails.eventable!,
+      avatar: "javascript:unsafe()",
+    },
+    logo: eventLogoUrl,
+  });
+  const invalidLogoAvatar =
+    invalidLogoView.container.querySelector<HTMLElement>(
+      ".event-request-details-modal__organizer-avatar",
+    );
+
+  assert.ok(invalidLogoAvatar);
+  assert.equal(invalidLogoAvatar.textContent, "DA");
+  assert.equal(invalidLogoAvatar.querySelector("img"), null);
+  invalidLogoView.unmount();
+
+  const failedLogoView = renderModal({
+    ...fullDetails,
+    eventable: {
+      ...fullDetails.eventable!,
+      avatar: "https://organizers.example/broken-avatar.png",
+    },
+    logo: eventLogoUrl,
+  });
+  const failedLogoAvatar =
+    failedLogoView.container.querySelector<HTMLElement>(
+      ".event-request-details-modal__organizer-avatar",
+    );
+  const failedLogo = failedLogoAvatar?.querySelector<HTMLImageElement>("img");
+
+  assert.ok(failedLogoAvatar);
+  assert.ok(failedLogo);
+  fireEvent.error(failedLogo);
+  assert.equal(failedLogoAvatar.querySelector("img"), null);
+  assert.equal(failedLogoAvatar.textContent, "DA");
+  assert.equal(failedLogoAvatar.getAttribute("aria-hidden"), "true");
+});
+
 test("handles null organizer and zero, one, or many speakers", () => {
   const emptyDetails: EventRequestDetails = {
     ...fullDetails,
@@ -251,7 +338,7 @@ test("handles null organizer and zero, one, or many speakers", () => {
   assert.ok(manySpeakerView.getByText("Elcoach"));
 });
 
-test("renders a valid header logo and falls back to decorative title initials", () => {
+test("renders the Event logo only in the showcase and handles image failure", () => {
   const logoUrl = "https://events.example/event-logo.png";
   const view = renderModal({ ...fullDetails, logo: logoUrl });
   const dialog = view.getByRole("dialog", {
@@ -262,11 +349,24 @@ test("renders a valid header logo and falls back to decorative title initials", 
   });
 
   assert.equal(logo.getAttribute("src"), logoUrl);
-  const logoAvatar = logo.closest<HTMLElement>(
+  assert.match(
+    logo.closest<HTMLElement>(
+      ".event-request-details-modal__logo-showcase",
+    )?.className ?? "",
+    /__logo-showcase/,
+  );
+  const headerAvatar = dialog.querySelector<HTMLElement>(
     ".event-request-details-modal__avatar",
   );
-  assert.ok(logoAvatar);
-  assert.equal(logoAvatar.getAttribute("aria-hidden"), null);
+  const organizerAvatar = dialog.querySelector<HTMLElement>(
+    ".event-request-details-modal__organizer-avatar",
+  );
+  assert.ok(headerAvatar);
+  assert.ok(organizerAvatar);
+  assert.equal(headerAvatar.textContent, "TF");
+  assert.equal(headerAvatar.querySelector("img"), null);
+  assert.equal(organizerAvatar.textContent, "DA");
+  assert.equal(organizerAvatar.querySelector("img"), null);
 
   fireEvent.error(logo);
 
@@ -276,23 +376,14 @@ test("renders a valid header logo and falls back to decorative title initials", 
     }),
     null,
   );
-  assert.equal(logoAvatar.textContent, "TF");
-  assert.equal(logoAvatar.getAttribute("aria-hidden"), "true");
-  view.unmount();
-
-  const emptyLogoView = renderModal({ ...fullDetails, logo: "" });
-  assert.ok(emptyLogoView.getByText("TF"));
-  emptyLogoView.unmount();
-
-  const genericTitleView = renderModal({
-    ...fullDetails,
-    logo: null,
-    title: null,
-  });
-  const genericDialog = genericTitleView.getByRole("dialog", {
-    name: "Event Request Details",
-  });
-  assert.ok(within(genericDialog).getByText("—"));
+  assert.ok(within(dialog).getByRole("img", { name: "Event logo" }));
+  assert.ok(
+    within(dialog).getByText(
+      "The Event logo will appear here when available.",
+    ),
+  );
+  assert.equal(headerAvatar.textContent, "TF");
+  assert.equal(organizerAvatar.textContent, "DA");
 });
 
 test("renders only safe social links and a safe telephone link", () => {
@@ -416,6 +507,14 @@ test("renders translated Arabic modal labels", () => {
   assert.ok(view.getByText(ar.order.eventRequests.details.organizerInformation));
   assert.ok(view.getByText(ar.order.eventRequests.details.speakers));
   assert.ok(view.getByText(ar.order.eventRequests.details.engagement));
+  assert.ok(
+    view.getByRole("img", {
+      name: ar.order.eventRequests.details.logoShowcase.title,
+    }),
+  );
+  assert.ok(
+    view.getByText(ar.order.eventRequests.details.logoShowcase.description),
+  );
   assert.ok(view.getByText(ar.order.eventRequests.table.types.conference));
   assert.ok(view.getByRole("status", { name: ar.order.status.approved }));
   assert.equal(document.documentElement.dir, "rtl");

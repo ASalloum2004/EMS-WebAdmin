@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   CompanyIcon,
   VerifiedCompanyIcon,
@@ -36,6 +37,38 @@ function OrganizerLink({
   );
 }
 
+function OrganizerAvatar({
+  avatar,
+  name,
+}: {
+  avatar: string | null;
+  name: string | null;
+}) {
+  const avatarUrl = getSafeExternalUrl(avatar);
+  const [hasAvatarError, setHasAvatarError] = useState(false);
+
+  useEffect(() => {
+    setHasAvatarError(false);
+  }, [avatarUrl, name]);
+
+  return (
+    <span
+      aria-hidden="true"
+      className="event-request-details-modal__organizer-avatar"
+    >
+      {avatarUrl && !hasAvatarError ? (
+        <img
+          alt=""
+          src={avatarUrl}
+          onError={() => setHasAvatarError(true)}
+        />
+      ) : (
+        getInitials(name)
+      )}
+    </span>
+  );
+}
+
 export function EventRequestOrganizerSection({
   organizer,
   t,
@@ -70,12 +103,7 @@ export function EventRequestOrganizerSection({
       title={labels.organizerInformation}
     >
       <div className="event-request-details-modal__organizer-heading">
-        <span
-          aria-hidden="true"
-          className="event-request-details-modal__organizer-avatar"
-        >
-          {getInitials(organizer.name)}
-        </span>
+        <OrganizerAvatar avatar={organizer.avatar} name={organizer.name} />
         <span className="event-request-details-modal__organizer-copy">
           <strong>
             {getTrimmedString(organizer.name) || labels.notAvailable}

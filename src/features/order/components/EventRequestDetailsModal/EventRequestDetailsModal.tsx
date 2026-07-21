@@ -6,6 +6,7 @@ import type { EventRequestDetailsModalProps } from "./EventRequestDetailsModal.t
 import { EventRequestDetailsStates } from "./EventRequestDetailsStates";
 import { EventRequestEngagementSection } from "./EventRequestEngagementSection";
 import { EventRequestInformationSection } from "./EventRequestInformationSection";
+import { EventRequestLogoShowcase } from "./EventRequestLogoShowcase";
 import { EventRequestOrganizerSection } from "./EventRequestOrganizerSection";
 import { EventRequestSpeakersSection } from "./EventRequestSpeakersSection";
 import "./EventRequestDetailsModal.scss";
@@ -68,7 +69,8 @@ export function EventRequestDetailsModal({
         dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
       );
       const firstFocusableElement = focusableElements[0];
-      const lastFocusableElement = focusableElements.at(-1);
+      const lastFocusableElement =
+        focusableElements[focusableElements.length - 1];
 
       if (!firstFocusableElement || !lastFocusableElement) {
         event.preventDefault();
@@ -122,32 +124,39 @@ export function EventRequestDetailsModal({
 
         <div className="event-request-details-modal__scroll-area">
           {details ? (
-            <div className="event-request-details-modal__content-grid">
-              <div className="event-request-details-modal__column">
-                <EventRequestInformationSection
-                  details={details}
-                  language={language}
-                  t={t}
-                />
-                <EventRequestSpeakersSection
-                  speakers={details.speakers}
-                  t={t}
-                />
+            <>
+              <EventRequestLogoShowcase
+                logo={details.logo}
+                title={details.title}
+                t={t}
+              />
+              <div className="event-request-details-modal__content-grid">
+                <div className="event-request-details-modal__column">
+                  <EventRequestInformationSection
+                    details={details}
+                    language={language}
+                    t={t}
+                  />
+                  <EventRequestSpeakersSection
+                    speakers={details.speakers}
+                    t={t}
+                  />
+                </div>
+                <div className="event-request-details-modal__column">
+                  <EventRequestOrganizerSection
+                    organizer={details.eventable}
+                    t={t}
+                  />
+                  <EventRequestEngagementSection
+                    averageRating={details.average_rating}
+                    language={language}
+                    qrScansCount={details.qr_scans_count}
+                    savedCount={details.saved_count}
+                    t={t}
+                  />
+                </div>
               </div>
-              <div className="event-request-details-modal__column">
-                <EventRequestOrganizerSection
-                  organizer={details.eventable}
-                  t={t}
-                />
-                <EventRequestEngagementSection
-                  averageRating={details.average_rating}
-                  language={language}
-                  qrScansCount={details.qr_scans_count}
-                  savedCount={details.saved_count}
-                  t={t}
-                />
-              </div>
-            </div>
+            </>
           ) : (
             <EventRequestDetailsStates
               error={error}

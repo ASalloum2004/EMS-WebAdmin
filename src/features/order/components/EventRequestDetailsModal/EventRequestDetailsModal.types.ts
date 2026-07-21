@@ -35,6 +35,12 @@ export interface EventRequestOrganizerSectionProps {
   t: I18nDictionary;
 }
 
+export interface EventRequestLogoShowcaseProps {
+  logo: string | null;
+  title: string | null;
+  t: I18nDictionary;
+}
+
 export interface EventRequestOrganizerLinkProps {
   href: string | null;
   label: string;

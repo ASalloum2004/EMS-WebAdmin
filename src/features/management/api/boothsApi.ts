@@ -1,38 +1,128 @@
 import { apiRequest } from "../../../api";
-import type { BoothApiData, BoothsResponse } from "../types";
+import type {
+  BoothApiData,
+  BoothsResponse,
+  GetBoothsParams,
+  GetBoothsResult,
+} from "../types";
 
-type NestedBoothsResponse = Omit<BoothsResponse, "data"> & {
-  data: {
-    data: BoothApiData[];
-  };
-};
+export const DEFAULT_BOOTHS_PER_PAGE = 10;
 
-type BoothsApiResponse = BoothsResponse | NestedBoothsResponse;
+const unexpectedResponseMessage = "Unexpected booths response format.";
 
-function isNestedBoothsData(
-  value: BoothsApiResponse["data"],
-): value is NestedBoothsResponse["data"] {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getPositiveInteger(value: unknown) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    !Number.isInteger(value) ||
+    value < 1
+  ) {
+    return undefined;
+  }
+
+  return value;
+}
+
+function getNonNegativeInteger(value: unknown) {
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    !Number.isInteger(value) ||
+    value < 0
+  ) {
+    return undefined;
+  }
+
+  return value;
+}
+
+function isBoothApiData(value: unknown): value is BoothApiData {
+  if (!isRecord(value)) {
+    return false;
+  }
+
   return (
-    typeof value === "object" &&
-    value !== null &&
-    "data" in value &&
-    Array.isArray(value.data)
+    typeof value.id === "number" &&
+    Number.isFinite(value.id) &&
+    typeof value.number === "string" &&
+    (typeof value.qr_token === "string" || value.qr_token === null) &&
+    typeof value.area === "number" &&
+    Number.isFinite(value.area) &&
+    typeof value.price === "string" &&
+    typeof value.svg_id === "string" &&
+    typeof value.created_at === "string" &&
+    typeof value.is_booked === "boolean"
   );
 }
 
-export async function getBooths(): Promise<BoothApiData[]> {
-  const response = await apiRequest<BoothsApiResponse>("booths", {
-    method: "GET",
-    requiresAuth: true,
-  });
+export function buildBoothsPath(params: GetBoothsParams = {}) {
+  const page = getPositiveInteger(params.page) ?? 1;
+  const perPage =
+    getPositiveInteger(params.perPage) ?? DEFAULT_BOOTHS_PER_PAGE;
+  const queryParams = new URLSearchParams();
 
-  if (Array.isArray(response.data)) {
-    return response.data;
+  queryParams.set("page", String(page));
+  queryParams.set("per_page", String(perPage));
+
+  return `booths?${queryParams.toString()}`;
+}
+
+export function normalizeBoothsResponse(
+  response: BoothsResponse,
+): GetBoothsResult {
+  if (
+    !isRecord(response) ||
+    typeof response.status !== "boolean" ||
+    typeof response.message !== "string" ||
+    !isRecord(response.data)
+  ) {
+    throw new Error(unexpectedResponseMessage);
   }
 
-  if (isNestedBoothsData(response.data)) {
-    return response.data.data;
+  const responseData = response.data;
+  const booths = responseData.data;
+  const currentPage = getPositiveInteger(responseData.current_page);
+  const perPage = getPositiveInteger(responseData.per_page);
+  const totalItems = getNonNegativeInteger(responseData.total);
+  const totalPages = getPositiveInteger(responseData.last_page);
+
+  if (
+    !Array.isArray(booths) ||
+    !booths.every(isBoothApiData) ||
+    currentPage === undefined ||
+    perPage === undefined ||
+    totalItems === undefined ||
+    totalPages === undefined ||
+    currentPage > totalPages
+  ) {
+    throw new Error(unexpectedResponseMessage);
   }
 
-  throw new Error("Unexpected booths response format.");
+  return {
+    booths,
+    pagination: {
+      currentPage,
+      perPage,
+      totalItems,
+      totalPages,
+    },
+  };
+}
+
+export async function getBooths(
+  params: GetBoothsParams = {},
+): Promise<GetBoothsResult> {
+  const response = await apiRequest<BoothsResponse>(
+    buildBoothsPath(params),
+    {
+      method: "GET",
+      requiresAuth: true,
+    },
+  );
+
+  return normalizeBoothsResponse(response);
 }

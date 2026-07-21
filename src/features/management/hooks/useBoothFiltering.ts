@@ -4,6 +4,7 @@ import type { BoothApiData, BoothClientFilters } from "../types";
 
 type UseBoothFilteringOptions = {
   booths: BoothApiData[];
+  onFiltersChange?: () => void;
   refetchBooths: () => Promise<BoothApiData[]>;
   searchValue: string;
   validationMessages?: BoothFilterValidationMessages;
@@ -171,6 +172,7 @@ function filterBoothsLocally(
 
 export function useBoothFiltering({
   booths,
+  onFiltersChange,
   refetchBooths,
   searchValue,
   validationMessages = DEFAULT_BOOTH_FILTER_VALIDATION_MESSAGES,
@@ -188,6 +190,7 @@ export function useBoothFiltering({
   }, [draftFilters, validationMessages]);
 
   const locallyFilteredBooths = useMemo(() => {
+    // Search and filters intentionally apply only to the current backend page.
     return filterBoothsLocally(booths, filters);
   }, [booths, filters]);
 
@@ -219,6 +222,7 @@ export function useBoothFiltering({
 
     setFilters(nextFilters);
     setIsFilterPanelOpen(false);
+    onFiltersChange?.();
   }
 
   function clearFilters() {
@@ -226,6 +230,7 @@ export function useBoothFiltering({
 
     setDraftFilters(emptyFilters);
     setFilters(emptyFilters);
+    onFiltersChange?.();
   }
 
   function refetchFilteredBooths() {

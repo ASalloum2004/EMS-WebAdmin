@@ -3,6 +3,7 @@ import {
   DataTable,
   filterBySearchQuery,
   SearchFilterBar,
+  TableFooter,
 } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
@@ -53,10 +54,15 @@ export function ManagementPage() {
   const {
     booths,
     clearUpdateError,
+    currentPage,
     error: boothsError,
     isLoading: isBoothsLoading,
     isUpdating: isUpdatingBooth,
+    perPage,
     refetch: refetchBooths,
+    setCurrentPage,
+    totalItems,
+    totalPages,
     updateBoothById,
     updateError: boothUpdateError,
   } = useBooths({ enabled: isBoothTab });
@@ -111,8 +117,12 @@ export function ManagementPage() {
     clearUpdateError: eventHallFiltering.clearUpdateError,
     updateEventHallPriceById: updateEventHallPriceForEditing,
   });
+  const resetBoothPagination = useCallback(() => {
+    setCurrentPage(1);
+  }, [setCurrentPage]);
   const boothFiltering = useBoothFiltering({
     booths,
+    onFiltersChange: resetBoothPagination,
     refetchBooths,
     searchValue,
     validationMessages: t.management.validation,
@@ -137,6 +147,7 @@ export function ManagementPage() {
   }, [eventHallEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = boothFiltering.visibleBooths.length > 0;
+  const hasBoothResponseRows = booths.length > 0;
 
   const visibleEventHalls = useMemo(() => {
     return filterBySearchQuery(
@@ -161,6 +172,17 @@ export function ManagementPage() {
     : isHallTab
       ? t.management.search.hallsAriaLabel
       : t.management.search.eventHallsAriaLabel;
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+
+      if (isBoothTab) {
+        setCurrentPage(1);
+      }
+    },
+    [isBoothTab, setCurrentPage],
+  );
 
   function handleTabChange(tab: ManagementTab) {
     setActiveTab(tab);
@@ -195,7 +217,7 @@ export function ManagementPage() {
             <div className="management-page__search">
               <SearchFilterBar
                 value={searchValue}
-                onChange={setSearchValue}
+                onChange={handleSearchChange}
                 inputAriaLabel={searchAriaLabel}
                 filterAriaLabel={t.common.openFilters}
                 filterLabel={t.common.filter}
@@ -306,6 +328,20 @@ export function ManagementPage() {
               columns={boothColumns}
               getItemKey={(booth) => booth.id}
               items={boothFiltering.visibleBooths}
+            />
+          ) : null}
+
+          {isBoothTab &&
+          !isBoothsLoading &&
+          !boothsError &&
+          hasBoothResponseRows ? (
+            <TableFooter
+              className="management-page__footer"
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              perPage={perPage}
+              totalItems={totalItems}
+              totalPages={totalPages}
             />
           ) : null}
 

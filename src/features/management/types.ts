@@ -15,7 +15,7 @@ export type HallsResponse = {
 export type BoothApiData = {
   id: number;
   number: string;
-  qr_token: string;
+  qr_token: string | null;
   area: number;
   price: string;
   svg_id: string;
@@ -37,7 +37,30 @@ export type BoothClientFilters = {
 export type BoothsResponse = {
   status: boolean;
   message: string;
-  data: BoothApiData[];
+  data: {
+    data: BoothApiData[];
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+  };
+};
+
+export type BoothsPagination = {
+  currentPage: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type GetBoothsResult = {
+  booths: BoothApiData[];
+  pagination: BoothsPagination;
+};
+
+export type GetBoothsParams = {
+  page?: number;
+  perPage?: number;
 };
 
 export type EventHall = {

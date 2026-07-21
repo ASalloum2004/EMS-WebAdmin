@@ -1,4 +1,9 @@
-export { getBooths } from "./boothsApi";
+export {
+  buildBoothsPath,
+  DEFAULT_BOOTHS_PER_PAGE,
+  getBooths,
+  normalizeBoothsResponse,
+} from "./boothsApi";
 export { createService } from "./createServiceApi";
 export { getEventHallDetails } from "./eventHallDetailsApi";
 export { getEventHalls } from "./eventHallsApi";

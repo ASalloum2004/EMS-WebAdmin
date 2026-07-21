@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiRequestError } from "../../../../api";
-import {
-  approveEventRequest,
-  rejectEventRequest,
-} from "../../api/eventRequestActionsApi";
 import type {
   ApproveEventRequestConflictState,
   ApproveEventRequestResult,
   EventRequestActionResponse,
 } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
+import { useApproveEventRequest } from "./useApproveEventRequest";
+import { useEventRequestApprovalConflicts } from "./useEventRequestApprovalConflicts";
+import { useRejectEventRequest } from "./useRejectEventRequest";
 
 type ActionRefreshCallback = (
   eventRequestId: number,
@@ -92,18 +91,9 @@ export function useEventRequestActions({
   selectedRequestId,
   selectedRequestStatus,
 }: UseEventRequestActionsOptions): UseEventRequestActionsResult {
-  const [approveConflict, setApproveConflict] =
-    useState<ApproveEventRequestConflictState | null>(null);
-  const [approveConflictError, setApproveConflictError] = useState("");
-  const [approveError, setApproveError] = useState("");
-  const [isApproving, setIsApproving] = useState(false);
-  const [isLoadingApproveConflicts, setIsLoadingApproveConflicts] =
-    useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
   const [mutatingRequestId, setMutatingRequestId] = useState<number | null>(
     null,
   );
-  const [rejectError, setRejectError] = useState("");
   const callbacksRef = useRef({
     onApproveSuccess,
     onInvalidStatus,
@@ -135,23 +125,10 @@ export function useEventRequestActions({
     };
   }, []);
 
-  useEffect(() => {
-    setApproveError("");
-    setRejectError("");
-
-    if (
-      approveConflict &&
-      (approveConflict.requestId !== selectedRequestId ||
-        !isPendingStatus(selectedRequestStatus))
-    ) {
-      setApproveConflict(null);
-      setApproveConflictError("");
-    }
-  }, [approveConflict, selectedRequestId, selectedRequestStatus]);
-
-  const isCurrentRequest = useCallback((eventRequestId: number) => {
-    return selectionRef.current.id === eventRequestId;
-  }, []);
+  const isCurrentRequest = useCallback(
+    (eventRequestId: number) => selectionRef.current.id === eventRequestId,
+    [],
+  );
 
   const isCurrentPendingRequest = useCallback(
     (eventRequestId: number) =>
@@ -160,27 +137,45 @@ export function useEventRequestActions({
     [isCurrentRequest],
   );
 
-  const startMutation = useCallback((eventRequestId: number) => {
-    if (
-      !isMountedRef.current ||
-      isMutationActiveRef.current ||
-      !isCurrentPendingRequest(eventRequestId)
-    ) {
-      return false;
-    }
+  const acquireMutation = useCallback(
+    (eventRequestId: number) => {
+      if (
+        !isMountedRef.current ||
+        isMutationActiveRef.current ||
+        !isCurrentPendingRequest(eventRequestId)
+      ) {
+        return false;
+      }
 
-    isMutationActiveRef.current = true;
-    setMutatingRequestId(eventRequestId);
-    return true;
-  }, [isCurrentPendingRequest]);
+      isMutationActiveRef.current = true;
+      setMutatingRequestId(eventRequestId);
+      return true;
+    },
+    [isCurrentPendingRequest],
+  );
 
-  const finishMutation = useCallback(() => {
+  const releaseMutation = useCallback(() => {
     isMutationActiveRef.current = false;
 
     if (isMountedRef.current) {
       setMutatingRequestId(null);
     }
   }, []);
+
+  const isMutationActive = useCallback(
+    () => isMutationActiveRef.current,
+    [],
+  );
+
+  const getErrorMessage = useCallback(
+    (error: unknown, fallbackMessage: string) =>
+      getActionErrorMessage(
+        error,
+        fallbackMessage,
+        invalidStatusMessage,
+      ),
+    [invalidStatusMessage],
+  );
 
   const refreshInvalidStatus = useCallback(
     async (error: unknown, eventRequestId: number) => {
@@ -197,319 +192,126 @@ export function useEventRequestActions({
     [],
   );
 
-  const approveEventRequestById = useCallback(
-    async (
-      eventRequestId: number,
-    ): Promise<ApproveEventRequestResult | null> => {
-      if (!startMutation(eventRequestId)) {
-        return null;
-      }
-
-      setApproveConflict(null);
-      setApproveConflictError("");
-      setApproveError("");
-      setIsApproving(true);
-
-      try {
-        const result = await approveEventRequest(eventRequestId, {
-          force: false,
-        });
-
-        if (!isMountedRef.current || !isCurrentRequest(eventRequestId)) {
-          return null;
-        }
-
-        if (result.kind === "conflict") {
-          if (!isCurrentPendingRequest(eventRequestId)) {
-            return null;
-          }
-
-          setApproveConflict({
-            message: result.message,
-            meta: result.meta,
-            requestId: eventRequestId,
-            requests: result.requests,
-          });
-          return result;
-        }
-
-        await callbacksRef.current.onApproveSuccess?.(eventRequestId);
-
-        return isMountedRef.current && isCurrentRequest(eventRequestId)
-          ? result
-          : null;
-      } catch (requestError) {
-        await refreshInvalidStatus(requestError, eventRequestId);
-
-        if (isMountedRef.current && isCurrentRequest(eventRequestId)) {
-          setApproveError(
-            getActionErrorMessage(
-              requestError,
-              approveFallbackMessage,
-              invalidStatusMessage,
-            ),
-          );
-        }
-
-        return null;
-      } finally {
-        finishMutation();
-
-        if (isMountedRef.current) {
-          setIsApproving(false);
-        }
-      }
-    },
-    [
-      approveFallbackMessage,
-      finishMutation,
-      invalidStatusMessage,
-      isCurrentPendingRequest,
-      isCurrentRequest,
-      refreshInvalidStatus,
-      startMutation,
-    ],
+  const notifyApproveSuccess = useCallback(
+    (eventRequestId: number) =>
+      callbacksRef.current.onApproveSuccess?.(eventRequestId),
+    [],
   );
 
-  const rejectEventRequestById = useCallback(
-    async (
-      eventRequestId: number,
-    ): Promise<EventRequestActionResponse | null> => {
-      if (!startMutation(eventRequestId)) {
-        return null;
-      }
-
-      setRejectError("");
-      setIsRejecting(true);
-
-      try {
-        const response = await rejectEventRequest(eventRequestId);
-
-        if (!isMountedRef.current || !isCurrentRequest(eventRequestId)) {
-          return null;
-        }
-
-        await callbacksRef.current.onRejectSuccess?.(eventRequestId);
-
-        return isMountedRef.current && isCurrentRequest(eventRequestId)
-          ? response
-          : null;
-      } catch (requestError) {
-        await refreshInvalidStatus(requestError, eventRequestId);
-
-        if (isMountedRef.current && isCurrentRequest(eventRequestId)) {
-          setRejectError(
-            getActionErrorMessage(
-              requestError,
-              rejectFallbackMessage,
-              invalidStatusMessage,
-            ),
-          );
-        }
-
-        return null;
-      } finally {
-        finishMutation();
-
-        if (isMountedRef.current) {
-          setIsRejecting(false);
-        }
-      }
-    },
-    [
-      finishMutation,
-      invalidStatusMessage,
-      isCurrentRequest,
-      refreshInvalidStatus,
-      rejectFallbackMessage,
-      startMutation,
-    ],
+  const notifyRejectSuccess = useCallback(
+    (eventRequestId: number) =>
+      callbacksRef.current.onRejectSuccess?.(eventRequestId),
+    [],
   );
 
-  const approveEventRequestAnyway = useCallback(async () => {
-    const conflict = approveConflict;
-
-    if (!conflict || !startMutation(conflict.requestId)) {
-      return null;
-    }
-
-    setApproveConflictError("");
-    setIsApproving(true);
-
-    try {
-      const result = await approveEventRequest(conflict.requestId, {
-        force: true,
-      });
-
-      if (!isMountedRef.current || !isCurrentRequest(conflict.requestId)) {
-        return null;
-      }
-
-      if (result.kind !== "approved") {
-        setApproveConflictError(
-          result.message || approveConflictFallbackMessage,
-        );
-        return null;
-      }
-
-      await callbacksRef.current.onApproveSuccess?.(conflict.requestId);
-
-      if (!isMountedRef.current || !isCurrentRequest(conflict.requestId)) {
-        return null;
-      }
-
-      setApproveConflict(null);
-      setApproveConflictError("");
-      return result;
-    } catch (requestError) {
-      await refreshInvalidStatus(requestError, conflict.requestId);
-
-      if (isMountedRef.current && isCurrentRequest(conflict.requestId)) {
-        setApproveConflictError(
-          getActionErrorMessage(
-            requestError,
-            approveFallbackMessage,
-            invalidStatusMessage,
-          ),
-        );
-      }
-
-      return null;
-    } finally {
-      finishMutation();
-
-      if (isMountedRef.current) {
-        setIsApproving(false);
-      }
-    }
-  }, [
-    approveConflict,
-    approveConflictFallbackMessage,
-    approveFallbackMessage,
-    finishMutation,
-    invalidStatusMessage,
+  const conflicts = useEventRequestApprovalConflicts({
+    acquireMutation,
+    fallbackMessage: approveConflictFallbackMessage,
+    getErrorMessage,
+    isCurrentPendingRequest,
     isCurrentRequest,
+    isMutationActive,
+    onApproveSuccess: notifyApproveSuccess,
     refreshInvalidStatus,
-    startMutation,
+    releaseMutation,
+  });
+  const approval = useApproveEventRequest({
+    acquireMutation,
+    conflictFallbackMessage: approveConflictFallbackMessage,
+    fallbackMessage: approveFallbackMessage,
+    getErrorMessage,
+    isCurrentPendingRequest,
+    isCurrentRequest,
+    onApproveStart: conflicts.resetApproveConflict,
+    onApproveSuccess: notifyApproveSuccess,
+    onConflict: conflicts.openApproveConflict,
+    onForcedApprovalStart: conflicts.clearApproveConflictError,
+    onForcedApprovalSuccess: conflicts.resetApproveConflict,
+    refreshInvalidStatus,
+    releaseMutation,
+  });
+  const rejection = useRejectEventRequest({
+    acquireMutation,
+    fallbackMessage: rejectFallbackMessage,
+    getErrorMessage,
+    isCurrentRequest,
+    onRejectSuccess: notifyRejectSuccess,
+    refreshInvalidStatus,
+    releaseMutation,
+  });
+
+  useEffect(() => {
+    approval.clearApproveError();
+    rejection.clearRejectError();
+  }, [
+    approval.clearApproveError,
+    conflicts.approveConflict,
+    rejection.clearRejectError,
+    selectedRequestId,
   ]);
 
-  const loadApproveConflictPage = useCallback(
-    async (page: number): Promise<ApproveEventRequestResult | null> => {
-      const conflict = approveConflict;
+  useEffect(() => {
+    if (
+      conflicts.approveConflict &&
+      (conflicts.approveConflict.requestId !== selectedRequestId ||
+        !isPendingStatus(selectedRequestStatus))
+    ) {
+      conflicts.resetApproveConflict();
+    }
+  }, [
+    conflicts.approveConflict,
+    conflicts.resetApproveConflict,
+    selectedRequestId,
+    selectedRequestStatus,
+  ]);
 
-      if (
-        !conflict ||
-        page === conflict.meta.current_page ||
-        !startMutation(conflict.requestId)
-      ) {
-        return null;
-      }
+  const approveEventRequestAnyway = useCallback(async () => {
+    if (!conflicts.approveConflict) {
+      return null;
+    }
 
-      setApproveConflictError("");
-      setIsLoadingApproveConflicts(true);
+    return approval.approveEventRequestAnyway(
+      conflicts.approveConflict.requestId,
+    );
+  }, [approval.approveEventRequestAnyway, conflicts.approveConflict]);
 
-      try {
-        const result = await approveEventRequest(conflict.requestId, {
-          force: false,
-          page,
-        });
-
-        if (
-          !isMountedRef.current ||
-          !isCurrentPendingRequest(conflict.requestId)
-        ) {
-          return null;
-        }
-
-        if (result.kind === "conflict") {
-          setApproveConflict({
-            message: result.message,
-            meta: result.meta,
-            requestId: conflict.requestId,
-            requests: result.requests,
-          });
-          return result;
-        }
-
-        await callbacksRef.current.onApproveSuccess?.(conflict.requestId);
-
-        if (!isMountedRef.current || !isCurrentRequest(conflict.requestId)) {
-          return null;
-        }
-
-        setApproveConflict(null);
-        return result;
-      } catch (requestError) {
-        await refreshInvalidStatus(requestError, conflict.requestId);
-
-        if (isMountedRef.current && isCurrentRequest(conflict.requestId)) {
-          setApproveConflictError(
-            getActionErrorMessage(
-              requestError,
-              approveConflictFallbackMessage,
-              invalidStatusMessage,
-            ),
-          );
-        }
-
-        return null;
-      } finally {
-        finishMutation();
-
-        if (isMountedRef.current) {
-          setIsLoadingApproveConflicts(false);
-        }
-      }
-    },
+  const closeApproveConflict = useCallback(
+    () =>
+      conflicts.closeApproveConflict(approval.clearForcedApproveError),
     [
-      approveConflict,
-      approveConflictFallbackMessage,
-      finishMutation,
-      invalidStatusMessage,
-      isCurrentPendingRequest,
-      isCurrentRequest,
-      refreshInvalidStatus,
-      startMutation,
+      approval.clearForcedApproveError,
+      conflicts.closeApproveConflict,
     ],
   );
 
-  const closeApproveConflict = useCallback(() => {
-    if (!isMountedRef.current || isMutationActiveRef.current) {
-      return false;
-    }
-
-    setApproveConflict(null);
-    setApproveConflictError("");
-    return true;
-  }, []);
-
-  const clearApproveError = useCallback(() => {
-    if (isMountedRef.current) {
-      setApproveError("");
-    }
-  }, []);
-
-  const clearRejectError = useCallback(() => {
-    if (isMountedRef.current) {
-      setRejectError("");
-    }
-  }, []);
+  const loadApproveConflictPage = useCallback(
+    (page: number) =>
+      conflicts.loadApproveConflictPage(
+        page,
+        approval.clearForcedApproveError,
+      ),
+    [
+      approval.clearForcedApproveError,
+      conflicts.loadApproveConflictPage,
+    ],
+  );
 
   return {
-    approveConflict,
-    approveConflictError,
-    approveError,
+    approveConflict: conflicts.approveConflict,
+    approveConflictError:
+      approval.forcedApproveError || conflicts.approveConflictError,
+    approveError: approval.approveError,
     approveEventRequestAnyway,
-    approveEventRequestById,
-    clearApproveError,
-    clearRejectError,
+    approveEventRequestById: approval.approveEventRequestById,
+    clearApproveError: approval.clearApproveError,
+    clearRejectError: rejection.clearRejectError,
     closeApproveConflict,
-    isApproving,
-    isLoadingApproveConflicts,
-    isRejecting,
+    isApproving: approval.isApproving,
+    isLoadingApproveConflicts: conflicts.isLoadingApproveConflicts,
+    isRejecting: rejection.isRejecting,
     loadApproveConflictPage,
     mutatingRequestId,
-    rejectError,
-    rejectEventRequestById,
+    rejectError: rejection.rejectError,
+    rejectEventRequestById: rejection.rejectEventRequestById,
   };
 }

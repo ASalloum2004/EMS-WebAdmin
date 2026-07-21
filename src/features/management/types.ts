@@ -61,6 +61,12 @@ export type GetBoothsResult = {
 export type GetBoothsParams = {
   page?: number;
   perPage?: number;
+  number?: string;
+  booked?: boolean;
+  minArea?: number;
+  maxArea?: number;
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 export type EventHall = {

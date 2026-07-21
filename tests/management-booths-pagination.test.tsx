@@ -43,7 +43,12 @@ function createBoothPage(page: number) {
   );
 }
 
-function boothsResponse(page: number, booths = createBoothPage(page)) {
+function boothsResponse(
+  page: number,
+  booths = createBoothPage(page),
+  total = 461,
+  lastPage = 47,
+) {
   return jsonResponse({
     status: true,
     message: "Booths retrieved successfully.",
@@ -51,8 +56,8 @@ function boothsResponse(page: number, booths = createBoothPage(page)) {
       data: booths,
       current_page: page,
       per_page: 10,
-      total: 461,
-      last_page: 47,
+      total,
+      last_page: lastPage,
     },
   });
 }
@@ -152,7 +157,7 @@ afterEach(() => {
 });
 
 test("Management Booth tab uses the shared footer for backend page navigation", async () => {
-  const requestedBoothPages: number[] = [];
+  const requestedBoothUrls: URL[] = [];
 
   globalThis.fetch = async (input) => {
     const url = new URL(getRequestUrl(input));
@@ -167,7 +172,18 @@ test("Management Booth tab uses the shared footer for backend page navigation", 
 
     if (url.pathname.endsWith("/booths")) {
       const page = Number(url.searchParams.get("page"));
-      requestedBoothPages.push(page);
+      const number = url.searchParams.get("filter[number]");
+      requestedBoothUrls.push(url);
+
+      if (number === "SE_99") {
+        return boothsResponse(1, [], 0, 1);
+      }
+
+      if (number) {
+        const id = Number(number.slice(-2));
+        return boothsResponse(1, [createBooth(id)], 12, 2);
+      }
+
       return boothsResponse(page);
     }
 
@@ -211,7 +227,10 @@ test("Management Booth tab uses the shared footer for backend page navigation", 
   fireEvent.click(within(getFooter()).getByRole("button", { name: "2" }));
   await view.findByText("SE_11");
   assert.equal(view.queryByText("SE_01"), null);
-  assert.deepEqual(requestedBoothPages, [1, 2]);
+  assert.deepEqual(
+    requestedBoothUrls.map((url) => Number(url.searchParams.get("page"))),
+    [1, 2],
+  );
   assert.equal(
     within(getFooter()).getByRole("button", { current: "page" }).textContent,
     "2",
@@ -220,25 +239,48 @@ test("Management Booth tab uses the shared footer for backend page navigation", 
   fireEvent.click(
     within(getFooter()).getByRole("button", { name: "Next page" }),
   );
-  await waitFor(() => assert.equal(requestedBoothPages.at(-1), 3));
+  await waitFor(() =>
+    assert.equal(requestedBoothUrls.at(-1)?.searchParams.get("page"), "3"),
+  );
   await view.findByText("SE_21");
 
   fireEvent.click(
     within(getFooter()).getByRole("button", { name: "Previous page" }),
   );
   await view.findByText("SE_11");
-  assert.equal(requestedBoothPages.at(-1), 2);
+  assert.equal(requestedBoothUrls.at(-1)?.searchParams.get("page"), "2");
 
   fireEvent.change(view.getByRole("searchbox", { name: "Search booths" }), {
     target: { value: "SE_99" },
   });
-  await waitFor(() => assert.equal(requestedBoothPages.at(-1), 1));
+  await waitFor(
+    () =>
+      assert.equal(
+        requestedBoothUrls.at(-1)?.searchParams.get("filter[number]"),
+        "SE_99",
+      ),
+    { timeout: 1200 },
+  );
+  assert.equal(requestedBoothUrls.at(-1)?.searchParams.get("page"), "1");
+  assert.equal(requestedBoothUrls.at(-1)?.searchParams.has("search"), false);
+  assert.equal(
+    requestedBoothUrls.at(-1)?.searchParams.has("filter[id]"),
+    false,
+  );
   await view.findByText("No booths found.");
-  assert.ok(view.container.querySelector(".management-page__footer"));
+  assert.equal(view.container.querySelector(".management-page__footer"), null);
 
   fireEvent.change(view.getByRole("searchbox", { name: "Search booths" }), {
     target: { value: "" },
   });
+  await waitFor(
+    () =>
+      assert.equal(
+        requestedBoothUrls.at(-1)?.searchParams.has("filter[number]"),
+        false,
+      ),
+    { timeout: 1200 },
+  );
   await view.findByText("SE_01");
   fireEvent.click(within(getFooter()).getByRole("button", { name: "2" }));
   await view.findByText("SE_11");
@@ -248,34 +290,144 @@ test("Management Booth tab uses the shared footer for backend page navigation", 
     target: { value: "SE_01" },
   });
   fireEvent.click(within(filterPanel).getByRole("button", { name: "Apply" }));
-  await waitFor(() => assert.equal(requestedBoothPages.at(-1), 1));
+  await waitFor(() =>
+    assert.equal(
+      requestedBoothUrls.at(-1)?.searchParams.get("filter[number]"),
+      "SE_01",
+    ),
+  );
+  assert.equal(requestedBoothUrls.at(-1)?.searchParams.get("page"), "1");
   await view.findByText("SE_01");
+  assert.equal(
+    (view.getByRole("searchbox", {
+      name: "Search booths",
+    }) as HTMLInputElement).value,
+    "SE_01",
+  );
+  assert.deepEqual(
+    within(getFooter())
+      .getAllByRole("button")
+      .filter((button) => /^\d+$/.test(button.textContent ?? ""))
+      .map((button) => button.textContent),
+    ["1", "2"],
+  );
 
-  fireEvent.click(within(getFooter()).getByRole("button", { name: "2" }));
-  await view.findByText("No booths found.");
   fireEvent.click(view.getByRole("button", { name: "Open filters" }));
   filterPanel = view.getByRole("dialog", { name: "Booth filters" });
+  assert.equal(
+    (within(filterPanel).getByLabelText("Booth Number") as HTMLInputElement)
+      .value,
+    "SE_01",
+  );
+  fireEvent.change(within(filterPanel).getByLabelText("Minimum area"), {
+    target: { value: "25" },
+  });
+  fireEvent.change(within(filterPanel).getByLabelText("Maximum area"), {
+    target: { value: "20" },
+  });
+  assert.ok(within(filterPanel).getByRole("alert"));
+  const requestCountBeforeInvalidApply = requestedBoothUrls.length;
+  assert.equal(
+    (within(filterPanel).getByRole("button", {
+      name: "Apply",
+    }) as HTMLButtonElement).disabled,
+    true,
+  );
+  fireEvent.click(within(filterPanel).getByRole("button", { name: "Apply" }));
+  assert.equal(requestedBoothUrls.length, requestCountBeforeInvalidApply);
   fireEvent.click(within(filterPanel).getByRole("button", { name: "Clear" }));
-  await waitFor(() => assert.equal(requestedBoothPages.at(-1), 1));
+  await waitFor(() =>
+    assert.equal(
+      requestedBoothUrls.at(-1)?.searchParams.has("filter[number]"),
+      false,
+    ),
+  );
+  assert.equal(requestedBoothUrls.at(-1)?.searchParams.get("page"), "1");
   await view.findByText("SE_01");
 
   fireEvent.click(view.getAllByRole("button", { name: "Edit" })[0]);
   assert.ok(view.getByRole("dialog", { name: "Edit Booth" }));
   fireEvent.click(view.getByRole("button", { name: "Cancel" }));
 
-  const boothRequestCount = requestedBoothPages.length;
+  fireEvent.change(view.getByRole("searchbox", { name: "Search booths" }), {
+    target: { value: "SE_06" },
+  });
+  await waitFor(
+    () =>
+      assert.equal(
+        requestedBoothUrls.at(-1)?.searchParams.get("filter[number]"),
+        "SE_06",
+      ),
+    { timeout: 1200 },
+  );
+  await view.findByText("SE_06");
+  const boothRequestCount = requestedBoothUrls.length;
   fireEvent.click(view.getByRole("tab", { name: "Hall" }));
   assert.equal(view.container.querySelector(".management-page__footer"), null);
+  assert.equal(
+    (view.getByRole("searchbox", { name: "Search halls" }) as HTMLInputElement)
+      .value,
+    "",
+  );
   fireEvent.click(view.getByRole("button", { name: "Open filters" }));
   fireEvent.click(view.getByRole("button", { name: "Clear" }));
-  assert.equal(requestedBoothPages.length, boothRequestCount);
+  assert.equal(requestedBoothUrls.length, boothRequestCount);
 
   fireEvent.click(view.getByRole("tab", { name: "Event Hall" }));
   await view.findByText("No event halls found.");
   assert.equal(view.container.querySelector(".management-page__footer"), null);
   fireEvent.click(view.getByRole("button", { name: "Open filters" }));
   fireEvent.click(view.getByRole("button", { name: "Clear" }));
-  assert.equal(requestedBoothPages.length, boothRequestCount);
+  assert.equal(requestedBoothUrls.length, boothRequestCount);
+});
+
+test("Management Booth renders backend-filtered rows directly without local filtering", async () => {
+  const requestedBoothUrls: URL[] = [];
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(getRequestUrl(input));
+
+    if (url.pathname.endsWith("/profile")) {
+      return getProfileResponse();
+    }
+
+    if (url.pathname.endsWith("/halls")) {
+      return getHallsResponse();
+    }
+
+    if (url.pathname.endsWith("/booths")) {
+      requestedBoothUrls.push(url);
+      const number = url.searchParams.get("filter[number]");
+
+      return number
+        ? boothsResponse(1, [createBooth(6)], 12, 2)
+        : boothsResponse(1, [createBooth(1)]);
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  };
+  const view = renderPage();
+
+  fireEvent.click(view.getByRole("tab", { name: "Booth" }));
+  await view.findByText("SE_01");
+  const search = view.getByRole("searchbox", { name: "Search booths" });
+  assert.equal(
+    (search as HTMLInputElement).placeholder,
+    "Search by booth number...",
+  );
+  fireEvent.change(search, { target: { value: "SE_01" } });
+
+  await waitFor(
+    () =>
+      assert.equal(
+        requestedBoothUrls.at(-1)?.searchParams.get("filter[number]"),
+        "SE_01",
+      ),
+    { timeout: 1200 },
+  );
+  await view.findByText("SE_06");
+  assert.equal(view.queryByText("SE_01"), null);
+  assert.ok(view.container.querySelector(".management-page__footer"));
 });
 
 test("Management Booth loading, error, retry, and empty states hide the footer", async () => {

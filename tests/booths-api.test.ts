@@ -78,6 +78,79 @@ test("builds default, page-two, and safely normalized Booth paths", () => {
   );
 });
 
+test("builds encoded Booth backend filters without empty values", () => {
+  const emptyUrl = new URL(
+    buildBoothsPath({ number: "   " }),
+    "https://example.test/",
+  );
+
+  assert.equal(emptyUrl.searchParams.get("page"), "1");
+  assert.equal(emptyUrl.searchParams.get("per_page"), "10");
+  assert.equal(emptyUrl.searchParams.has("filter[number]"), false);
+  assert.equal(emptyUrl.searchParams.has("filter[booked]"), false);
+  assert.equal(emptyUrl.searchParams.has("filter[min_area]"), false);
+  assert.equal(emptyUrl.searchParams.has("filter[max_area]"), false);
+  assert.equal(emptyUrl.searchParams.has("filter[min_price]"), false);
+  assert.equal(emptyUrl.searchParams.has("filter[max_price]"), false);
+
+  const path = buildBoothsPath({ number: "  SE 06/&  " });
+  const encodedUrl = new URL(path, "https://example.test/");
+
+  assert.match(path, /filter%5Bnumber%5D=SE\+06%2F%26/);
+  assert.equal(encodedUrl.searchParams.get("filter[number]"), "SE 06/&");
+});
+
+test("preserves both Booth booking booleans and numeric zero filters", () => {
+  const bookedUrl = new URL(
+    buildBoothsPath({ booked: true }),
+    "https://example.test/",
+  );
+  const availableUrl = new URL(
+    buildBoothsPath({
+      booked: false,
+      maxArea: 0,
+      maxPrice: 0,
+      minArea: 0,
+      minPrice: 0,
+    }),
+    "https://example.test/",
+  );
+
+  assert.equal(bookedUrl.searchParams.get("filter[booked]"), "true");
+  assert.equal(availableUrl.searchParams.get("filter[booked]"), "false");
+  assert.equal(availableUrl.searchParams.get("filter[min_area]"), "0");
+  assert.equal(availableUrl.searchParams.get("filter[max_area]"), "0");
+  assert.equal(availableUrl.searchParams.get("filter[min_price]"), "0");
+  assert.equal(availableUrl.searchParams.get("filter[max_price]"), "0");
+});
+
+test("composes every Booth filter with backend pagination", () => {
+  const url = new URL(
+    buildBoothsPath({
+      booked: false,
+      maxArea: 25,
+      maxPrice: 625,
+      minArea: 20,
+      minPrice: 500,
+      number: " SE_06 ",
+      page: 2,
+      perPage: 25,
+    }),
+    "https://example.test/",
+  );
+
+  assert.equal(url.searchParams.get("page"), "2");
+  assert.equal(url.searchParams.get("per_page"), "25");
+  assert.equal(url.searchParams.get("filter[number]"), "SE_06");
+  assert.equal(url.searchParams.get("filter[booked]"), "false");
+  assert.equal(url.searchParams.get("filter[min_area]"), "20");
+  assert.equal(url.searchParams.get("filter[max_area]"), "25");
+  assert.equal(url.searchParams.get("filter[min_price]"), "500");
+  assert.equal(url.searchParams.get("filter[max_price]"), "625");
+  assert.equal(url.searchParams.has("search"), false);
+  assert.equal(url.searchParams.has("filter[id]"), false);
+});
+
 test("requests authenticated Booth page one and normalizes nested metadata", async () => {
   let requestedUrl = "";
   let requestedInit: RequestInit | undefined;

@@ -11,6 +11,11 @@ import type {
   GetBoothsResult,
   UpdateBoothPayload,
 } from "../types";
+import {
+  getBoothFilterParams,
+  useBoothFiltering,
+  type BoothFilterValidationMessages,
+} from "./useBoothFiltering";
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
   return error instanceof Error && error.message.trim()
@@ -39,6 +44,7 @@ export function isLatestBoothsRequest(
 
 type UseBoothsOptions = {
   enabled?: boolean;
+  validationMessages?: BoothFilterValidationMessages;
 };
 
 const initialPagination: BoothsPagination = {
@@ -48,7 +54,10 @@ const initialPagination: BoothsPagination = {
   totalPages: 1,
 };
 
-export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
+export function useBooths({
+  enabled = true,
+  validationMessages,
+}: UseBoothsOptions = {}) {
   const [booths, setBooths] = useState<BoothApiData[]>([]);
   const [pagination, setPagination] =
     useState<BoothsPagination>(initialPagination);
@@ -71,12 +80,51 @@ export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
   boothsRef.current = booths;
   paginationRef.current = pagination;
 
+  const resetPagination = useCallback(() => {
+    setPagination((currentPagination) => {
+      if (currentPagination.currentPage === 1) {
+        return currentPagination;
+      }
+
+      return {
+        ...currentPagination,
+        currentPage: 1,
+      };
+    });
+  }, []);
+  const filters = useBoothFiltering({
+    onFiltersChange: resetPagination,
+    validationMessages,
+  });
+  const filterParams = getBoothFilterParams(filters.appliedFilters);
+  const booked = filterParams.booked;
+  const maxArea = filterParams.maxArea;
+  const maxPrice = filterParams.maxPrice;
+  const minArea = filterParams.minArea;
+  const minPrice = filterParams.minPrice;
+  const number = filterParams.number;
+
   const requestParams = useMemo<GetBoothsParams>(
     () => ({
+      booked,
+      maxArea,
+      maxPrice,
+      minArea,
+      minPrice,
+      number,
       page: currentPage,
       perPage,
     }),
-    [currentPage, perPage],
+    [
+      booked,
+      currentPage,
+      maxArea,
+      maxPrice,
+      minArea,
+      minPrice,
+      number,
+      perPage,
+    ],
   );
   requestParamsRef.current = requestParams;
 
@@ -148,11 +196,7 @@ export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
 
       try {
         const updatedBooth = await updateBooth(boothId, payload);
-        setBooths((currentBooths) =>
-          currentBooths.map((booth) =>
-            booth.id === updatedBooth.id ? updatedBooth : booth,
-          ),
-        );
+        await requestBooths(requestParamsRef.current);
 
         return updatedBooth;
       } catch (boothError) {
@@ -163,7 +207,7 @@ export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
         setIsUpdating(false);
       }
     },
-    [],
+    [requestBooths],
   );
 
   const clearUpdateError = useCallback(() => {
@@ -218,11 +262,14 @@ export function useBooths({ enabled = true }: UseBoothsOptions = {}) {
     clearUpdateError,
     currentPage: pagination.currentPage,
     error,
+    filters,
     isLoading,
     isUpdating,
     perPage: pagination.perPage,
     refetch,
+    searchValue: filters.searchValue,
     setCurrentPage,
+    setSearchValue: filters.setSearchValue,
     totalItems: pagination.totalItems,
     totalPages: pagination.totalPages,
     updateBoothById,

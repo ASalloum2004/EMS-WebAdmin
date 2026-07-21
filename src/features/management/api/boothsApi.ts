@@ -64,9 +64,34 @@ export function buildBoothsPath(params: GetBoothsParams = {}) {
   const perPage =
     getPositiveInteger(params.perPage) ?? DEFAULT_BOOTHS_PER_PAGE;
   const queryParams = new URLSearchParams();
+  const number = params.number?.trim();
 
   queryParams.set("page", String(page));
   queryParams.set("per_page", String(perPage));
+
+  if (number) {
+    queryParams.set("filter[number]", number);
+  }
+
+  if (params.booked !== undefined) {
+    queryParams.set("filter[booked]", String(params.booked));
+  }
+
+  if (params.minArea !== undefined) {
+    queryParams.set("filter[min_area]", String(params.minArea));
+  }
+
+  if (params.maxArea !== undefined) {
+    queryParams.set("filter[max_area]", String(params.maxArea));
+  }
+
+  if (params.minPrice !== undefined) {
+    queryParams.set("filter[min_price]", String(params.minPrice));
+  }
+
+  if (params.maxPrice !== undefined) {
+    queryParams.set("filter[max_price]", String(params.maxPrice));
+  }
 
   return `booths?${queryParams.toString()}`;
 }

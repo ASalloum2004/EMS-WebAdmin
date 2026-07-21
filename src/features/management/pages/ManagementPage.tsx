@@ -20,7 +20,6 @@ import {
 } from "../components/ManagementTabs";
 import {
   useBoothEditing,
-  useBoothFiltering,
   useBooths,
   useEventHallDetails,
   useEventHallEditing,
@@ -60,12 +59,18 @@ export function ManagementPage() {
     isUpdating: isUpdatingBooth,
     perPage,
     refetch: refetchBooths,
+    searchValue: boothSearchValue,
     setCurrentPage,
+    setSearchValue: setBoothSearchValue,
     totalItems,
     totalPages,
     updateBoothById,
     updateError: boothUpdateError,
-  } = useBooths({ enabled: isBoothTab });
+    filters: boothFiltering,
+  } = useBooths({
+    enabled: isBoothTab,
+    validationMessages: t.management.validation,
+  });
   const eventHallFiltering = useEventHalls({
     enabled: isEventHallTab,
     errorFallback: t.management.eventHalls.errorFallback,
@@ -117,16 +122,6 @@ export function ManagementPage() {
     clearUpdateError: eventHallFiltering.clearUpdateError,
     updateEventHallPriceById: updateEventHallPriceForEditing,
   });
-  const resetBoothPagination = useCallback(() => {
-    setCurrentPage(1);
-  }, [setCurrentPage]);
-  const boothFiltering = useBoothFiltering({
-    booths,
-    onFiltersChange: resetBoothPagination,
-    refetchBooths,
-    searchValue,
-    validationMessages: t.management.validation,
-  });
   const hallColumns = useMemo(() => {
     return getHallColumns(t);
   }, [t]);
@@ -146,8 +141,7 @@ export function ManagementPage() {
     );
   }, [eventHallEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
-  const hasBooths = boothFiltering.visibleBooths.length > 0;
-  const hasBoothResponseRows = booths.length > 0;
+  const hasBooths = booths.length > 0;
 
   const visibleEventHalls = useMemo(() => {
     return filterBySearchQuery(
@@ -175,13 +169,14 @@ export function ManagementPage() {
 
   const handleSearchChange = useCallback(
     (value: string) => {
-      setSearchValue(value);
-
       if (isBoothTab) {
-        setCurrentPage(1);
+        setBoothSearchValue(value);
+        return;
       }
+
+      setSearchValue(value);
     },
-    [isBoothTab, setCurrentPage],
+    [isBoothTab, setBoothSearchValue],
   );
 
   function handleTabChange(tab: ManagementTab) {
@@ -216,7 +211,7 @@ export function ManagementPage() {
 
             <div className="management-page__search">
               <SearchFilterBar
-                value={searchValue}
+                value={isBoothTab ? boothSearchValue : searchValue}
                 onChange={handleSearchChange}
                 inputAriaLabel={searchAriaLabel}
                 filterAriaLabel={t.common.openFilters}
@@ -307,7 +302,7 @@ export function ManagementPage() {
               <p>{boothsError || t.management.booths.errorFallback}</p>
               <button
                 type="button"
-                onClick={() => void boothFiltering.refetchFilteredBooths()}
+                onClick={() => void refetchBooths()}
               >
                 {t.common.tryAgain}
               </button>
@@ -327,14 +322,14 @@ export function ManagementPage() {
               className="management-booth-table"
               columns={boothColumns}
               getItemKey={(booth) => booth.id}
-              items={boothFiltering.visibleBooths}
+              items={booths}
             />
           ) : null}
 
           {isBoothTab &&
           !isBoothsLoading &&
           !boothsError &&
-          hasBoothResponseRows ? (
+          hasBooths ? (
             <TableFooter
               className="management-page__footer"
               currentPage={currentPage}

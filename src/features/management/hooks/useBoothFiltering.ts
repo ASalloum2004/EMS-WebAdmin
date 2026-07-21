@@ -1,16 +1,12 @@
-import { useMemo, useState } from "react";
-import { filterBySearchQuery } from "../../../components";
-import type { BoothApiData, BoothClientFilters } from "../types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { BoothClientFilters, GetBoothsParams } from "../types";
 
 type UseBoothFilteringOptions = {
-  booths: BoothApiData[];
   onFiltersChange?: () => void;
-  refetchBooths: () => Promise<BoothApiData[]>;
-  searchValue: string;
   validationMessages?: BoothFilterValidationMessages;
 };
 
-type BoothFilterValidationMessages = {
+export type BoothFilterValidationMessages = {
   invalidMaximumArea: string;
   invalidMaximumPrice: string;
   invalidMinimumArea: string;
@@ -30,6 +26,8 @@ const DEFAULT_BOOTH_FILTER_VALIDATION_MESSAGES: BoothFilterValidationMessages = 
     "Minimum price cannot be greater than maximum price.",
 };
 
+export const BOOTH_SEARCH_DEBOUNCE_MS = 400;
+
 function createEmptyBoothFilters(): BoothClientFilters {
   return {
     booked: "",
@@ -45,7 +43,7 @@ function getOptionalNumber(value: string) {
   const trimmedValue = value.trim();
 
   if (!trimmedValue) {
-    return null;
+    return undefined;
   }
 
   const numericValue = Number(trimmedValue);
@@ -53,130 +51,78 @@ function getOptionalNumber(value: string) {
   return Number.isFinite(numericValue) ? numericValue : null;
 }
 
-function getInvalidNumberMessage(value: string, message: string) {
-  if (!value.trim()) {
-    return "";
-  }
-
-  return Number.isFinite(Number(value)) ? "" : message;
-}
-
 function getBoothValidationMessage(
   filters: BoothClientFilters,
   messages: BoothFilterValidationMessages,
 ) {
-  const invalidMinArea = getInvalidNumberMessage(
-    filters.minArea,
-    messages.invalidMinimumArea,
-  );
-  const invalidMaxArea = getInvalidNumberMessage(
-    filters.maxArea,
-    messages.invalidMaximumArea,
-  );
-  const invalidMinPrice = getInvalidNumberMessage(
-    filters.minPrice,
-    messages.invalidMinimumPrice,
-  );
-  const invalidMaxPrice = getInvalidNumberMessage(
-    filters.maxPrice,
-    messages.invalidMaximumPrice,
-  );
-
-  if (invalidMinArea) {
-    return invalidMinArea;
-  }
-
-  if (invalidMaxArea) {
-    return invalidMaxArea;
-  }
-
-  if (invalidMinPrice) {
-    return invalidMinPrice;
-  }
-
-  if (invalidMaxPrice) {
-    return invalidMaxPrice;
-  }
-
   const minArea = getOptionalNumber(filters.minArea);
   const maxArea = getOptionalNumber(filters.maxArea);
   const minPrice = getOptionalNumber(filters.minPrice);
   const maxPrice = getOptionalNumber(filters.maxPrice);
 
-  if (minArea !== null && maxArea !== null && minArea > maxArea) {
+  if (minArea === null) {
+    return messages.invalidMinimumArea;
+  }
+
+  if (maxArea === null) {
+    return messages.invalidMaximumArea;
+  }
+
+  if (minPrice === null) {
+    return messages.invalidMinimumPrice;
+  }
+
+  if (maxPrice === null) {
+    return messages.invalidMaximumPrice;
+  }
+
+  if (
+    typeof minArea === "number" &&
+    typeof maxArea === "number" &&
+    minArea > maxArea
+  ) {
     return messages.minimumAreaGreaterThanMaximum;
   }
 
-  if (minPrice !== null && maxPrice !== null && minPrice > maxPrice) {
+  if (
+    typeof minPrice === "number" &&
+    typeof maxPrice === "number" &&
+    minPrice > maxPrice
+  ) {
     return messages.minimumPriceGreaterThanMaximum;
   }
 
   return "";
 }
 
-function filterBoothsLocally(
-  booths: BoothApiData[],
+export function getBoothFilterParams(
   filters: BoothClientFilters,
-) {
-  const boothNumber = filters.number.trim().toLowerCase();
+): Omit<GetBoothsParams, "page" | "perPage"> {
+  const number = filters.number.trim();
   const minArea = getOptionalNumber(filters.minArea);
   const maxArea = getOptionalNumber(filters.maxArea);
   const minPrice = getOptionalNumber(filters.minPrice);
   const maxPrice = getOptionalNumber(filters.maxPrice);
 
-  return booths.filter((booth) => {
-    const boothPrice = Number(booth.price);
-
-    if (
-      boothNumber &&
-      !booth.number.toLowerCase().includes(boothNumber)
-    ) {
-      return false;
-    }
-
-    if (filters.booked === "booked" && booth.is_booked !== true) {
-      return false;
-    }
-
-    if (filters.booked === "available" && booth.is_booked !== false) {
-      return false;
-    }
-
-    if (minArea !== null && booth.area < minArea) {
-      return false;
-    }
-
-    if (maxArea !== null && booth.area > maxArea) {
-      return false;
-    }
-
-    if (minPrice !== null && !Number.isFinite(boothPrice)) {
-      return false;
-    }
-
-    if (maxPrice !== null && !Number.isFinite(boothPrice)) {
-      return false;
-    }
-
-    if (minPrice !== null && boothPrice < minPrice) {
-      return false;
-    }
-
-    if (maxPrice !== null && boothPrice > maxPrice) {
-      return false;
-    }
-
-    return true;
-  });
+  return {
+    booked:
+      filters.booked === "booked"
+        ? true
+        : filters.booked === "available"
+          ? false
+          : undefined,
+    maxArea: typeof maxArea === "number" ? maxArea : undefined,
+    maxPrice: typeof maxPrice === "number" ? maxPrice : undefined,
+    minArea: typeof minArea === "number" ? minArea : undefined,
+    minPrice: typeof minPrice === "number" ? minPrice : undefined,
+    number: number || undefined,
+  };
 }
 
 export function useBoothFiltering({
-  booths,
   onFiltersChange,
-  refetchBooths,
-  searchValue,
   validationMessages = DEFAULT_BOOTH_FILTER_VALIDATION_MESSAGES,
-}: UseBoothFilteringOptions) {
+}: UseBoothFilteringOptions = {}) {
   const [filters, setFilters] = useState<BoothClientFilters>(
     createEmptyBoothFilters,
   );
@@ -184,70 +130,99 @@ export function useBoothFiltering({
     createEmptyBoothFilters,
   );
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [searchValue, setSearchValueState] = useState("");
 
   const validationMessage = useMemo(() => {
     return getBoothValidationMessage(draftFilters, validationMessages);
   }, [draftFilters, validationMessages]);
 
-  const locallyFilteredBooths = useMemo(() => {
-    // Search and filters intentionally apply only to the current backend page.
-    return filterBoothsLocally(booths, filters);
-  }, [booths, filters]);
+  useEffect(() => {
+    const nextNumber = searchValue.trim();
 
-  const visibleBooths = useMemo(() => {
-    return filterBySearchQuery(locallyFilteredBooths, searchValue, (booth) => [
-      booth.id,
-      booth.number,
-    ]);
-  }, [locallyFilteredBooths, searchValue]);
-
-  function toggleFilterPanel() {
-    if (!isFilterPanelOpen) {
-      setDraftFilters(filters);
-    }
-
-    setIsFilterPanelOpen((isOpen) => !isOpen);
-  }
-
-  function closeFilterPanel() {
-    setIsFilterPanelOpen(false);
-  }
-
-  function applyFilters() {
-    if (validationMessage) {
+    if (nextNumber === filters.number) {
       return;
     }
 
-    const nextFilters = draftFilters;
+    const timeoutId = window.setTimeout(() => {
+      setFilters((currentFilters) => ({
+        ...currentFilters,
+        number: nextNumber,
+      }));
+      onFiltersChange?.();
+    }, BOOTH_SEARCH_DEBOUNCE_MS);
 
+    return () => window.clearTimeout(timeoutId);
+  }, [filters.number, onFiltersChange, searchValue]);
+
+  const setSearchValue = useCallback(
+    (value: string) => {
+      setSearchValueState(value);
+
+      if (isFilterPanelOpen) {
+        setDraftFilters((currentFilters) => ({
+          ...currentFilters,
+          number: value,
+        }));
+      }
+    },
+    [isFilterPanelOpen],
+  );
+
+  const toggleFilterPanel = useCallback(() => {
+    if (!isFilterPanelOpen) {
+      setDraftFilters({
+        ...filters,
+        number: searchValue,
+      });
+    }
+
+    setIsFilterPanelOpen((isOpen) => !isOpen);
+  }, [filters, isFilterPanelOpen, searchValue]);
+
+  const closeFilterPanel = useCallback(() => {
+    setIsFilterPanelOpen(false);
+  }, []);
+
+  const applyFilters = useCallback(() => {
+    if (validationMessage) {
+      return false;
+    }
+
+    const nextFilters = {
+      ...draftFilters,
+      number: draftFilters.number.trim(),
+    };
+
+    setDraftFilters(nextFilters);
     setFilters(nextFilters);
+    setSearchValueState(nextFilters.number);
     setIsFilterPanelOpen(false);
     onFiltersChange?.();
-  }
 
-  function clearFilters() {
+    return true;
+  }, [draftFilters, onFiltersChange, validationMessage]);
+
+  const clearFilters = useCallback(() => {
     const emptyFilters = createEmptyBoothFilters();
 
     setDraftFilters(emptyFilters);
     setFilters(emptyFilters);
+    setSearchValueState("");
     onFiltersChange?.();
-  }
-
-  function refetchFilteredBooths() {
-    return refetchBooths();
-  }
+  }, [onFiltersChange]);
 
   return {
+    appliedFilters: filters,
     applyFilters,
     clearFilters,
     closeFilterPanel,
     draftFilters,
     filters,
     isFilterPanelOpen,
-    refetchFilteredBooths,
+    searchValue,
     setDraftFilters,
+    setSearchValue,
     toggleFilterPanel,
     validationMessage,
-    visibleBooths,
   };
 }

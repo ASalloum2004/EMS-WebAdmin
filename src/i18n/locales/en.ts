@@ -352,7 +352,7 @@ export const en = {
     },
     search: {
       hallsPlaceholder: "Search by id, number, or type...",
-      boothsPlaceholder: "Search by id or number...",
+      boothsPlaceholder: "Search by booth number...",
       eventHallsPlaceholder: "Search event halls...",
       hallsAriaLabel: "Search halls",
       boothsAriaLabel: "Search booths",

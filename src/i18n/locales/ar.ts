@@ -353,7 +353,7 @@ export const ar: I18nDictionary = {
     },
     search: {
       hallsPlaceholder: "ابحث بالمعرف أو الرقم أو النوع...",
-      boothsPlaceholder: "ابحث بالمعرف أو الرقم...",
+      boothsPlaceholder: "ابحث برقم الجناح...",
       eventHallsPlaceholder: "البحث في قاعات الفعاليات...",
       hallsAriaLabel: "بحث في القاعات",
       boothsAriaLabel: "بحث في الأجنحة",

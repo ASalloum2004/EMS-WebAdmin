@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
-import { ApiRequestError } from "../src/api/apiClient.js";
+import { API_BASE_URL, ApiRequestError } from "../src/api/apiClient.js";
 import {
   buildEventRequestDetailsPath,
   getEventRequestDetails,
   normalizeEventRequestDetailsResponse,
+  resolveEventRequestLogoUrl,
 } from "../src/features/order/api/eventRequestDetailsApi.js";
 import type {
   EventRequestDetailsApiData,
@@ -165,6 +166,33 @@ test("supports null organizer, empty speakers, and nullable metadata", () => {
   assert.equal(details.average_rating, null);
   assert.equal(details.qr_token, null);
   assert.equal(details.logo, null);
+});
+
+test("normalizes absolute, relative, empty, missing, and unsafe Event logos", () => {
+  const apiOrigin = new URL(API_BASE_URL).origin;
+  const absoluteLogo = "https://cdn.example.com/events/logo.png";
+
+  assert.equal(resolveEventRequestLogoUrl(absoluteLogo), absoluteLogo);
+  assert.equal(
+    resolveEventRequestLogoUrl("/storage/events/logo.png"),
+    `${apiOrigin}/storage/events/logo.png`,
+  );
+  assert.equal(resolveEventRequestLogoUrl(""), null);
+  assert.equal(resolveEventRequestLogoUrl(undefined), null);
+  assert.equal(resolveEventRequestLogoUrl("javascript:unsafe()"), null);
+
+  const missingLogoDetails = normalizeEventRequestDetailsResponse(
+    getResponse({ ...rawDetails, logo: undefined }),
+  );
+  assert.equal(missingLogoDetails.logo, null);
+
+  const relativeLogoDetails = normalizeEventRequestDetailsResponse(
+    getResponse({ ...rawDetails, logo: "storage/events/logo.png" }),
+  );
+  assert.equal(
+    relativeLogoDetails.logo,
+    `${apiOrigin}/storage/events/logo.png`,
+  );
 });
 
 test("normalizes the sparse Request #2 details response", () => {

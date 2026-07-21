@@ -1,50 +1,77 @@
 .event-request-details-modal__organizer-heading {
   min-width: 0;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 13px;
 }
 
 .event-request-details-modal__organizer-avatar {
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 13px;
+  flex: 0 0 auto;
+  flex-basis: 58px;
+  overflow: hidden;
+  border: 1px solid var(--ems-color-primary);
+  border-radius: 16px;
   background-color: var(
     --ems-color-primary-soft,
     var(--ems-color-success-surface)
   );
   color: var(--ems-color-primary);
   font-family: var(--ems-font-body);
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 800;
+  line-height: 24px;
 }
 
-.event-request-details-modal__organizer-heading > span:nth-child(2) {
+.event-request-details-modal__organizer-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.event-request-details-modal__organizer-copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
-.event-request-details-modal__organizer-heading small {
-  color: var(--ems-color-muted-light);
-  font-family: var(--ems-font-body);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 15px;
-}
-
-.event-request-details-modal__organizer-heading strong {
+.event-request-details-modal__organizer-copy strong {
   overflow-wrap: anywhere;
   color: var(--ems-color-heading);
   font-family: var(--ems-font-body);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 21px;
+  line-height: 20px;
+}
+
+.event-request-details-modal__organizer-status {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 5px;
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.event-request-details-modal__organizer-status--approved {
+  color: var(--ems-color-status-positive-text);
+}
+
+.event-request-details-modal__organizer-status--rejected {
+  color: var(--ems-color-status-negative-text);
+}
+
+.event-request-details-modal__organizer-status--unknown {
+  color: var(--ems-color-muted);
 }
 
 .event-request-details-modal__organizer-facts {
@@ -123,12 +150,9 @@
 }
 
 @media (max-width: 640px) {
-  .event-request-details-modal__organizer-heading {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .event-request-details-modal__company-status {
-    grid-column: 1 / -1;
-    justify-self: start;
+  .event-request-details-modal__organizer-avatar {
+    width: 54px;
+    height: 54px;
+    flex-basis: 54px;
   }
 }

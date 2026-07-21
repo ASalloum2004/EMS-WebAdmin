@@ -1,5 +1,6 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, test } from "node:test";
 import { cleanup, fireEvent, render, within } from "@testing-library/react";
 import {
@@ -139,7 +140,87 @@ test("renders every Event detail section and excludes organizer coordinates", ()
   );
   assert.ok(avatar);
   assert.equal(avatar.textContent, "TF");
-  assert.equal(within(avatar).getByText("TF").getAttribute("aria-hidden"), "true");
+  assert.equal(avatar.getAttribute("aria-hidden"), "true");
+  assert.ok(within(dialog).getByRole("heading", { name: fullDetails.title! }));
+  assert.ok(
+    within(dialog).getByRole("button", {
+      name: "Close Event Request details",
+    }),
+  );
+});
+
+test("renders the organizer identity with the Booth large-avatar contract", () => {
+  const eventLogoUrl = "https://events.example/event-logo.png";
+  const view = renderModal({ ...fullDetails, logo: eventLogoUrl });
+  assert.equal(
+    view
+      .getByRole("img", {
+        name: "Event logo: The Future of Publishing",
+      })
+      .getAttribute("src"),
+    eventLogoUrl,
+  );
+  const organizerHeading = view.getByRole("heading", {
+    name: "Organizer information",
+  });
+  const organizerCard = organizerHeading.closest("section");
+
+  assert.ok(organizerCard);
+
+  const identity = organizerCard.querySelector<HTMLElement>(
+    ".event-request-details-modal__organizer-heading",
+  );
+  const avatar = organizerCard.querySelector<HTMLElement>(
+    ".event-request-details-modal__organizer-avatar",
+  );
+  const copy = organizerCard.querySelector<HTMLElement>(
+    ".event-request-details-modal__organizer-copy",
+  );
+
+  assert.ok(identity);
+  assert.ok(avatar);
+  assert.ok(copy);
+  assert.equal(identity.firstElementChild, avatar);
+  assert.equal(identity.lastElementChild, copy);
+  assert.equal(avatar.textContent, "DA");
+  assert.equal(avatar.getAttribute("aria-hidden"), "true");
+  assert.equal(within(organizerCard).queryByRole("img"), null);
+  assert.ok(within(copy).getByText("Dar Al feker"));
+
+  const status = within(copy).getByText("Pending");
+  assert.match(status.className, /event-request-details-modal__organizer-status/);
+  assert.match(status.className, /--pending/);
+  assert.equal(within(organizerCard).queryByText("Company name"), null);
+
+  assert.ok(within(organizerCard).getByText("Lectures & Exhibitions"));
+  assert.ok(within(organizerCard).getByText("+963112223334"));
+  assert.ok(within(organizerCard).getByText("2015"));
+  assert.ok(
+    within(organizerCard).getByText("Leading readers for reading."),
+  );
+  assert.equal(within(organizerCard).queryByText("QR_METADATA_VALUE"), null);
+  assert.equal(
+    view.queryByText("Additional event information"),
+    null,
+  );
+
+  const organizerStyles = readFileSync(
+    "src/features/order/components/EventRequestDetailsModal/EventRequestOrganizerSection.scss",
+    "utf8",
+  );
+
+  assert.match(
+    organizerStyles,
+    /\.event-request-details-modal__organizer-heading\s*\{[\s\S]*?display: flex;[\s\S]*?gap: 13px;/,
+  );
+  assert.match(
+    organizerStyles,
+    /\.event-request-details-modal__organizer-avatar\s*\{[\s\S]*?width: 58px;[\s\S]*?height: 58px;[\s\S]*?flex-basis: 58px;[\s\S]*?border: 1px solid var\(--ems-color-primary\);[\s\S]*?border-radius: 16px;[\s\S]*?font-size: 18px;/,
+  );
+  assert.match(
+    organizerStyles,
+    /@media \(max-width: 640px\)\s*\{[\s\S]*?\.event-request-details-modal__organizer-avatar\s*\{[\s\S]*?width: 54px;[\s\S]*?height: 54px;[\s\S]*?flex-basis: 54px;/,
+  );
 });
 
 test("handles null organizer and zero, one, or many speakers", () => {
@@ -181,7 +262,11 @@ test("renders a valid header logo and falls back to decorative title initials", 
   });
 
   assert.equal(logo.getAttribute("src"), logoUrl);
-  assert.ok(logo.closest(".event-request-details-modal__avatar"));
+  const logoAvatar = logo.closest<HTMLElement>(
+    ".event-request-details-modal__avatar",
+  );
+  assert.ok(logoAvatar);
+  assert.equal(logoAvatar.getAttribute("aria-hidden"), null);
 
   fireEvent.error(logo);
 
@@ -191,8 +276,8 @@ test("renders a valid header logo and falls back to decorative title initials", 
     }),
     null,
   );
-  const failedLogoFallback = within(dialog).getByText("TF");
-  assert.equal(failedLogoFallback.getAttribute("aria-hidden"), "true");
+  assert.equal(logoAvatar.textContent, "TF");
+  assert.equal(logoAvatar.getAttribute("aria-hidden"), "true");
   view.unmount();
 
   const emptyLogoView = renderModal({ ...fullDetails, logo: "" });
@@ -207,7 +292,7 @@ test("renders a valid header logo and falls back to decorative title initials", 
   const genericDialog = genericTitleView.getByRole("dialog", {
     name: "Event Request Details",
   });
-  assert.ok(within(genericDialog).getByText("ER"));
+  assert.ok(within(genericDialog).getByText("—"));
 });
 
 test("renders only safe social links and a safe telephone link", () => {
@@ -283,6 +368,12 @@ test("supports loading, errors, Retry, Close, Escape, and backdrop dismissal", (
 
   assert.ok(view.getByRole("status"));
   assert.ok(view.getAllByText("Loading Event Request details...").length);
+  const loadingAvatar = view.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__avatar",
+  );
+  assert.ok(loadingAvatar);
+  assert.equal(loadingAvatar.textContent, "—");
+  assert.equal(loadingAvatar.getAttribute("aria-hidden"), "true");
   assert.ok(
     view.getByRole("button", { name: "Close Event Request details" }),
   );
@@ -301,6 +392,11 @@ test("supports loading, errors, Retry, Close, Escape, and backdrop dismissal", (
     </I18nProvider>,
   );
   assert.equal(view.getByRole("alert").textContent, "Backend details error.Try again");
+  const errorAvatar = view.container.querySelector<HTMLElement>(
+    ".event-request-details-modal__avatar",
+  );
+  assert.ok(errorAvatar);
+  assert.equal(errorAvatar.textContent, "—");
   fireEvent.click(view.getByRole("button", { name: "Try again" }));
   assert.equal(retryCount, 1);
 

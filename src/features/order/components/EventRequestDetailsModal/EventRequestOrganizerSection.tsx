@@ -1,4 +1,7 @@
-import { CompanyIcon } from "../../../../assets/icons/orderIcons";
+import {
+  CompanyIcon,
+  VerifiedCompanyIcon,
+} from "../../../../assets/icons/orderIcons";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import { EventRequestDetailsCard } from "./EventRequestDetailsCard";
 import type {
@@ -73,22 +76,26 @@ export function EventRequestOrganizerSection({
         >
           {getInitials(organizer.name)}
         </span>
-        <span>
-          <small>{labels.companyName}</small>
+        <span className="event-request-details-modal__organizer-copy">
           <strong>
             {getTrimmedString(organizer.name) || labels.notAvailable}
           </strong>
-        </span>
-        <span
-          aria-label={`${labels.companyStatus}: ${companyStatus}`}
-          className={classNames(
-            "event-request-details-modal__company-status",
-            `event-request-details-modal__company-status--${getStatusModifier(
-              organizer.status,
-            )}`,
-          )}
-        >
-          {companyStatus}
+          <small
+            aria-label={`${labels.companyStatus}: ${companyStatus}`}
+            className={classNames(
+              "event-request-details-modal__organizer-status",
+              `event-request-details-modal__organizer-status--${getStatusModifier(
+                organizer.status,
+              )}`,
+            )}
+          >
+            <VerifiedCompanyIcon
+              aria-hidden="true"
+              size={14}
+              strokeWidth={2}
+            />
+            {companyStatus}
+          </small>
         </span>
       </div>
 

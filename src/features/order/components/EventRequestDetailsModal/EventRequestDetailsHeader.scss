@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   flex: 0 0 auto;
   overflow: hidden;
   border: 1px solid var(--ems-color-primary);
@@ -17,6 +18,8 @@
   line-height: 24px;
   width: 52px;
   height: 52px;
+  min-width: 52px;
+  min-height: 52px;
 }
 
 .event-request-details-modal__avatar img {
@@ -60,8 +63,7 @@
 
 .event-request-details-modal__request-badge,
 .event-request-details-modal__type-badge,
-.event-request-details-modal__status,
-.event-request-details-modal__company-status {
+.event-request-details-modal__status {
   min-height: 26px;
   display: inline-flex;
   align-items: center;
@@ -92,8 +94,7 @@
   color: var(--ems-color-primary-dark);
 }
 
-.event-request-details-modal__status--pending,
-.event-request-details-modal__company-status--pending {
+.event-request-details-modal__status--pending {
   background-color: var(
     --ems-color-primary-soft,
     var(--ems-color-success-surface)
@@ -101,20 +102,17 @@
   color: var(--ems-color-primary-dark);
 }
 
-.event-request-details-modal__status--approved,
-.event-request-details-modal__company-status--approved {
+.event-request-details-modal__status--approved {
   background-color: var(--ems-color-status-positive-surface);
   color: var(--ems-color-status-positive-text);
 }
 
-.event-request-details-modal__status--rejected,
-.event-request-details-modal__company-status--rejected {
+.event-request-details-modal__status--rejected {
   background-color: var(--ems-color-status-negative-surface);
   color: var(--ems-color-status-negative-text);
 }
 
-.event-request-details-modal__status--unknown,
-.event-request-details-modal__company-status--unknown {
+.event-request-details-modal__status--unknown {
   background-color: var(
     --ems-color-surface-strong,
     var(--ems-color-surface)
@@ -130,6 +128,8 @@
   .event-request-details-modal__avatar {
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     font-size: 14px;
   }
 

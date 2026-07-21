@@ -10,24 +10,32 @@ export function EventRequestDetailsLogo({
 }: EventRequestDetailsLogoProps) {
   const logoUrl = getSafeExternalUrl(logo);
   const [hasImageError, setHasImageError] = useState(false);
-  const eventTitle =
-    getTrimmedString(title) || t.order.eventRequests.details.title;
-  const altText = `${t.order.eventRequests.details.logoAlt}: ${eventTitle}`;
+  const eventTitle = getTrimmedString(title);
+  const fallback = eventTitle
+    ? getInitials(eventTitle)
+    : t.order.details.emptyValue;
+  const altText = `${t.order.eventRequests.details.logoAlt}: ${
+    eventTitle || t.order.eventRequests.details.title
+  }`;
+  const imageUrl = logoUrl && !hasImageError ? logoUrl : null;
 
   useEffect(() => {
     setHasImageError(false);
   }, [eventTitle, logoUrl]);
 
   return (
-    <span className="event-request-details-modal__avatar">
-      {logoUrl && !hasImageError ? (
+    <span
+      aria-hidden={imageUrl ? undefined : "true"}
+      className="event-request-details-modal__avatar"
+    >
+      {imageUrl ? (
         <img
           alt={altText}
           onError={() => setHasImageError(true)}
-          src={logoUrl}
+          src={imageUrl}
         />
       ) : (
-        <span aria-hidden="true">{getInitials(eventTitle)}</span>
+        fallback
       )}
     </span>
   );

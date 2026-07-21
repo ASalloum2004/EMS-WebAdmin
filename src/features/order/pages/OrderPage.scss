@@ -133,6 +133,10 @@
   flex-basis: 130px;
 }
 
+.order-table__cell--company .data-table__primary-value {
+  overflow-wrap: anywhere;
+}
+
 .order-table__cell--created {
   flex-basis: 170px;
 }

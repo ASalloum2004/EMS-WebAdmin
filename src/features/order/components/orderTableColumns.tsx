@@ -25,6 +25,17 @@ function renderStatus(request: BoothRequestApiData, t: I18nDictionary) {
   );
 }
 
+export function getBoothRequestCompanyDisplayName(
+  request: BoothRequestApiData,
+  t: I18nDictionary,
+) {
+  return (
+    getTrimmedString(request.company_name) ||
+    getTrimmedString(request.company?.name) ||
+    `${t.order.table.companyPrefix} #${request.company_id}`
+  );
+}
+
 export function formatRequestDate(date: unknown, language: SupportedLanguage) {
   const normalizedDate = getTrimmedString(date);
   const parsedDate = new Date(normalizedDate.replace(" ", "T"));
@@ -47,9 +58,14 @@ export function getBoothRequestColumns(
   return [
     {
       key: "company_id",
+      className: "order-table__cell--company",
       label: t.order.table.companyId,
-      render: (request) =>
-        `${t.order.table.companyPrefix} #${request.company_id}`,
+      render: (request) => getBoothRequestCompanyDisplayName(request, t),
+      supportingText: (request) => (
+        <span aria-label={`${t.order.table.requestId}: ${request.id}`}>
+          {t.order.table.requestPrefix} #{request.id}
+        </span>
+      ),
       variant: "primary",
     },
     {

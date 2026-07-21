@@ -15,6 +15,7 @@ import { AdminLayout } from "../../../layouts";
 import {
   BoothRequestDetailsModal,
   EventRequestDetailsModal,
+  getBoothRequestCompanyDisplayName,
   getBoothRequestColumns,
   getEventRequestColumns,
   OrderFiltersPanel,
@@ -255,7 +256,7 @@ export function OrderPage() {
                     columns={columns}
                     emptyMessage={t.order.table.empty}
                     getItemAriaLabel={(request) =>
-                      `${t.order.details.openAriaLabel} ${t.order.table.companyPrefix} #${request.company_id}`
+                      `${t.order.details.openAriaLabel} ${getBoothRequestCompanyDisplayName(request, t)}`
                     }
                     getItemKey={(request) => request.id}
                     items={boothRequests.requests}

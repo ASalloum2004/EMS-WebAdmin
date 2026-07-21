@@ -31,6 +31,7 @@ import { en } from "../src/i18n/locales/en.js";
 const firstRequest: BoothRequestApiData = {
   booth_id: 9,
   company_id: 37,
+  company_name: "First Company",
   created_at: "2026-07-14 10:01:00",
   final_price: 10,
   id: 901,
@@ -41,6 +42,7 @@ const firstRequest: BoothRequestApiData = {
 const secondRequest: BoothRequestApiData = {
   booth_id: 12,
   company_id: 52,
+  company_name: "Second Company",
   created_at: "2026-07-15 10:01:00",
   final_price: 20,
   id: 902,

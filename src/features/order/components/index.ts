@@ -6,4 +6,7 @@ export * from "./RejectBoothRequestConfirmModal";
 export * from "./OrderTabs";
 export { getEventRequestColumns } from "./eventRequestTableColumns";
 export { OrderFiltersPanel } from "./OrderFiltersPanel/OrderFiltersPanel";
-export { getBoothRequestColumns } from "./orderTableColumns";
+export {
+  getBoothRequestColumns,
+  getBoothRequestCompanyDisplayName,
+} from "./orderTableColumns";

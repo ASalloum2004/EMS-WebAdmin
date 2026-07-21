@@ -28,6 +28,22 @@ const boothRequestsResponse: BoothRequestsResponse = {
       id: index + 1,
       booth_id: 1,
       company_id: index + 1,
+      company_name: index === 0 ? "GreenFoods Co." : null,
+      company:
+        index === 0
+          ? {
+              id: 1,
+              name: "GreenFoods Co.",
+              business_sector: null,
+              phone: null,
+              description: null,
+              year_founded: null,
+              social_links: null,
+              headquarters_lat: 0,
+              headquarters_lng: 0,
+              status: null,
+            }
+          : undefined,
       status: "approved",
       reason_for_booking: "Exhibitor booth request created for Elcoach.",
       final_price: 250,
@@ -45,6 +61,8 @@ test("normalizes booth requests from the nested response structure", () => {
 
   assert.equal(result.requests.length, 5);
   assert.equal(result.requests[0]?.id, 1);
+  assert.equal(result.requests[0]?.company_name, "GreenFoods Co.");
+  assert.equal(result.requests[0]?.company?.name, "GreenFoods Co.");
 });
 
 test("maps nested booth request pagination metadata", () => {

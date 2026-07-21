@@ -10,7 +10,7 @@ export type BoothRequestFilters = {
   status: BoothRequestStatusFilter;
 };
 
-export type BoothRequestApiData = {
+type BoothRequestBaseApiData = {
   id: number;
   booth_id: number;
   company_id: number;
@@ -18,6 +18,24 @@ export type BoothRequestApiData = {
   reason_for_booking: string;
   final_price: number;
   created_at: string;
+};
+
+export type BoothRequestListCompanyApiData = {
+  id: number;
+  name: string | null;
+  business_sector: string | null;
+  phone: string | null;
+  description: string | null;
+  year_founded: number | null;
+  social_links: BoothRequestCompanySocialLinksResponse | null;
+  headquarters_lat: number | null;
+  headquarters_lng: number | null;
+  status: string | null;
+};
+
+export type BoothRequestApiData = BoothRequestBaseApiData & {
+  company_name: string | null;
+  company?: BoothRequestListCompanyApiData | null;
 };
 
 export type EventRequestStatus = BoothRequestStatus;
@@ -189,7 +207,7 @@ export type BoothRequestCompanyDetailsResponse = Omit<
   status?: string | null;
 };
 
-export type BoothRequestDetailsApiData = BoothRequestApiData & {
+export type BoothRequestDetailsApiData = BoothRequestBaseApiData & {
   company: BoothRequestCompanyDetails;
   services: unknown[];
 };

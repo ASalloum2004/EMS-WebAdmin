@@ -24,7 +24,6 @@ export function EventRequestDetailsHeader({
   return (
     <header className="event-request-details-modal__header">
       <EventRequestDetailsLogo
-        className="event-request-details-modal__logo--header"
         logo={details?.logo ?? null}
         t={t}
         title={details?.title ?? null}

@@ -129,15 +129,20 @@ test("renders every Event detail section and excludes organizer coordinates", ()
   assert.ok(within(dialog).getByText("Speaker ID #5"));
   assert.ok(within(dialog).getByText("Not rated yet"));
   assert.equal(within(dialog).getAllByText("0").length, 2);
-  assert.ok(within(dialog).getByText("QR_METADATA_VALUE"));
-  assert.ok(
-    within(dialog).getAllByLabelText(
-      "Event logo: The Future of Publishing",
-    ).length >= 2,
+  assert.equal(within(dialog).queryByText("QR_METADATA_VALUE"), null);
+  assert.equal(
+    within(dialog).queryByText("Additional event information"),
+    null,
   );
+  const avatar = dialog.querySelector<HTMLElement>(
+    ".event-request-details-modal__avatar",
+  );
+  assert.ok(avatar);
+  assert.equal(avatar.textContent, "TF");
+  assert.equal(within(avatar).getByText("TF").getAttribute("aria-hidden"), "true");
 });
 
-test("handles null organizer, QR metadata, logo, and zero, one, or many speakers", () => {
+test("handles null organizer and zero, one, or many speakers", () => {
   const emptyDetails: EventRequestDetails = {
     ...fullDetails,
     eventable: null,
@@ -149,10 +154,7 @@ test("handles null organizer, QR metadata, logo, and zero, one, or many speakers
 
   assert.ok(emptyView.getByText("No organizer information is available."));
   assert.ok(emptyView.getByText("No speakers are assigned to this event."));
-  assert.ok(emptyView.getAllByText("Not available").length);
-  assert.ok(
-    emptyView.getAllByLabelText("Event logo: The Future of Publishing").length,
-  );
+  assert.ok(emptyView.getByText("TF"));
   emptyView.unmount();
 
   const oneSpeakerView = renderModal({
@@ -166,6 +168,46 @@ test("handles null organizer, QR metadata, logo, and zero, one, or many speakers
   const manySpeakerView = renderModal(fullDetails);
   assert.ok(manySpeakerView.getByText("Fawzy"));
   assert.ok(manySpeakerView.getByText("Elcoach"));
+});
+
+test("renders a valid header logo and falls back to decorative title initials", () => {
+  const logoUrl = "https://events.example/event-logo.png";
+  const view = renderModal({ ...fullDetails, logo: logoUrl });
+  const dialog = view.getByRole("dialog", {
+    name: "The Future of Publishing",
+  });
+  const logo = within(dialog).getByRole("img", {
+    name: "Event logo: The Future of Publishing",
+  });
+
+  assert.equal(logo.getAttribute("src"), logoUrl);
+  assert.ok(logo.closest(".event-request-details-modal__avatar"));
+
+  fireEvent.error(logo);
+
+  assert.equal(
+    within(dialog).queryByRole("img", {
+      name: "Event logo: The Future of Publishing",
+    }),
+    null,
+  );
+  const failedLogoFallback = within(dialog).getByText("TF");
+  assert.equal(failedLogoFallback.getAttribute("aria-hidden"), "true");
+  view.unmount();
+
+  const emptyLogoView = renderModal({ ...fullDetails, logo: "" });
+  assert.ok(emptyLogoView.getByText("TF"));
+  emptyLogoView.unmount();
+
+  const genericTitleView = renderModal({
+    ...fullDetails,
+    logo: null,
+    title: null,
+  });
+  const genericDialog = genericTitleView.getByRole("dialog", {
+    name: "Event Request Details",
+  });
+  assert.ok(within(genericDialog).getByText("ER"));
 });
 
 test("renders only safe social links and a safe telephone link", () => {
@@ -278,9 +320,6 @@ test("renders translated Arabic modal labels", () => {
   assert.ok(view.getByText(ar.order.eventRequests.details.organizerInformation));
   assert.ok(view.getByText(ar.order.eventRequests.details.speakers));
   assert.ok(view.getByText(ar.order.eventRequests.details.engagement));
-  assert.ok(
-    view.getByText(ar.order.eventRequests.details.additionalInformation),
-  );
   assert.ok(view.getByText(ar.order.eventRequests.table.types.conference));
   assert.ok(view.getByRole("status", { name: ar.order.status.approved }));
   assert.equal(document.documentElement.dir, "rtl");

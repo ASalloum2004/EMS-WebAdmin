@@ -12,7 +12,7 @@ const unexpectedResponseMessage =
   "Unexpected event request details response format.";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isNullableString(value: unknown): value is string | null {
@@ -23,67 +23,100 @@ function isNullableNumber(value: unknown): value is number | null {
   return (typeof value === "number" && Number.isFinite(value)) || value === null;
 }
 
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function isOptionalNullableString(value: unknown) {
+  return value === undefined || isNullableString(value);
+}
+
+function isOptionalNullableNumber(value: unknown) {
+  return value === undefined || isNullableNumber(value);
+}
+
 function isValidSocialLinks(value: unknown) {
   if (value === undefined || value === null) {
     return true;
   }
 
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+
   return (
     isRecord(value) &&
-    (value.website === undefined || isNullableString(value.website)) &&
-    (value.linkedin === undefined || isNullableString(value.linkedin))
+    isOptionalNullableString(value.website) &&
+    isOptionalNullableString(value.linkedin)
   );
 }
 
 function isValidOrganizer(value: unknown): value is EventRequestOrganizerApiData {
   return (
     isRecord(value) &&
-    typeof value.id === "number" &&
-    Number.isFinite(value.id) &&
-    isNullableString(value.name) &&
-    isNullableString(value.business_sector) &&
-    isNullableString(value.phone) &&
-    isNullableString(value.description) &&
-    isNullableNumber(value.year_founded) &&
+    isPositiveInteger(value.id) &&
+    isOptionalNullableString(value.name) &&
+    isOptionalNullableString(value.business_sector) &&
+    isOptionalNullableString(value.phone) &&
+    isOptionalNullableString(value.description) &&
+    isOptionalNullableNumber(value.year_founded) &&
     isValidSocialLinks(value.social_links) &&
-    isNullableNumber(value.headquarters_lat) &&
-    isNullableNumber(value.headquarters_lng) &&
-    isNullableString(value.status)
+    isOptionalNullableString(value.status)
   );
 }
 
 function isValidSpeaker(value: unknown): value is EventRequestSpeakerApiData {
   return (
     isRecord(value) &&
-    typeof value.id === "number" &&
-    Number.isFinite(value.id) &&
+    isPositiveInteger(value.id) &&
     isNullableString(value.name)
+  );
+}
+
+function isValidSpeakers(value: unknown) {
+  return (
+    value === undefined ||
+    value === null ||
+    (Array.isArray(value) && value.every(isValidSpeaker))
   );
 }
 
 function isValidDetails(value: unknown): value is EventRequestDetailsApiData {
   return (
     isRecord(value) &&
-    typeof value.id === "number" &&
-    Number.isFinite(value.id) &&
+    isPositiveInteger(value.id) &&
     isNullableString(value.title) &&
     isNullableNumber(value.event_hall_id) &&
     isNullableString(value.type) &&
     isNullableString(value.status) &&
-    isNullableString(value.start_at) &&
-    isNullableString(value.end_at) &&
-    isNullableNumber(value.duration) &&
-    isNullableString(value.description) &&
-    isNullableString(value.qr_token) &&
-    (value.eventable === null || isValidOrganizer(value.eventable)) &&
-    Array.isArray(value.speakers) &&
-    value.speakers.every(isValidSpeaker) &&
-    isNullableNumber(value.average_rating) &&
-    isNullableNumber(value.qr_scans_count) &&
-    isNullableNumber(value.saved_count) &&
-    isNullableString(value.created_at) &&
-    isNullableString(value.logo)
+    isOptionalNullableString(value.start_at) &&
+    isOptionalNullableString(value.end_at) &&
+    isOptionalNullableNumber(value.duration) &&
+    isOptionalNullableString(value.description) &&
+    isOptionalNullableString(value.qr_token) &&
+    (value.eventable === undefined ||
+      value.eventable === null ||
+      isValidOrganizer(value.eventable)) &&
+    isValidSpeakers(value.speakers) &&
+    isOptionalNullableNumber(value.average_rating) &&
+    isOptionalNullableNumber(value.qr_scans_count) &&
+    isOptionalNullableNumber(value.saved_count) &&
+    isOptionalNullableString(value.created_at) &&
+    isOptionalNullableString(value.logo)
   );
+}
+
+function normalizeSocialLinks(
+  socialLinks: EventRequestOrganizerApiData["social_links"],
+) {
+  if (!socialLinks || Array.isArray(socialLinks)) {
+    return null;
+  }
+
+  return {
+    website: socialLinks.website ?? null,
+    linkedin: socialLinks.linkedin ?? null,
+  };
 }
 
 function normalizeOrganizer(
@@ -91,18 +124,13 @@ function normalizeOrganizer(
 ): EventRequestOrganizerDetails {
   return {
     id: rawOrganizer.id,
-    name: rawOrganizer.name,
-    business_sector: rawOrganizer.business_sector,
-    phone: rawOrganizer.phone,
-    description: rawOrganizer.description,
-    year_founded: rawOrganizer.year_founded,
-    social_links: rawOrganizer.social_links
-      ? {
-          website: rawOrganizer.social_links.website ?? null,
-          linkedin: rawOrganizer.social_links.linkedin ?? null,
-        }
-      : null,
-    status: rawOrganizer.status,
+    name: rawOrganizer.name ?? null,
+    business_sector: rawOrganizer.business_sector ?? null,
+    phone: rawOrganizer.phone ?? null,
+    description: rawOrganizer.description ?? null,
+    year_founded: rawOrganizer.year_founded ?? null,
+    social_links: normalizeSocialLinks(rawOrganizer.social_links),
+    status: rawOrganizer.status ?? null,
   };
 }
 
@@ -133,23 +161,23 @@ export function normalizeEventRequestDetailsResponse(
     event_hall_id: details.event_hall_id,
     type: details.type,
     status: details.status,
-    start_at: details.start_at,
-    end_at: details.end_at,
-    duration: details.duration,
-    description: details.description,
-    qr_token: details.qr_token,
+    start_at: details.start_at ?? null,
+    end_at: details.end_at ?? null,
+    duration: details.duration ?? null,
+    description: details.description ?? null,
+    qr_token: details.qr_token ?? null,
     eventable: details.eventable
       ? normalizeOrganizer(details.eventable)
       : null,
-    speakers: details.speakers.map((speaker) => ({
+    speakers: (details.speakers ?? []).map((speaker) => ({
       id: speaker.id,
       name: speaker.name,
     })),
-    average_rating: details.average_rating,
-    qr_scans_count: details.qr_scans_count,
-    saved_count: details.saved_count,
-    created_at: details.created_at,
-    logo: details.logo,
+    average_rating: details.average_rating ?? null,
+    qr_scans_count: details.qr_scans_count ?? null,
+    saved_count: details.saved_count ?? null,
+    created_at: details.created_at ?? null,
+    logo: details.logo ?? null,
   };
 }
 

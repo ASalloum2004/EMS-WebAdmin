@@ -54,13 +54,6 @@ export interface EventRequestEngagementSectionProps {
   t: I18nDictionary;
 }
 
-export interface EventRequestAdditionalInfoSectionProps {
-  logo: string | null;
-  qrToken: string | null;
-  t: I18nDictionary;
-  title: string | null;
-}
-
 export interface EventRequestDetailsFooterProps {
   onApprove?: () => void;
   onReject?: () => void;
@@ -83,7 +76,6 @@ export interface EventRequestDetailsCardProps {
 }
 
 export interface EventRequestDetailsLogoProps {
-  className?: string;
   logo: string | null;
   t: I18nDictionary;
   title: string | null;

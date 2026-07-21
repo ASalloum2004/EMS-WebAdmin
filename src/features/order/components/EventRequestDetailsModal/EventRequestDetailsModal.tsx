@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { useI18n } from "../../../../i18n";
-import { EventRequestAdditionalInfoSection } from "./EventRequestAdditionalInfoSection";
 import { EventRequestDetailsFooter } from "./EventRequestDetailsFooter";
 import { EventRequestDetailsHeader } from "./EventRequestDetailsHeader";
 import type { EventRequestDetailsModalProps } from "./EventRequestDetailsModal.types";
@@ -146,12 +145,6 @@ export function EventRequestDetailsModal({
                   qrScansCount={details.qr_scans_count}
                   savedCount={details.saved_count}
                   t={t}
-                />
-                <EventRequestAdditionalInfoSection
-                  logo={details.logo}
-                  qrToken={details.qr_token}
-                  t={t}
-                  title={details.title}
                 />
               </div>
             </div>

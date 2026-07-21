@@ -37,7 +37,7 @@
 .event-request-details-modal__header {
   position: relative;
   z-index: 2;
-  min-height: 94px;
+  min-height: 86px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -100,9 +100,9 @@
   }
 
   .event-request-details-modal__header {
-    min-height: 80px;
+    min-height: 76px;
     grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 11px;
+    gap: 12px;
     padding: 14px 16px;
   }
 
@@ -113,11 +113,5 @@
   .event-request-details-modal__content-grid,
   .event-request-details-modal__column {
     gap: 16px;
-  }
-}
-
-@media (max-width: 420px) {
-  .event-request-details-modal__header {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }

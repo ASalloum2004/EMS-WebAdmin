@@ -48,6 +48,24 @@ const rawDetails: EventRequestDetailsApiData = {
   logo: null,
 };
 
+const requestTwoResponseFixture: EventRequestDetailsResponse = {
+  status: true,
+  message: "Success",
+  data: {
+    id: 2,
+    title: "Modern API Security",
+    event_hall_id: null,
+    type: null,
+    status: null,
+    eventable: {
+      id: 2,
+      headquarters_lat: "33.513807",
+      social_links: [],
+    },
+    speakers: null,
+  },
+};
+
 function getResponse(
   data: EventRequestDetailsApiData = rawDetails,
 ): EventRequestDetailsResponse {
@@ -149,8 +167,57 @@ test("supports null organizer, empty speakers, and nullable metadata", () => {
   assert.equal(details.logo, null);
 });
 
-test("normalizes missing and partial organizer social links", () => {
+test("normalizes the sparse Request #2 details response", () => {
   const details = normalizeEventRequestDetailsResponse(
+    requestTwoResponseFixture,
+  );
+
+  assert.equal(details.id, 2);
+  assert.equal(details.title, "Modern API Security");
+  assert.deepEqual(details.speakers, []);
+  assert.deepEqual(details.eventable, {
+    id: 2,
+    name: null,
+    business_sector: null,
+    phone: null,
+    description: null,
+    year_founded: null,
+    social_links: null,
+    status: null,
+  });
+  assert.equal(details.start_at, null);
+  assert.equal(details.end_at, null);
+  assert.equal(details.duration, null);
+  assert.equal(details.description, null);
+  assert.equal(details.qr_token, null);
+  assert.equal(details.average_rating, null);
+  assert.equal(details.qr_scans_count, null);
+  assert.equal(details.saved_count, null);
+  assert.equal(details.created_at, null);
+  assert.equal(details.logo, null);
+
+  const organizer = details.eventable as Record<string, unknown>;
+  assert.equal("headquarters_lat" in organizer, false);
+  assert.equal("headquarters_lng" in organizer, false);
+});
+
+test("normalizes missing organizer and speakers collections", () => {
+  const details = normalizeEventRequestDetailsResponse(
+    getResponse({
+      id: 2,
+      title: "Modern API Security",
+      event_hall_id: null,
+      type: null,
+      status: null,
+    }),
+  );
+
+  assert.equal(details.eventable, null);
+  assert.deepEqual(details.speakers, []);
+});
+
+test("normalizes missing and partial organizer social links", () => {
+  const partialDetails = normalizeEventRequestDetailsResponse(
     getResponse({
       ...rawDetails,
       eventable: {
@@ -160,10 +227,32 @@ test("normalizes missing and partial organizer social links", () => {
     }),
   );
 
-  assert.deepEqual(details.eventable?.social_links, {
+  assert.deepEqual(partialDetails.eventable?.social_links, {
     website: "https://dar.com",
     linkedin: null,
   });
+
+  const emptyDetails = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      eventable: {
+        id: 1,
+        social_links: {},
+      },
+    }),
+  );
+  assert.deepEqual(emptyDetails.eventable?.social_links, {
+    website: null,
+    linkedin: null,
+  });
+
+  const missingDetails = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      eventable: { id: 1 },
+    }),
+  );
+  assert.equal(missingDetails.eventable?.social_links, null);
 });
 
 test("rejects invalid Event Request details response objects and arrays", () => {
@@ -173,7 +262,31 @@ test("rejects invalid Event Request details response objects and arrays", () => 
         ...getResponse(),
         data: {
           ...rawDetails,
-          speakers: null as unknown as EventRequestDetailsApiData["speakers"],
+          speakers: [{ id: 0, name: "Invalid speaker" }],
+        },
+      }),
+    /Unexpected event request details response format/,
+  );
+
+  assert.throws(
+    () =>
+      normalizeEventRequestDetailsResponse({
+        ...getResponse(),
+        data: {
+          ...rawDetails,
+          duration: "3" as unknown as number,
+        },
+      }),
+    /Unexpected event request details response format/,
+  );
+
+  assert.throws(
+    () =>
+      normalizeEventRequestDetailsResponse({
+        ...getResponse(),
+        data: {
+          ...rawDetails,
+          id: 0,
         },
       }),
     /Unexpected event request details response format/,

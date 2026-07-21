@@ -31,8 +31,7 @@
 
 .event-request-details-modal__facts,
 .event-request-details-modal__organizer-facts,
-.event-request-details-modal__engagement,
-.event-request-details-modal__additional {
+.event-request-details-modal__engagement {
   margin: 0;
 }
 
@@ -145,25 +144,6 @@
   line-height: 24px;
 }
 
-.event-request-details-modal__additional {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.event-request-details-modal__additional > div {
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(96px, 120px) minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-}
-
-.event-request-details-modal__qr-token {
-  font-family: var(--ems-font-mono, monospace);
-  font-weight: 600;
-}
-
 @media (max-width: 640px) {
   .event-request-details-modal__facts,
   .event-request-details-modal__speakers,
@@ -190,7 +170,6 @@
     --ems-card-padding: 16px;
   }
 
-  .event-request-details-modal__additional > div,
   .event-request-details-modal__organizer-facts > div {
     grid-template-columns: 1fr;
     gap: 4px;

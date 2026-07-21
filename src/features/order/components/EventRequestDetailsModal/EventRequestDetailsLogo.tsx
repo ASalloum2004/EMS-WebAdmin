@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import type { EventRequestDetailsLogoProps } from "./EventRequestDetailsModal.types";
-import {
-  classNames,
-  getInitials,
-  getSafeExternalUrl,
-} from "./EventRequestDetailsModal.utils";
+import { getInitials, getSafeExternalUrl } from "./EventRequestDetailsModal.utils";
 
 export function EventRequestDetailsLogo({
-  className,
   logo,
   title,
   t,
@@ -24,12 +19,7 @@ export function EventRequestDetailsLogo({
   }, [eventTitle, logoUrl]);
 
   return (
-    <span
-      className={classNames(
-        "event-request-details-modal__logo",
-        className,
-      )}
-    >
+    <span className="event-request-details-modal__avatar">
       {logoUrl && !hasImageError ? (
         <img
           alt={altText}
@@ -37,7 +27,7 @@ export function EventRequestDetailsLogo({
           src={logoUrl}
         />
       ) : (
-        <span aria-label={altText}>{getInitials(eventTitle)}</span>
+        <span aria-hidden="true">{getInitials(eventTitle)}</span>
       )}
     </span>
   );

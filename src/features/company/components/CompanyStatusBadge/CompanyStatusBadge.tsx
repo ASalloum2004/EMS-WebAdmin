@@ -27,7 +27,7 @@ export function CompanyStatusBadge({
       ? t.company.statuses.approved
       : variant === "not-approved"
         ? t.company.statuses.notApproved
-        : t.company.details.notProvided;
+        : t.company.statuses.notProvided;
 
   return (
     <span className={`company-status-badge company-status-badge--${variant}`}>

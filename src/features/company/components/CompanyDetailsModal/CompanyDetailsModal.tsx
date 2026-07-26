@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink } from "lucide-react";
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type {
@@ -29,57 +28,6 @@ function getTrimmedValue(value: string | null | undefined) {
   return value?.trim() ?? "";
 }
 
-function getSafeExternalUrl(value: string | null | undefined) {
-  const normalizedValue = getTrimmedValue(value);
-
-  try {
-    const url = new URL(normalizedValue);
-
-    return url.protocol === "https:" || url.protocol === "http:"
-      ? url.toString()
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function formatCoordinate(value: number | string | null) {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? String(value) : "";
-  }
-
-  return getTrimmedValue(value);
-}
-
-function CompanyExternalLink({
-  label,
-  notProvided,
-  value,
-}: {
-  label: string;
-  notProvided: string;
-  value: string | null | undefined;
-}) {
-  const safeUrl = getSafeExternalUrl(value);
-
-  if (!safeUrl) {
-    return <span>{notProvided}</span>;
-  }
-
-  return (
-    <a
-      aria-label={`${label}: ${safeUrl}`}
-      className="company-details-modal__external-link"
-      href={safeUrl}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <span>{getTrimmedValue(value)}</span>
-      <ExternalLink aria-hidden="true" size={14} strokeWidth={1.8} />
-    </a>
-  );
-}
-
 function ManagerAvatar({ manager }: { manager: CompanyManager }) {
   const [hasAvatarError, setHasAvatarError] = useState(false);
   const avatar = getTrimmedValue(manager.avatar);
@@ -103,30 +51,6 @@ function ManagerAvatar({ manager }: { manager: CompanyManager }) {
   );
 }
 
-function GalleryImage({
-  alt,
-  fallback,
-  source,
-}: {
-  alt: string;
-  fallback: string;
-  source: string;
-}) {
-  const [hasImageError, setHasImageError] = useState(false);
-
-  useEffect(() => {
-    setHasImageError(false);
-  }, [source]);
-
-  return hasImageError ? (
-    <span className="company-details-modal__gallery-fallback">
-      {fallback}
-    </span>
-  ) : (
-    <img alt={alt} onError={() => setHasImageError(true)} src={source} />
-  );
-}
-
 function CompanyDetailsContent({
   company,
   details,
@@ -147,70 +71,20 @@ function CompanyDetailsContent({
         <div className="company-details-modal__identity">
           <CompanyLogo logo={logo} name={companyName} large />
           <div>
-            <strong>{companyName || t.company.details.notProvided}</strong>
-            <span>{businessSector || t.company.details.notProvided}</span>
+            <strong>{companyName}</strong>
+            <span>{businessSector}</span>
           </div>
           <CompanyStatusBadge status={details.status} />
         </div>
-        <div className="company-details-modal__description">
-          <h4>{t.company.details.description}</h4>
-          <p>{details.description || t.company.details.notProvided}</p>
-        </div>
-      </section>
-
-      <div className="company-details-modal__section-grid">
-        <section className="company-details-modal__section">
-          <h3>{t.company.details.contactAndSocial}</h3>
+        {phone ? (
           <dl className="company-details-modal__facts">
             <div>
               <dt>{t.company.table.phone}</dt>
-              <dd dir={phone ? "ltr" : undefined}>
-                {phone || t.company.details.notProvided}
-              </dd>
-            </div>
-            <div>
-              <dt>{t.company.details.website}</dt>
-              <dd>
-                <CompanyExternalLink
-                  label={t.company.details.website}
-                  notProvided={t.company.details.notProvided}
-                  value={details.socialLinks?.website}
-                />
-              </dd>
-            </div>
-            <div>
-              <dt>{t.company.details.linkedin}</dt>
-              <dd>
-                <CompanyExternalLink
-                  label={t.company.details.linkedin}
-                  notProvided={t.company.details.notProvided}
-                  value={details.socialLinks?.linkedin}
-                />
-              </dd>
+              <dd dir="ltr">{phone}</dd>
             </div>
           </dl>
-        </section>
-
-        <section className="company-details-modal__section">
-          <h3>{t.company.details.headquarters}</h3>
-          <dl className="company-details-modal__facts">
-            <div>
-              <dt>{t.company.details.latitude}</dt>
-              <dd dir="ltr">
-                {formatCoordinate(details.headquartersLat) ||
-                  t.company.details.notProvided}
-              </dd>
-            </div>
-            <div>
-              <dt>{t.company.details.longitude}</dt>
-              <dd dir="ltr">
-                {formatCoordinate(details.headquartersLng) ||
-                  t.company.details.notProvided}
-              </dd>
-            </div>
-          </dl>
-        </section>
-      </div>
+        ) : null}
+      </section>
 
       <section className="company-details-modal__section">
         <h3>{t.company.details.managers}</h3>
@@ -220,11 +94,8 @@ function CompanyDetailsContent({
               <li key={`${manager.email ?? manager.name}-${index}`}>
                 <ManagerAvatar manager={manager} />
                 <span>
-                  <strong>
-                    {manager.name || t.company.details.notProvided}
-                  </strong>
-                  <small>{manager.email || t.company.details.notProvided}</small>
-                  {manager.phone ? <small dir="ltr">{manager.phone}</small> : null}
+                  {manager.name ? <strong>{manager.name}</strong> : null}
+                  {manager.email ? <small>{manager.email}</small> : null}
                 </span>
               </li>
             ))}
@@ -243,17 +114,21 @@ function CompanyDetailsContent({
             {details.booths.map((booth, index) => (
               <li key={`${booth.label ?? booth.number ?? "booth"}-${index}`}>
                 <strong>
-                  {booth.label || booth.number || t.company.details.notProvided}
+                  {booth.label || booth.number}
                 </strong>
                 <dl className="company-details-modal__facts">
-                  <div>
-                    <dt>{t.company.details.boothNumber}</dt>
-                    <dd>{booth.number || t.company.details.notProvided}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.company.details.hall}</dt>
-                    <dd>{booth.hall || t.company.details.notProvided}</dd>
-                  </div>
+                  {booth.number ? (
+                    <div>
+                      <dt>{t.company.details.boothNumber}</dt>
+                      <dd>{booth.number}</dd>
+                    </div>
+                  ) : null}
+                  {booth.hall ? (
+                    <div>
+                      <dt>{t.company.details.hall}</dt>
+                      <dd>{booth.hall}</dd>
+                    </div>
+                  ) : null}
                 </dl>
               </li>
             ))}
@@ -265,25 +140,6 @@ function CompanyDetailsContent({
         )}
       </section>
 
-      <section className="company-details-modal__section">
-        <h3>{t.company.details.gallery}</h3>
-        {details.gallery.length ? (
-          <div className="company-details-modal__gallery">
-            {details.gallery.map((galleryImage, index) => (
-              <GalleryImage
-                alt={`${companyName} ${t.company.details.galleryImage} ${index + 1}`}
-                fallback={t.company.details.imageUnavailable}
-                key={`${galleryImage}-${index}`}
-                source={galleryImage}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="company-details-modal__empty">
-            {t.company.details.noGalleryImages}
-          </p>
-        )}
-      </section>
     </div>
   );
 }
@@ -374,7 +230,7 @@ export function CompanyDetailsModal({
         <header className="company-details-modal__header">
           <div>
             <h2 id="company-details-modal-title">{t.company.details.title}</h2>
-            <p>{company.name || t.company.details.notProvided}</p>
+            <p>{company.name}</p>
           </div>
           <ModalCloseButton
             ariaLabel={t.company.details.closeAriaLabel}

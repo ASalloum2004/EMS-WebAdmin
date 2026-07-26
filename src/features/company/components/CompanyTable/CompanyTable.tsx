@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { DataTable, type DataTableColumn } from "../../../../components";
-import { useI18n } from "../../../../i18n";
+import { useI18n, type SupportedLanguage } from "../../../../i18n";
 import type { CompanyListItem } from "../../types";
 import { CompanyLogo } from "../CompanyLogo";
 import { CompanyStatusBadge } from "../CompanyStatusBadge";
@@ -25,12 +25,31 @@ function CompanyIdentity({ company }: { company: CompanyListItem }) {
   );
 }
 
+export function formatCompanyCount(
+  count: number | null | undefined,
+  language: SupportedLanguage,
+) {
+  if (
+    typeof count !== "number" ||
+    !Number.isFinite(count) ||
+    !Number.isInteger(count) ||
+    count < 0
+  ) {
+    return EMPTY_VALUE;
+  }
+
+  return new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US", {
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  }).format(count);
+}
+
 export function CompanyTable({
   companies,
   emptyMessage,
   onOpenCompany,
 }: CompanyTableProps) {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const columns = useMemo<Array<DataTableColumn<CompanyListItem>>>(
     () => [
       {
@@ -53,6 +72,20 @@ export function CompanyTable({
         className: "company-table__cell--phone",
       },
       {
+        key: "managers_count",
+        label: t.company.table.managers,
+        render: (company) =>
+          formatCompanyCount(company.managersCount, language),
+        className: "company-table__cell--count",
+      },
+      {
+        key: "booths_count",
+        label: t.company.table.booths,
+        render: (company) =>
+          formatCompanyCount(company.boothsCount, language),
+        className: "company-table__cell--count",
+      },
+      {
         key: "status",
         label: t.company.table.status,
         render: (company) => <CompanyStatusBadge status={company.status} />,
@@ -60,7 +93,7 @@ export function CompanyTable({
         variant: "badge",
       },
     ],
-    [t],
+    [language, t],
   );
 
   return (

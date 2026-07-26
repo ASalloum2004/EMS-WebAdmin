@@ -32,6 +32,10 @@
   flex: 0 1 150px;
 }
 
+.company-table__cell--count {
+  flex: 0 1 76px;
+}
+
 .company-table__cell--phone .data-table__value {
   direction: ltr;
   text-align: start;
@@ -56,6 +60,7 @@
 
   .company-table__cell--sector,
   .company-table__cell--phone,
+  .company-table__cell--count,
   .company-table .company-table__cell--status {
     flex: 1 1 150px;
   }
@@ -64,6 +69,7 @@
 @media (max-width: 640px) {
   .company-table__cell--sector,
   .company-table__cell--phone,
+  .company-table__cell--count,
   .company-table .company-table__cell--status {
     flex: 1 1 100%;
     align-items: flex-start;

@@ -1,8 +1,3 @@
-export type CompanySocialLinksApiData = {
-  linkedin?: string | null;
-  website?: string | null;
-};
-
 export type CompanyListApiData = {
   id: number;
   name: string | null;
@@ -19,7 +14,6 @@ export type CompanyManagerApiData = {
   name: string | null;
   email: string | null;
   avatar: string | null;
-  phone?: string | null;
 };
 
 export type CompanyBoothApiData = {
@@ -38,11 +32,6 @@ export type CompanyDetailsApiData = {
   logo: string | null;
   managers: CompanyManagerApiData[];
   booths: CompanyBoothApiData[];
-  description?: string | null;
-  social_links?: CompanySocialLinksApiData | null;
-  headquarters_lat?: number | string | null;
-  headquarters_lng?: number | string | null;
-  gallery?: unknown;
 };
 
 export type CompaniesApiResponse = {
@@ -68,6 +57,8 @@ export type CompanyListItem = {
   name: string;
   businessSector: string;
   phone: string | null;
+  managersCount: number | null;
+  boothsCount: number | null;
   status: string | null;
   logo: string | null;
 };
@@ -76,7 +67,6 @@ export type CompanyManager = {
   name: string;
   email: string | null;
   avatar: string | null;
-  phone: string | null;
 };
 
 export type CompanyBooth = {
@@ -85,17 +75,10 @@ export type CompanyBooth = {
   label: string | null;
 };
 
-export type CompanySocialLinks = {
-  linkedin: string | null;
-  website: string | null;
-};
-
-export type CompanyDetails = CompanyListItem & {
-  description: string | null;
-  socialLinks: CompanySocialLinks | null;
-  headquartersLat: number | string | null;
-  headquartersLng: number | string | null;
-  gallery: string[];
+export type CompanyDetails = Omit<
+  CompanyListItem,
+  "boothsCount" | "managersCount"
+> & {
   managers: CompanyManager[];
   booths: CompanyBooth[];
 };

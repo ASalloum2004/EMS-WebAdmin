@@ -34,6 +34,14 @@ function getNonNegativeInteger(value: unknown) {
   return Math.trunc(value);
 }
 
+function getCompanyCount(value: unknown) {
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 0
+    ? value
+    : null;
+}
+
 function getTrimmedString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
@@ -46,6 +54,8 @@ function normalizeCompanyListItem(
     name: getTrimmedString(company.name) ?? "",
     businessSector: getTrimmedString(company.business_sector) ?? "",
     phone: getTrimmedString(company.phone),
+    managersCount: getCompanyCount(company.managers_count),
+    boothsCount: getCompanyCount(company.booths_count),
     status: getTrimmedString(company.status),
     logo: getTrimmedString(company.logo),
   };

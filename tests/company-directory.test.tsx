@@ -16,6 +16,7 @@ import {
   normalizeCompanyDetailsResponse,
 } from "../src/features/company/api/index.js";
 import { getCompanyStatusVariant } from "../src/features/company/components/CompanyStatusBadge/CompanyStatusBadge.js";
+import { formatCompanyCount } from "../src/features/company/components/CompanyTable/CompanyTable.js";
 import { CompanyPage } from "../src/features/company/pages/CompanyPage.js";
 import type {
   CompaniesApiResponse,
@@ -68,7 +69,6 @@ const detailResponse: CompanyDetailsApiResponse = {
         name: "Directory Manager",
         email: "manager@example.com",
         avatar: null,
-        phone: null,
       },
     ],
     booths: [
@@ -171,7 +171,7 @@ test("builds exact company list and detail paths without empty or status filters
   assert.doesNotMatch(buildCompaniesPath(), /status|active/i);
 });
 
-test("normalizes verified list and detail wrappers without exposing IDs or counts", () => {
+test("normalizes verified list counts while keeping relationship IDs internal", () => {
   const listResult = normalizeCompaniesResponse(createListResponse());
   const company = listResult.companies[0];
 
@@ -180,6 +180,8 @@ test("normalizes verified list and detail wrappers without exposing IDs or count
     name: "Dar Al feker",
     businessSector: "Lectures & Exhibitions",
     phone: "+963112223334",
+    managersCount: 2,
+    boothsCount: 2,
     status: "approved",
     logo: null,
   });
@@ -198,14 +200,11 @@ test("normalizes verified list and detail wrappers without exposing IDs or count
       name: "Directory Manager",
       email: "manager@example.com",
       avatar: null,
-      phone: null,
     },
   ]);
   assert.deepEqual(details.booths, [
     { number: "2C-01", hall: "2", label: "Booth 2-2C-01" },
   ]);
-  assert.deepEqual(details.gallery, []);
-  assert.equal(details.description, null);
   assert.equal(Object.hasOwn(details.managers[0], "id"), false);
   assert.equal(Object.hasOwn(details.booths[0], "id"), false);
   assert.equal(details.status, "approved");
@@ -213,6 +212,8 @@ test("normalizes verified list and detail wrappers without exposing IDs or count
   assert.equal(getCompanyStatusVariant("PENDING"), "not-approved");
   assert.equal(getCompanyStatusVariant("rejected"), "not-approved");
   assert.equal(getCompanyStatusVariant(null), "missing");
+  assert.equal(formatCompanyCount(0, "en"), "0");
+  assert.equal(formatCompanyCount(null, "en"), "—");
 });
 
 test("uses the authenticated shared API client for the companies list", async () => {
@@ -282,6 +283,17 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   assert.ok(view.getByText("Approved"));
   assert.equal(view.queryByText("Year Founded"), null);
   assert.equal(view.queryByText("Total Managers"), null);
+  const firstCompanyRow = view.getByRole("button", {
+    name: "Open company details for Dar Al feker",
+  });
+  assert.equal(within(firstCompanyRow).getByText("Managers").textContent, "Managers");
+  assert.equal(within(firstCompanyRow).getByText("Booths").textContent, "Booths");
+  assert.equal(within(firstCompanyRow).getAllByText("2").length, 2);
+
+  const zeroCountRow = view.getByRole("button", {
+    name: "Open company details for Metro Tech Labs",
+  });
+  assert.ok(within(zeroCountRow).getByText("0"));
 
   const search = view.getByRole("searchbox", {
     name: "Search companies by name",
@@ -360,6 +372,14 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   assert.ok(view.getByText("Booth 2-2C-01"));
   assert.ok(view.getAllByText("Approved").length >= 2);
   assert.equal(view.queryByText("Year Founded"), null);
+  assert.equal(view.queryByText("Description"), null);
+  assert.equal(view.queryByText("Website"), null);
+  assert.equal(view.queryByText("LinkedIn"), null);
+  assert.equal(view.queryByText("Headquarters"), null);
+  assert.equal(view.queryByText("Latitude"), null);
+  assert.equal(view.queryByText("Longitude"), null);
+  assert.equal(view.queryByText("Gallery"), null);
+  assert.equal(view.queryByText("No gallery images"), null);
 
   fireEvent.click(
     view.getByRole("button", { name: "Close company details" }),

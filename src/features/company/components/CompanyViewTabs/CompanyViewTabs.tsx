@@ -1,7 +1,16 @@
 import { useI18n } from "../../../../i18n";
+import type { CompanyDirectoryView } from "../../types";
 import "./CompanyViewTabs.scss";
 
-export function CompanyViewTabs() {
+type CompanyViewTabsProps = {
+  activeView: CompanyDirectoryView;
+  onViewChange: (view: CompanyDirectoryView) => void;
+};
+
+export function CompanyViewTabs({
+  activeView,
+  onViewChange,
+}: CompanyViewTabsProps) {
   const { t } = useI18n();
 
   return (
@@ -11,20 +20,27 @@ export function CompanyViewTabs() {
       role="tablist"
     >
       <button
-        aria-disabled="true"
-        aria-selected="false"
-        className="company-view-tabs__tab"
-        disabled
+        aria-controls="company-directory-manager-panel"
+        aria-selected={activeView === "manager"}
+        className={`company-view-tabs__tab${
+          activeView === "manager" ? " company-view-tabs__tab--active" : ""
+        }`}
+        onClick={() => onViewChange("manager")}
         role="tab"
-        title={t.company.tabs.managerComingSoon}
+        tabIndex={activeView === "manager" ? 0 : -1}
         type="button"
       >
         {t.company.tabs.viewByManager}
       </button>
       <button
-        aria-selected="true"
-        className="company-view-tabs__tab company-view-tabs__tab--active"
+        aria-controls="company-directory-company-panel"
+        aria-selected={activeView === "company"}
+        className={`company-view-tabs__tab${
+          activeView === "company" ? " company-view-tabs__tab--active" : ""
+        }`}
+        onClick={() => onViewChange("company")}
         role="tab"
+        tabIndex={activeView === "company" ? 0 : -1}
         type="button"
       >
         {t.company.tabs.viewByCompany}

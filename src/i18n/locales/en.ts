@@ -15,6 +15,7 @@ export const en = {
     noResults: "No results found.",
     previousPage: "Previous page",
     nextPage: "Next page",
+    rowsPerPage: "Rows per page",
   },
   auth: {
     login: "Login",
@@ -91,7 +92,6 @@ export const en = {
       viewByManager: "View by Manager",
       viewByCompany: "View by Company",
       ariaLabel: "Company directory view",
-      managerComingSoon: "View by Manager will be available later",
     },
     search: {
       placeholder: "Search companies by name...",
@@ -102,6 +102,8 @@ export const en = {
       panelAriaLabel: "Company filters",
       businessSector: "Business Sector",
       businessSectorPlaceholder: "Enter a business sector",
+      status: "Status",
+      allStatuses: "All statuses",
     },
     table: {
       ariaLabel: "Companies",
@@ -135,6 +137,39 @@ export const en = {
       approved: "Approved",
       notApproved: "Not Approved",
       notProvided: "Not provided",
+      pending: "Pending",
+      rejected: "Rejected",
+    },
+    manager: {
+      panelAriaLabel: "Manager directory and controls",
+      summary: {
+        totalManagers: "Total Managers",
+        managedCompanies: "Managed Companies",
+        managedBooths: "Managed Booths",
+      },
+      search: {
+        placeholder: "Search managers by name...",
+        ariaLabel: "Search managers by name",
+      },
+      table: {
+        ariaLabel: "Managers",
+        manager: "Manager",
+        email: "Email",
+        companies: "Companies",
+        booths: "Booths",
+        actions: "Actions",
+        openDetails: "Open manager details for",
+        viewDetails: "View manager details for",
+        empty: "No managers are available.",
+        noResults: "No managers match your search.",
+        matchingManagers: "{{count}} matching managers",
+      },
+      details: {
+        title: "Manager details",
+        profile: "Manager Profile",
+        managementSummary: "Management Summary",
+        closeAriaLabel: "Close manager details",
+      },
     },
   },
   visitor: {

@@ -8,14 +8,16 @@ type UseCompanyFiltersOptions = {
 export function createEmptyCompanyFilters(): CompanyFilters {
   return {
     businessSector: "",
+    status: "",
   };
 }
 
 export function getCompanyFilterParams(
   filters: CompanyFilters,
-): Pick<GetCompaniesParams, "businessSector"> {
+): Pick<GetCompaniesParams, "businessSector" | "status"> {
   return {
     businessSector: filters.businessSector.trim() || undefined,
+    status: filters.status || undefined,
   };
 }
 
@@ -25,6 +27,7 @@ export function applyCompanyFilters(
 ) {
   const nextFilters: CompanyFilters = {
     businessSector: filters.businessSector.trim(),
+    status: filters.status,
   };
 
   onFiltersChange?.();

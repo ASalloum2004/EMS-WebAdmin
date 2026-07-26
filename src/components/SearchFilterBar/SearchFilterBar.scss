@@ -93,6 +93,15 @@
   outline-offset: 2px;
 }
 
+.search-filter-bar__filter-button--active {
+  border-color: var(--ems-color-primary);
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
+}
+
 .search-filter-bar--without-filter {
   --search-filter-bar-end-padding: 14px;
 }

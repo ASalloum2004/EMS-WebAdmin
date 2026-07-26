@@ -4,3 +4,8 @@ export * from "./CompanyLogo";
 export * from "./CompanyStatusBadge";
 export * from "./CompanyTable";
 export * from "./CompanyViewTabs";
+export * from "./ManagerAvatar";
+export * from "./ManagerDetailsModal";
+export * from "./ManagerSummaryCards";
+export * from "./ManagerTable";
+export * from "./ManagerView";

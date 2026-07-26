@@ -1,0 +1,196 @@
+.manager-details-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.manager-details-modal__dialog {
+  width: min(100%, 680px);
+  max-height: calc(100vh - 48px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  box-shadow: var(--ems-shadow-modal);
+  outline: none;
+}
+
+.manager-details-modal__header {
+  min-height: 86px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--ems-color-border-soft);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+}
+
+.manager-details-modal__header > div {
+  min-width: 0;
+}
+
+.manager-details-modal__header h2,
+.manager-details-modal__header p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--ems-font-body);
+}
+
+.manager-details-modal__header h2 {
+  color: var(--ems-color-heading);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.manager-details-modal__header p {
+  margin-top: 3px;
+  color: var(--ems-color-muted-light);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+}
+
+.manager-details-modal__scroll-area {
+  min-height: 0;
+  display: grid;
+  flex: 1 1 auto;
+  gap: 18px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px 28px;
+  background-color: var(
+    --ems-color-page-background,
+    var(--ems-color-admin-background)
+  );
+}
+
+.manager-details-modal__section {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+}
+
+.manager-details-modal__section h3 {
+  margin: 0 0 16px;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.manager-details-modal__identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.manager-details-modal__identity > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manager-details-modal__identity strong,
+.manager-details-modal__identity span {
+  overflow-wrap: anywhere;
+  font-family: var(--ems-font-body);
+}
+
+.manager-details-modal__identity strong {
+  color: var(--ems-color-heading);
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.manager-details-modal__identity span {
+  color: var(--ems-color-muted);
+  font-size: 13px;
+  line-height: 20px;
+  unicode-bidi: plaintext;
+}
+
+.manager-details-modal__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.manager-details-modal__summary > div {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.manager-details-modal__summary dt,
+.manager-details-modal__summary dd {
+  overflow-wrap: anywhere;
+  font-family: var(--ems-font-body);
+}
+
+.manager-details-modal__summary dt {
+  color: var(--ems-color-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.manager-details-modal__summary dd {
+  margin: 8px 0 0;
+  color: var(--ems-color-heading);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .manager-details-modal {
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .manager-details-modal__dialog {
+    max-height: calc(100vh - 24px);
+  }
+
+  .manager-details-modal__header {
+    min-height: 76px;
+    padding: 14px 16px;
+  }
+
+  .manager-details-modal__scroll-area {
+    padding: 16px;
+  }
+
+  .manager-details-modal__section {
+    padding: 16px;
+  }
+
+  .manager-details-modal__identity {
+    align-items: flex-start;
+  }
+
+  .manager-details-modal__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

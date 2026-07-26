@@ -179,7 +179,8 @@ export function CompanyDetailsModal({
         dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
       );
       const firstFocusableElement = focusableElements[0];
-      const lastFocusableElement = focusableElements.at(-1);
+      const lastFocusableElement =
+        focusableElements[focusableElements.length - 1];
 
       if (!firstFocusableElement || !lastFocusableElement) {
         event.preventDefault();

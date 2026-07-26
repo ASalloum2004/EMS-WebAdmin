@@ -25,19 +25,22 @@
   font-weight: 600;
   line-height: 20px;
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.company-view-tabs__tab:disabled {
-  cursor: not-allowed;
-  opacity: 0.62;
+.company-view-tabs__tab:not(.company-view-tabs__tab--active):hover {
+  color: var(--ems-color-primary);
 }
 
-.company-view-tabs__tab--active,
-.company-view-tabs__tab--active:disabled {
+.company-view-tabs__tab--active {
   background-color: var(--ems-color-card-background, var(--ems-color-white));
   color: var(--ems-color-primary);
   box-shadow: var(--ems-shadow-button);
-  opacity: 1;
+}
+
+.company-view-tabs__tab:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
 }
 
 @media (max-width: 640px) {

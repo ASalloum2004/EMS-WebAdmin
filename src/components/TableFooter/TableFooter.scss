@@ -1,6 +1,40 @@
 .table-footer {
+  position: relative;
   display: flex;
+  align-items: center;
   justify-content: center;
+}
+
+.table-footer__page-size {
+  position: absolute;
+  inset-inline-start: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.table-footer__page-size select {
+  height: 32px;
+  padding: 0 26px 0 9px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-pagination-text);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  outline: none;
+}
+
+.table-footer__page-size select:focus-visible {
+  border-color: var(--ems-color-primary);
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
 }
 
 .table-footer__controls {
@@ -71,6 +105,15 @@
 }
 
 @media (max-width: 520px) {
+  .table-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .table-footer__page-size {
+    position: static;
+  }
+
   .table-footer__button {
     min-width: 30px;
     height: 30px;

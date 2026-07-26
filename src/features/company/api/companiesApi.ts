@@ -9,6 +9,11 @@ import type {
 
 export const COMPANIES_PATH = "companies";
 export const DEFAULT_COMPANIES_PER_PAGE = 15;
+export const COMPANY_STATUS_FILTER_VALUES = [
+  "approved",
+  "pending",
+  "rejected",
+] as const;
 
 function getPositiveInteger(value: unknown) {
   if (
@@ -63,8 +68,6 @@ function normalizeCompanyListItem(
 
 export function buildCompaniesPath(params: GetCompaniesParams = {}) {
   const page = getPositiveInteger(params.page) ?? 1;
-  const perPage =
-    getPositiveInteger(params.perPage) ?? DEFAULT_COMPANIES_PER_PAGE;
   const queryParams = new URLSearchParams();
   const name = params.name?.trim();
   const businessSector = params.businessSector?.trim();
@@ -77,8 +80,14 @@ export function buildCompaniesPath(params: GetCompaniesParams = {}) {
     queryParams.set("filter[business_sector]", businessSector);
   }
 
+  if (
+    params.status &&
+    COMPANY_STATUS_FILTER_VALUES.includes(params.status)
+  ) {
+    queryParams.set("filter[status]", params.status);
+  }
+
   queryParams.set("page", String(page));
-  queryParams.set("per_page", String(perPage));
 
   return `${COMPANIES_PATH}?${queryParams.toString()}`;
 }
@@ -102,7 +111,6 @@ export function normalizeCompaniesResponse(
     1;
   const perPage =
     getPositiveInteger(response.data.per_page) ??
-    getPositiveInteger(requestedParams.perPage) ??
     DEFAULT_COMPANIES_PER_PAGE;
   const totalItems =
     getNonNegativeInteger(response.data.total) ?? companies.length;

@@ -16,7 +16,7 @@
 
 .company-filters-panel__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -35,7 +35,8 @@
   line-height: 16px;
 }
 
-.company-filters-panel__field input {
+.company-filters-panel__field input,
+.company-filters-panel__field select {
   width: 100%;
   height: 38px;
   padding: 0 12px;
@@ -50,7 +51,8 @@
   outline: none;
 }
 
-.company-filters-panel__field input:focus {
+.company-filters-panel__field input:focus,
+.company-filters-panel__field select:focus {
   border-color: var(--ems-color-primary);
   box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
 }

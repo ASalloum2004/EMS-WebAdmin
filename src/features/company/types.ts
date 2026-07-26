@@ -1,9 +1,28 @@
+export type CompanyApiStatus = "approved" | "pending" | "rejected";
+
+export type CompanyDirectoryView = "company" | "manager";
+
+export type Manager = {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string | null;
+  companies_count: number;
+  booths_count: number;
+};
+
+export type ManagerSummary = {
+  totalManagers: number;
+  managedCompanies: number;
+  managedBooths: number;
+};
+
 export type CompanyListApiData = {
   id: number;
   name: string | null;
   business_sector: string | null;
   phone: string | null;
-  status: string | null;
+  status: CompanyApiStatus | null;
   logo: string | null;
   managers_count: number;
   booths_count: number;
@@ -28,7 +47,7 @@ export type CompanyDetailsApiData = {
   name: string | null;
   business_sector: string | null;
   phone: string | null;
-  status: string | null;
+  status: CompanyApiStatus | null;
   logo: string | null;
   managers: CompanyManagerApiData[];
   booths: CompanyBoothApiData[];
@@ -85,6 +104,7 @@ export type CompanyDetails = Omit<
 
 export type CompanyFilters = {
   businessSector: string;
+  status: "" | CompanyApiStatus;
 };
 
 export type CompanyPagination = {
@@ -98,7 +118,7 @@ export type GetCompaniesParams = {
   businessSector?: string;
   name?: string;
   page?: number;
-  perPage?: number;
+  status?: CompanyApiStatus;
 };
 
 export type GetCompaniesResult = {

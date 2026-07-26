@@ -8,6 +8,9 @@ export type TableFooterProps = {
   totalItems?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
+  perPageOptions?: readonly number[];
+  showPageSizeSelector?: boolean;
   className?: string;
   showSinglePage?: boolean;
 };
@@ -57,6 +60,9 @@ export function TableFooter({
   totalItems,
   totalPages,
   onPageChange,
+  onPerPageChange,
+  perPageOptions = [],
+  showPageSizeSelector = true,
   className,
   showSinglePage = false,
 }: TableFooterProps) {
@@ -76,6 +82,20 @@ export function TableFooter({
       ? Math.max(1, Math.trunc(totalPages))
       : Math.max(1, Math.ceil(safeTotalItems / safePerPage));
   const activePage = clampPage(currentPage, safeTotalPages);
+  const safePerPageOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [...perPageOptions, safePerPage]
+            .filter(
+              (option) =>
+                Number.isFinite(option) && option > 0,
+            )
+            .map((option) => Math.trunc(option)),
+        ),
+      ).sort((firstOption, secondOption) => firstOption - secondOption),
+    [perPageOptions, safePerPage],
+  );
 
   const pageNumbers = useMemo(
     () => getPageNumbers(activePage, safeTotalPages),
@@ -92,12 +112,43 @@ export function TableFooter({
     onPageChange?.(nextPage);
   }
 
+  function handlePerPageChange(value: string) {
+    const nextPerPage = Number(value);
+
+    if (
+      !Number.isInteger(nextPerPage) ||
+      nextPerPage < 1 ||
+      nextPerPage === safePerPage
+    ) {
+      return;
+    }
+
+    onPerPageChange?.(nextPerPage);
+  }
+
   if (safeTotalPages <= 1 && !showSinglePage) {
     return null;
   }
 
   return (
     <nav className={classNames("table-footer", className)}>
+      {showPageSizeSelector && onPerPageChange ? (
+        <label className="table-footer__page-size">
+          <span>{t.common.rowsPerPage}</span>
+          <select
+            aria-label={t.common.rowsPerPage}
+            onChange={(event) => handlePerPageChange(event.target.value)}
+            value={safePerPage}
+          >
+            {safePerPageOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
       <div className="table-footer__controls">
         {activePage > 1 ? (
           <button

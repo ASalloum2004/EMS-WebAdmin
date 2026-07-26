@@ -55,7 +55,6 @@ export function useCompanies(errorFallback: string) {
   const automaticRequestKeyRef = useRef<string | null>(null);
   const requestParamsRef = useRef<GetCompaniesParams>({});
   const currentPage = pagination.currentPage;
-  const perPage = pagination.perPage;
 
   const resetPagination = useCallback(() => {
     setPagination((currentPagination) => ({
@@ -68,6 +67,7 @@ export function useCompanies(errorFallback: string) {
   });
   const filterParams = getCompanyFilterParams(filters.appliedFilters);
   const businessSector = filterParams.businessSector;
+  const status = filterParams.status;
 
   useEffect(() => {
     const nextSearch = searchValue.trim();
@@ -89,9 +89,9 @@ export function useCompanies(errorFallback: string) {
       businessSector,
       name: debouncedSearch || undefined,
       page: currentPage,
-      perPage,
+      status,
     }),
-    [businessSector, currentPage, debouncedSearch, perPage],
+    [businessSector, currentPage, debouncedSearch, status],
   );
   requestParamsRef.current = requestParams;
 
@@ -117,7 +117,7 @@ export function useCompanies(errorFallback: string) {
           companies: [],
           pagination: {
             currentPage: params.page ?? 1,
-            perPage: params.perPage ?? DEFAULT_COMPANIES_PER_PAGE,
+            perPage: DEFAULT_COMPANIES_PER_PAGE,
             totalItems: 0,
             totalPages: 1,
           },
@@ -168,13 +168,15 @@ export function useCompanies(errorFallback: string) {
     },
     [pagination.totalPages],
   );
-  const hasActiveCriteria = Boolean(debouncedSearch || businessSector);
+  const hasActiveFilters = Boolean(businessSector || status);
+  const hasActiveCriteria = Boolean(debouncedSearch || hasActiveFilters);
 
   return {
     companies,
     currentPage: pagination.currentPage,
     error,
     filters,
+    hasActiveFilters,
     hasActiveCriteria,
     isLoading,
     perPage: pagination.perPage,

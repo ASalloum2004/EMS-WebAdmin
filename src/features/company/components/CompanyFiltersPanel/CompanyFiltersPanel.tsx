@@ -38,6 +38,24 @@ export function CompanyFiltersPanel({
             value={filters.businessSector}
           />
         </label>
+
+        <label className="company-filters-panel__field">
+          <span>{t.company.filters.status}</span>
+          <select
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                status: event.target.value as CompanyFilters["status"],
+              })
+            }
+            value={filters.status}
+          >
+            <option value="">{t.company.filters.allStatuses}</option>
+            <option value="approved">{t.company.statuses.approved}</option>
+            <option value="pending">{t.company.statuses.pending}</option>
+            <option value="rejected">{t.company.statuses.rejected}</option>
+          </select>
+        </label>
       </div>
 
       <div className="company-filters-panel__actions">

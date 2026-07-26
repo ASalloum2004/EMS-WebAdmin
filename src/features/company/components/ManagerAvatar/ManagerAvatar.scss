@@ -1,0 +1,35 @@
+.manager-avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 50%;
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.manager-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.manager-avatar--large {
+  width: 68px;
+  height: 68px;
+  flex-basis: 68px;
+  font-size: 18px;
+  line-height: 24px;
+}

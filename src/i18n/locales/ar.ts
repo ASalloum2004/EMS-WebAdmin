@@ -17,6 +17,7 @@ export const ar: I18nDictionary = {
     noResults: "لا توجد نتائج.",
     previousPage: "الصفحة السابقة",
     nextPage: "الصفحة التالية",
+    rowsPerPage: "عدد الصفوف في الصفحة",
   },
   auth: {
     login: "تسجيل الدخول",
@@ -91,7 +92,6 @@ export const ar: I18nDictionary = {
       viewByManager: "العرض حسب المدير",
       viewByCompany: "العرض حسب الشركة",
       ariaLabel: "طريقة عرض دليل الشركات",
-      managerComingSoon: "سيتم توفير العرض حسب المدير لاحقاً",
     },
     search: {
       placeholder: "ابحث عن الشركات حسب الاسم...",
@@ -102,6 +102,8 @@ export const ar: I18nDictionary = {
       panelAriaLabel: "عوامل تصفية الشركات",
       businessSector: "قطاع الأعمال",
       businessSectorPlaceholder: "أدخل قطاع الأعمال",
+      status: "الحالة",
+      allStatuses: "جميع الحالات",
     },
     table: {
       ariaLabel: "الشركات",
@@ -135,6 +137,39 @@ export const ar: I18nDictionary = {
       approved: "موافق عليها",
       notApproved: "غير موافق عليها",
       notProvided: "غير متوفر",
+      pending: "قيد الانتظار",
+      rejected: "مرفوضة",
+    },
+    manager: {
+      panelAriaLabel: "دليل المديرين وأدوات التحكم",
+      summary: {
+        totalManagers: "إجمالي المديرين",
+        managedCompanies: "الشركات المُدارة",
+        managedBooths: "الأجنحة المُدارة",
+      },
+      search: {
+        placeholder: "ابحث عن المديرين حسب الاسم...",
+        ariaLabel: "البحث عن المديرين حسب الاسم",
+      },
+      table: {
+        ariaLabel: "المديرون",
+        manager: "المدير",
+        email: "البريد الإلكتروني",
+        companies: "الشركات",
+        booths: "الأجنحة",
+        actions: "الإجراءات",
+        openDetails: "فتح تفاصيل المدير",
+        viewDetails: "عرض تفاصيل المدير",
+        empty: "لا يوجد مديرون متاحون.",
+        noResults: "لا يوجد مديرون يطابقون بحثك.",
+        matchingManagers: "{{count}} من المديرين المطابقين",
+      },
+      details: {
+        title: "تفاصيل المدير",
+        profile: "الملف الشخصي للمدير",
+        managementSummary: "ملخص الإدارة",
+        closeAriaLabel: "إغلاق تفاصيل المدير",
+      },
     },
   },
   visitor: {

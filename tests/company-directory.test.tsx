@@ -85,16 +85,19 @@ const detailResponse: CompanyDetailsApiResponse = {
 function createListResponse(
   items = companyListItems,
   currentPage = 1,
+  perPage = 15,
 ): CompaniesApiResponse {
+  const total = 16;
+
   return {
     status: true,
     message: "companies retrieved successfully",
     data: {
       data: items,
       current_page: currentPage,
-      per_page: 15,
-      total: currentPage === 1 ? 16 : 2,
-      last_page: 2,
+      per_page: perPage,
+      total,
+      last_page: Math.max(1, Math.ceil(total / perPage)),
     },
   };
 }
@@ -152,23 +155,23 @@ afterEach(() => {
   }
 });
 
-test("builds exact company list and detail paths without empty or status filters", () => {
+test("builds exact combined company parameters and omits empty filters", () => {
   assert.equal(
     buildCompaniesPath({
       businessSector: " Technology ",
       name: " Tech ",
       page: 2,
-      perPage: 15,
+      status: "approved",
     }),
-    "companies?filter%5Bname%5D=Tech&filter%5Bbusiness_sector%5D=Technology&page=2&per_page=15",
+    "companies?filter%5Bname%5D=Tech&filter%5Bbusiness_sector%5D=Technology&filter%5Bstatus%5D=approved&page=2",
   );
   assert.equal(
     buildCompaniesPath({ businessSector: " ", name: " " }),
-    "companies?page=1&per_page=15",
+    "companies?page=1",
   );
   assert.equal(buildCompanyDetailsPath(5), "companies/5");
   assert.throws(() => buildCompanyDetailsPath(0), /valid company ID/);
-  assert.doesNotMatch(buildCompaniesPath(), /status|active/i);
+  assert.doesNotMatch(buildCompaniesPath(), /filter%5Bstatus%5D|active/i);
 });
 
 test("normalizes verified list counts while keeping relationship IDs internal", () => {
@@ -227,12 +230,22 @@ test("uses the authenticated shared API client for the companies list", async ()
     return jsonResponse(createListResponse());
   };
 
-  const result = await getCompanies({ name: "Tech", page: 1 });
+  const result = await getCompanies({
+    businessSector: "Technology",
+    name: "Tech",
+    page: 1,
+    status: "pending",
+  });
   const url = new URL(requestUrl);
 
   assert.equal(url.pathname, "/api/v1/admin/companies");
   assert.equal(url.searchParams.get("filter[name]"), "Tech");
-  assert.equal(url.searchParams.get("filter[status]"), null);
+  assert.equal(
+    url.searchParams.get("filter[business_sector]"),
+    "Technology",
+  );
+  assert.equal(url.searchParams.get("filter[status]"), "pending");
+  assert.equal(url.searchParams.get("per_page"), null);
   assert.equal(authorization, "Bearer company-page-test-token");
   assert.equal(result.companies.length, 2);
 });
@@ -259,14 +272,17 @@ test("View by Company uses server controls and opens lazy cached details in a mo
     const businessSector = url.searchParams.get(
       "filter[business_sector]",
     );
+    const status = url.searchParams.get("filter[status]");
     const page = Number(url.searchParams.get("page") ?? "1");
+    const perPage = 15;
     const filteredItems = companyListItems.filter(
       (company) =>
         (!name || company.name?.includes(name)) &&
-        (!businessSector || company.business_sector === businessSector),
+        (!businessSector || company.business_sector === businessSector) &&
+        (!status || company.status === status),
     );
 
-    return jsonResponse(createListResponse(filteredItems, page));
+    return jsonResponse(createListResponse(filteredItems, page, perPage));
   };
 
   const view = render(
@@ -276,6 +292,7 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   );
 
   await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
+  assert.equal(view.queryByLabelText("Rows per page"), null);
   assert.ok(
     view.getByRole("heading", { name: "Companies & Managers Directory" }),
   );
@@ -315,9 +332,11 @@ test("View by Company uses server controls and opens lazy cached details in a mo
 
   fireEvent.click(view.getByRole("button", { name: "Open company filters" }));
   const filterPanel = view.getByRole("group", { name: "Company filters" });
-  assert.equal(within(filterPanel).queryByLabelText("Status"), null);
   fireEvent.change(within(filterPanel).getByLabelText("Business Sector"), {
     target: { value: "Technology" },
+  });
+  fireEvent.change(within(filterPanel).getByLabelText("Status"), {
+    target: { value: "pending" },
   });
   fireEvent.click(within(filterPanel).getByRole("button", { name: "Apply" }));
 
@@ -327,10 +346,59 @@ test("View by Company uses server controls and opens lazy cached details in a mo
         (url) =>
           url.searchParams.get("filter[name]") === "Tech" &&
           url.searchParams.get("filter[business_sector]") === "Technology" &&
+          url.searchParams.get("filter[status]") === "pending" &&
           url.searchParams.get("page") === "1" &&
-          url.searchParams.get("filter[status]") === null,
+          url.searchParams.get("per_page") === null,
       ),
     ),
+  );
+  assert.equal(
+    view
+      .getByRole("button", { name: "Open company filters" })
+      .getAttribute("aria-pressed"),
+    "true",
+  );
+
+  const filteredFooter = view.container.querySelector<HTMLElement>(
+    ".company-page__footer",
+  );
+  assert.ok(filteredFooter);
+  fireEvent.click(
+    within(filteredFooter).getByRole("button", { name: "2" }),
+  );
+  await waitFor(() =>
+    assert.ok(
+      requestedUrls.some(
+        (url) =>
+          url.searchParams.get("filter[name]") === "Tech" &&
+          url.searchParams.get("filter[business_sector]") === "Technology" &&
+          url.searchParams.get("filter[status]") === "pending" &&
+          url.searchParams.get("page") === "2" &&
+          url.searchParams.get("per_page") === null,
+      ),
+    ),
+  );
+  await waitFor(() => assert.equal(view.queryByLabelText("Rows per page"), null));
+
+  fireEvent.click(view.getByRole("button", { name: "Open company filters" }));
+  fireEvent.click(view.getByRole("button", { name: "Clear" }));
+  await waitFor(() =>
+    assert.ok(
+      requestedUrls.some(
+        (url) =>
+          url.searchParams.get("filter[name]") === "Tech" &&
+          url.searchParams.get("filter[business_sector]") === null &&
+          url.searchParams.get("filter[status]") === null &&
+          url.searchParams.get("page") === "1" &&
+          url.searchParams.get("per_page") === null,
+      ),
+    ),
+  );
+  assert.equal(
+    view
+      .getByRole("button", { name: "Open company filters" })
+      .getAttribute("aria-pressed"),
+    "false",
   );
 
   fireEvent.change(search, { target: { value: "" } });
@@ -340,23 +408,13 @@ test("View by Company uses server controls and opens lazy cached details in a mo
         requestedUrls.some(
           (url) =>
             url.searchParams.get("filter[name]") === null &&
-            url.searchParams.get("filter[business_sector]") ===
-              "Technology",
+            url.searchParams.get("filter[business_sector]") === null &&
+            url.searchParams.get("filter[status]") === null &&
+            url.searchParams.get("page") === "1" &&
+            url.searchParams.get("per_page") === null,
         ),
       ),
     { timeout: 1200 },
-  );
-
-  fireEvent.click(view.getByRole("button", { name: "Open company filters" }));
-  fireEvent.click(view.getByRole("button", { name: "Clear" }));
-  await waitFor(() =>
-    assert.ok(
-      requestedUrls.some(
-        (url) =>
-          url.searchParams.get("filter[name]") === null &&
-          url.searchParams.get("filter[business_sector]") === null,
-      ),
-    ),
   );
 
   await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
@@ -396,19 +454,4 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   fireEvent.keyDown(document, { key: "Escape" });
   await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
 
-  const footer = view.container.querySelector<HTMLElement>(
-    ".company-page__footer",
-  );
-  assert.ok(footer);
-  fireEvent.click(within(footer).getByRole("button", { name: "2" }));
-  await waitFor(() =>
-    assert.ok(
-      requestedUrls.some(
-        (url) =>
-          url.searchParams.get("page") === "2" &&
-          url.searchParams.get("filter[name]") === null &&
-          url.searchParams.get("filter[business_sector]") === null,
-      ),
-    ),
-  );
 });

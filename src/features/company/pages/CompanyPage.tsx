@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SearchFilterBar, TableFooter } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
@@ -6,12 +7,17 @@ import {
   CompanyFiltersPanel,
   CompanyTable,
   CompanyViewTabs,
+  ManagerSummaryCards,
+  ManagerView,
 } from "../components";
 import { useCompanies, useCompanyDetails } from "../hooks";
+import type { CompanyDirectoryView } from "../types";
 import "./CompanyPage.scss";
 
 export function CompanyPage() {
   const { t } = useI18n();
+  const [activeView, setActiveView] =
+    useState<CompanyDirectoryView>("company");
   const companiesState = useCompanies(t.company.table.loadError);
   const companyDetails = useCompanyDetails(t.company.details.loadError);
   const selectedCompany = companiesState.companies.find(
@@ -41,6 +47,15 @@ export function CompanyPage() {
     companyDetails.closeCompany();
   }
 
+  function handleViewChange(view: CompanyDirectoryView) {
+    if (view === activeView) {
+      return;
+    }
+
+    companyDetails.closeCompany();
+    setActiveView(view);
+  }
+
   return (
     <ManagementLayout>
       <div className="company-page">
@@ -49,79 +64,92 @@ export function CompanyPage() {
           <p>{t.company.description}</p>
         </header>
 
-        <CompanyViewTabs />
+        {activeView === "manager" ? <ManagerSummaryCards /> : null}
 
-        <section
-          aria-busy={companiesState.isLoading}
-          aria-label={t.company.panelAriaLabel}
-          className="company-page__panel"
-        >
-          <div className="company-page__search">
-            <SearchFilterBar
-              filterAriaLabel={t.company.filters.filterAriaLabel}
-              filterLabel={t.common.filter}
-              inputAriaLabel={t.company.search.ariaLabel}
-              onChange={handleSearchChange}
-              onFilterClick={companiesState.filters.toggleFilterPanel}
-              placeholder={t.company.search.placeholder}
-              showFilterButton
-              value={companiesState.searchValue}
-            />
+        <CompanyViewTabs
+          activeView={activeView}
+          onViewChange={handleViewChange}
+        />
 
-            {companiesState.filters.isFilterPanelOpen ? (
-              <CompanyFiltersPanel
-                filters={companiesState.filters.draftFilters}
-                onApply={handleApplyFilters}
-                onChange={companiesState.filters.setDraftFilters}
-                onClear={handleClearFilters}
+        {activeView === "manager" ? (
+          <ManagerView />
+        ) : (
+          <section
+            aria-busy={companiesState.isLoading}
+            aria-label={t.company.panelAriaLabel}
+            className="company-page__panel"
+            id="company-directory-company-panel"
+            role="tabpanel"
+          >
+            <div className="company-page__search">
+              <SearchFilterBar
+                filterAriaLabel={t.company.filters.filterAriaLabel}
+                filterLabel={t.common.filter}
+                inputAriaLabel={t.company.search.ariaLabel}
+                isFilterActive={companiesState.hasActiveFilters}
+                onChange={handleSearchChange}
+                onFilterClick={companiesState.filters.toggleFilterPanel}
+                placeholder={t.company.search.placeholder}
+                showFilterButton
+                value={companiesState.searchValue}
+              />
+
+              {companiesState.filters.isFilterPanelOpen ? (
+                <CompanyFiltersPanel
+                  filters={companiesState.filters.draftFilters}
+                  onApply={handleApplyFilters}
+                  onChange={companiesState.filters.setDraftFilters}
+                  onClear={handleClearFilters}
+                />
+              ) : null}
+            </div>
+
+            <div className="company-page__divider" />
+
+            {companiesState.isLoading ? (
+              <p className="company-page__state" role="status">
+                {t.company.table.loading}
+              </p>
+            ) : null}
+
+            {!companiesState.isLoading && companiesState.error ? (
+              <div className="company-page__state" role="alert">
+                <p>{companiesState.error || t.company.table.loadError}</p>
+                <button
+                  onClick={() => void companiesState.refetch()}
+                  type="button"
+                >
+                  {t.common.tryAgain}
+                </button>
+              </div>
+            ) : null}
+
+            {!companiesState.isLoading && !companiesState.error ? (
+              <CompanyTable
+                companies={companiesState.companies}
+                emptyMessage={emptyMessage}
+                onOpenCompany={companyDetails.openCompany}
               />
             ) : null}
-          </div>
 
-          <div className="company-page__divider" />
+            {!companiesState.isLoading &&
+            !companiesState.error &&
+            companiesState.companies.length ? (
+              <TableFooter
+                className="company-page__footer"
+                currentPage={companiesState.currentPage}
+                onPageChange={handlePageChange}
+                perPage={companiesState.perPage}
+                showPageSizeSelector={false}
+                showSinglePage
+                totalItems={companiesState.totalItems}
+                totalPages={companiesState.totalPages}
+              />
+            ) : null}
+          </section>
+        )}
 
-          {companiesState.isLoading ? (
-            <p className="company-page__state" role="status">
-              {t.company.table.loading}
-            </p>
-          ) : null}
-
-          {!companiesState.isLoading && companiesState.error ? (
-            <div className="company-page__state" role="alert">
-              <p>{companiesState.error || t.company.table.loadError}</p>
-              <button
-                onClick={() => void companiesState.refetch()}
-                type="button"
-              >
-                {t.common.tryAgain}
-              </button>
-            </div>
-          ) : null}
-
-          {!companiesState.isLoading && !companiesState.error ? (
-            <CompanyTable
-              companies={companiesState.companies}
-              emptyMessage={emptyMessage}
-              onOpenCompany={companyDetails.openCompany}
-            />
-          ) : null}
-
-          {!companiesState.isLoading &&
-          !companiesState.error &&
-          companiesState.companies.length ? (
-            <TableFooter
-              className="company-page__footer"
-              currentPage={companiesState.currentPage}
-              onPageChange={handlePageChange}
-              perPage={companiesState.perPage}
-              showSinglePage
-              totalItems={companiesState.totalItems}
-              totalPages={companiesState.totalPages}
-            />
-          ) : null}
-        </section>
-
-        {selectedCompany ? (
+        {activeView === "company" && selectedCompany ? (
           <CompanyDetailsModal
             company={selectedCompany}
             detailsState={companyDetails.detailsState}

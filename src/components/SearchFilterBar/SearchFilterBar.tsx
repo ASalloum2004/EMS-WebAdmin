@@ -6,6 +6,7 @@ interface SearchFilterBarProps {
   filterAriaLabel?: string;
   filterLabel?: string;
   inputAriaLabel?: string;
+  isFilterActive?: boolean;
   onChange?: (value: string) => void;
   onFilterClick?: () => void;
   placeholder?: string;
@@ -56,6 +57,7 @@ export function SearchFilterBar({
   filterAriaLabel = "Open filters",
   filterLabel = "Filter",
   inputAriaLabel = "Search",
+  isFilterActive,
   onChange,
   onFilterClick,
   placeholder = "Search...",
@@ -106,7 +108,11 @@ export function SearchFilterBar({
 
       {showFilterButton ? (
         <button
-          className="search-filter-bar__filter-button"
+          aria-pressed={isFilterActive}
+          className={classNames(
+            "search-filter-bar__filter-button",
+            isFilterActive && "search-filter-bar__filter-button--active",
+          )}
           type="button"
           aria-label={filterAriaLabel}
           onClick={onFilterClick}
@@ -114,7 +120,7 @@ export function SearchFilterBar({
           <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
             <path d="M3.25 4.5A.75.75 0 0 1 4 3.75h12a.75.75 0 0 1 .57 1.24l-4.82 5.62v3.64a.75.75 0 0 1-.38.65l-2.5 1.42a.75.75 0 0 1-1.12-.65v-5.06L3.43 4.99a.75.75 0 0 1-.18-.49Zm2.38.75 3.45 4.01c.11.14.17.31.17.49v4.63l1-.57V9.75c0-.18.06-.35.17-.49l3.95-4.01H5.63Z" />
           </svg>
-          { <span>{filterLabel}</span> }
+          <span>{filterLabel}</span>
         </button>
       ) : null}
     </div>

@@ -1,0 +1,69 @@
+.manager-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.manager-summary__card {
+  --ems-card-min-height: 132px;
+  --ems-card-padding: 22px;
+  --ems-card-header-margin: 10px;
+
+  direction: inherit;
+}
+
+.manager-summary__card .card__header {
+  align-items: flex-start;
+}
+
+.manager-summary__label {
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.manager-summary__icon {
+  --ems-card-icon-background: var(--ems-color-success-surface);
+  --ems-card-icon-color: var(--ems-color-primary);
+
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 12px;
+}
+
+.manager-summary__icon svg {
+  display: block;
+}
+
+.manager-summary__value {
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 34px;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .manager-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .manager-summary__card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .manager-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .manager-summary__card:last-child {
+    grid-column: auto;
+  }
+}

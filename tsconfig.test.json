@@ -38,6 +38,13 @@
     "src/features/order/hooks/useBoothRequestStatistics.ts",
     "src/features/order/hooks/useBoothRequests.ts",
     "src/features/order/types.ts",
+    "src/features/visitor/api/index.ts",
+    "src/features/visitor/api/visitorStatisticsApi.ts",
+    "src/features/visitor/api/visitorsApi.ts",
+    "src/features/visitor/hooks/useVisitorFilters.ts",
+    "src/features/visitor/hooks/useVisitorStatistics.ts",
+    "src/features/visitor/hooks/useVisitors.ts",
+    "src/features/visitor/types.ts",
     "tests/**/*.test.ts",
     "tests/**/*.test.tsx"
   ]

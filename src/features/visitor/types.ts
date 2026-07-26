@@ -1,4 +1,12 @@
-export type VisitorDateFilter = "any" | "today" | "last7Days" | "last30Days";
+export type VisitorGender = "male" | "female";
+
+export type VisitorGenderFilter = "" | VisitorGender;
+
+export interface VisitorFilters {
+  gender: VisitorGenderFilter;
+  job: string;
+  location: string;
+}
 
 export interface VisitorApiData {
   id: number;
@@ -28,8 +36,35 @@ export interface VisitorApiResponse {
   data: VisitorPaginationData;
 }
 
-export interface VisitorStatistics {
+export interface VisitorPagination {
+  currentPage: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface GetVisitorsResult {
+  visitors: VisitorApiData[];
+  pagination: VisitorPagination;
+}
+
+export interface GetVisitorsParams {
+  gender?: VisitorGender;
+  job?: string;
+  location?: string;
+  page?: number;
+  perPage?: number;
+  search?: string;
+}
+
+export interface VisitorStatisticsData {
   total_visitors: number;
-  women_visitors: number;
-  men_visitors: number;
+  male_visitors: number;
+  female_visitors: number;
+}
+
+export interface VisitorStatisticsResponse {
+  status: boolean;
+  message: string;
+  data: VisitorStatisticsData;
 }

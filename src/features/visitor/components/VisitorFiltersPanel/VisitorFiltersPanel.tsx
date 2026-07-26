@@ -1,16 +1,19 @@
 import { useI18n } from "../../../../i18n";
-import type { VisitorDateFilter } from "../../types";
+import type {
+  VisitorFilters,
+  VisitorGenderFilter,
+} from "../../types";
 import "./VisitorFiltersPanel.scss";
 
 interface VisitorFiltersPanelProps {
-  dateFilter: VisitorDateFilter;
+  filters: VisitorFilters;
   onApply: () => void;
-  onChange: (dateFilter: VisitorDateFilter) => void;
+  onChange: (filters: VisitorFilters) => void;
   onClear: () => void;
 }
 
 export function VisitorFiltersPanel({
-  dateFilter,
+  filters,
   onApply,
   onChange,
   onClear,
@@ -23,20 +26,48 @@ export function VisitorFiltersPanel({
       className="visitor-filters-panel"
       role="group"
     >
-      <label className="visitor-filters-panel__field">
-        <span>{t.visitor.filters.date}</span>
-        <select
-          onChange={(event) =>
-            onChange(event.target.value as VisitorDateFilter)
-          }
-          value={dateFilter}
-        >
-          <option value="any">{t.visitor.filters.anyTime}</option>
-          <option value="today">{t.visitor.filters.today}</option>
-          <option value="last7Days">{t.visitor.filters.last7Days}</option>
-          <option value="last30Days">{t.visitor.filters.last30Days}</option>
-        </select>
-      </label>
+      <div className="visitor-filters-panel__grid">
+        <label className="visitor-filters-panel__field">
+          <span>{t.visitor.filters.gender}</span>
+          <select
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                gender: event.target.value as VisitorGenderFilter,
+              })
+            }
+            value={filters.gender}
+          >
+            <option value="">{t.visitor.filters.allGenders}</option>
+            <option value="female">{t.visitor.table.genders.female}</option>
+            <option value="male">{t.visitor.table.genders.male}</option>
+          </select>
+        </label>
+
+        <label className="visitor-filters-panel__field">
+          <span>{t.visitor.filters.job}</span>
+          <input
+            onChange={(event) =>
+              onChange({ ...filters, job: event.target.value })
+            }
+            placeholder={t.visitor.filters.jobPlaceholder}
+            type="text"
+            value={filters.job}
+          />
+        </label>
+
+        <label className="visitor-filters-panel__field">
+          <span>{t.visitor.filters.location}</span>
+          <input
+            onChange={(event) =>
+              onChange({ ...filters, location: event.target.value })
+            }
+            placeholder={t.visitor.filters.locationPlaceholder}
+            type="text"
+            value={filters.location}
+          />
+        </label>
+      </div>
 
       <div className="visitor-filters-panel__actions">
         <button

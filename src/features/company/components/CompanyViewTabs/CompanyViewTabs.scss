@@ -1,0 +1,52 @@
+.company-view-tabs {
+  width: min(100%, 360px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.company-view-tabs__tab {
+  min-width: 0;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--ems-radius-sm);
+  background-color: transparent;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.company-view-tabs__tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.company-view-tabs__tab--active,
+.company-view-tabs__tab--active:disabled {
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  box-shadow: var(--ems-shadow-button);
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .company-view-tabs {
+    width: 100%;
+  }
+
+  .company-view-tabs__tab {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}

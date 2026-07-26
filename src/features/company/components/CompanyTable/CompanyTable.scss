@@ -1,0 +1,71 @@
+.company-table.data-table {
+  max-height: none;
+  overflow: visible;
+}
+
+.company-table .data-table__row {
+  min-height: 88px;
+  padding: 16px 18px;
+}
+
+.company-identity {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.company-identity__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.company-table__cell--company {
+  flex: 1 1 220px;
+}
+
+.company-table__cell--sector {
+  flex: 0 1 170px;
+}
+
+.company-table__cell--phone {
+  flex: 0 1 150px;
+}
+
+.company-table__cell--phone .data-table__value {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: plaintext;
+}
+
+.company-table .company-table__cell--status {
+  flex: 0 1 110px;
+  align-items: flex-start;
+}
+
+.company-table .data-table__cell--badge .data-table__value {
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+}
+
+@media (max-width: 900px) {
+  .company-table__cell--company {
+    flex-basis: 100%;
+  }
+
+  .company-table__cell--sector,
+  .company-table__cell--phone,
+  .company-table .company-table__cell--status {
+    flex: 1 1 150px;
+  }
+}
+
+@media (max-width: 640px) {
+  .company-table__cell--sector,
+  .company-table__cell--phone,
+  .company-table .company-table__cell--status {
+    flex: 1 1 100%;
+    align-items: flex-start;
+  }
+}

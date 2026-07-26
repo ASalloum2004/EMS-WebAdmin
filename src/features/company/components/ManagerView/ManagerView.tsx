@@ -20,7 +20,7 @@ function clampPage(page: number, totalPages: number) {
 }
 
 export function ManagerView() {
-  const { language, t } = useI18n();
+  const { t } = useI18n();
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
@@ -40,14 +40,6 @@ export function ManagerView() {
   const visibleManagers = filteredManagers.slice(
     pageStart,
     pageStart + MANAGERS_PER_PAGE,
-  );
-  const formatter = useMemo(
-    () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
-    [language],
-  );
-  const resultSummary = t.company.manager.table.matchingManagers.replace(
-    "{{count}}",
-    formatter.format(filteredManagers.length),
   );
   const emptyMessage = searchValue.trim()
     ? t.company.manager.table.noResults
@@ -90,20 +82,16 @@ export function ManagerView() {
         />
 
         {filteredManagers.length ? (
-          <div className="manager-view__footer">
-            <span className="manager-view__result-summary">
-              {resultSummary}
-            </span>
-            <TableFooter
-              currentPage={activePage}
-              onPageChange={handlePageChange}
-              perPage={MANAGERS_PER_PAGE}
-              showPageSizeSelector={false}
-              showSinglePage
-              totalItems={filteredManagers.length}
-              totalPages={totalPages}
-            />
-          </div>
+          <TableFooter
+            className="manager-view__footer"
+            currentPage={activePage}
+            onPageChange={handlePageChange}
+            perPage={MANAGERS_PER_PAGE}
+            showPageSizeSelector={false}
+            showSinglePage
+            totalItems={filteredManagers.length}
+            totalPages={totalPages}
+          />
         ) : null}
       </section>
 

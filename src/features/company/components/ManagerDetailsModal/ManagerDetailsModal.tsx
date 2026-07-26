@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
-import { ModalCloseButton } from "../../../../components";
+import { Card, ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
-import type { Manager } from "../../types";
+import type { Manager, ManagerPortfolio } from "../../types";
+import { CompanyLogo } from "../CompanyLogo";
 import { ManagerAvatar } from "../ManagerAvatar";
 import "./ManagerDetailsModal.scss";
 
@@ -15,6 +16,78 @@ type ManagerDetailsModalProps = {
   manager: Manager;
   onClose: () => void;
 };
+
+function PortfolioStatus({
+  status,
+}: {
+  status: ManagerPortfolio["status"];
+}) {
+  const { t } = useI18n();
+
+  return (
+    <span
+      className={`manager-details-modal__status manager-details-modal__status--${status}`}
+    >
+      {t.company.statuses[status]}
+    </span>
+  );
+}
+
+function PortfolioCard({ portfolio }: { portfolio: ManagerPortfolio }) {
+  const { t } = useI18n();
+
+  return (
+    <Card
+      aria-label={`${t.company.manager.details.portfolio} ${portfolio.name}`}
+      bodyClassName="manager-details-modal__portfolio-body"
+      className="manager-details-modal__portfolio-card"
+    >
+      <div className="manager-details-modal__portfolio-header">
+        <CompanyLogo logo={portfolio.logo} name={portfolio.name} />
+        <div>
+          <h4>{portfolio.name}</h4>
+        </div>
+        <PortfolioStatus status={portfolio.status} />
+      </div>
+
+      <dl className="manager-details-modal__portfolio-facts">
+        <div>
+          <dt>{t.company.manager.details.businessSector}</dt>
+          <dd>{portfolio.business_sector}</dd>
+        </div>
+        <div>
+          <dt>{t.company.manager.details.phone}</dt>
+          <dd dir="ltr">{portfolio.phone}</dd>
+        </div>
+      </dl>
+
+      <div className="manager-details-modal__booths">
+        <h5>{t.company.manager.details.booths}</h5>
+        {portfolio.booths.length ? (
+          <ul>
+            {portfolio.booths.map((booth) => (
+              <li key={booth.id}>
+                <strong>{booth.label}</strong>
+                <dl>
+                  <div>
+                    <dt>{t.company.manager.details.boothNumber}</dt>
+                    <dd>{booth.number}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.company.manager.details.hall}</dt>
+                    <dd>{booth.hall}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{t.company.manager.details.noBoothsAssigned}</p>
+        )}
+      </div>
+    </Card>
+  );
+}
 
 export function ManagerDetailsModal({
   manager,
@@ -128,10 +201,6 @@ export function ManagerDetailsModal({
                 <span dir="ltr">{manager.email}</span>
               </div>
             </div>
-          </section>
-
-          <section className="manager-details-modal__section">
-            <h3>{t.company.manager.details.managementSummary}</h3>
             <dl className="manager-details-modal__summary">
               <div>
                 <dt>{t.company.manager.summary.managedCompanies}</dt>
@@ -142,6 +211,21 @@ export function ManagerDetailsModal({
                 <dd>{formatter.format(manager.booths_count)}</dd>
               </div>
             </dl>
+          </section>
+
+          <section className="manager-details-modal__section">
+            <h3>{t.company.manager.details.portfolios}</h3>
+            {manager.portfolios.length ? (
+              <div className="manager-details-modal__portfolio-grid">
+                {manager.portfolios.map((portfolio) => (
+                  <PortfolioCard key={portfolio.id} portfolio={portfolio} />
+                ))}
+              </div>
+            ) : (
+              <p className="manager-details-modal__empty">
+                {t.company.manager.details.noPortfolios}
+              </p>
+            )}
           </section>
         </div>
       </section>

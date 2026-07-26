@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Eye } from "lucide-react";
 import { DataTable, type DataTableColumn } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type { Manager } from "../../types";
@@ -68,25 +67,6 @@ export function ManagerTable({
 
   return (
     <DataTable
-      actions={(manager) => (
-        <span className="manager-table__action-cell">
-          <span className="manager-table__action-label">
-            {t.company.manager.table.actions}
-          </span>
-          <button
-            aria-label={`${t.company.manager.table.viewDetails} ${manager.name}`}
-            className="manager-table__view-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onOpenManager(manager);
-            }}
-            onKeyDown={(event) => event.stopPropagation()}
-            type="button"
-          >
-            <Eye aria-hidden="true" size={18} strokeWidth={1.8} />
-          </button>
-        </span>
-      )}
       ariaLabel={t.company.manager.table.ariaLabel}
       className="manager-table"
       columns={columns}

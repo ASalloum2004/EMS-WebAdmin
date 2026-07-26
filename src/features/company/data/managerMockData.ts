@@ -3,6 +3,77 @@ import type { Manager, ManagerSummary } from "../types";
 
 export const MANAGERS_PER_PAGE = 5;
 
+export const MOCK_MANAGER_PORTFOLIOS: Manager["portfolios"] = [
+  {
+    id: 1,
+    name: "Dar Al feker",
+    business_sector: "Lectures & Exhibitions",
+    phone: "+963112223334",
+    status: "approved",
+    logo: null,
+    booths: [
+      {
+        id: 43,
+        number: "2C-01",
+        hall: "2",
+        label: "Booth 2-2C-01",
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: "GreenFoods Co.",
+    business_sector: "Food & Beverage",
+    phone: "+963944120630",
+    status: "approved",
+    logo: null,
+    booths: [],
+  },
+  {
+    id: 3,
+    name: "North Star Events",
+    business_sector: "Events & Conferences",
+    phone: "+963933480215",
+    status: "pending",
+    logo: null,
+    booths: [
+      {
+        id: 44,
+        number: "3A-12",
+        hall: "3",
+        label: "Booth 3-3A-12",
+      },
+    ],
+  },
+  {
+    id: 4,
+    name: "Artisan Market House",
+    business_sector: "Handcrafts & Retail",
+    phone: "+963955703814",
+    status: "approved",
+    logo: null,
+    booths: [],
+  },
+  {
+    id: 5,
+    name: "Metro Tech Labs",
+    business_sector: "Technology",
+    phone: "+963117778889",
+    status: "rejected",
+    logo: null,
+    booths: [],
+  },
+  {
+    id: 6,
+    name: "Summit Retail Group",
+    business_sector: "Retail & Distribution",
+    phone: "+963988642170",
+    status: "pending",
+    logo: null,
+    booths: [],
+  },
+];
+
 export const MOCK_MANAGERS: Manager[] = [
   {
     id: 3,
@@ -11,6 +82,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 6,
     booths_count: 2,
+    portfolios: MOCK_MANAGER_PORTFOLIOS,
   },
   {
     id: 4,
@@ -19,6 +91,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: adminAvatar,
     companies_count: 0,
     booths_count: 1,
+    portfolios: [],
   },
   {
     id: 5,
@@ -27,6 +100,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 3,
     booths_count: 0,
+    portfolios: [],
   },
   {
     id: 6,
@@ -35,6 +109,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: adminAvatar,
     companies_count: 5,
     booths_count: 4,
+    portfolios: [],
   },
   {
     id: 7,
@@ -43,6 +118,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 1,
     booths_count: 1,
+    portfolios: [],
   },
   {
     id: 8,
@@ -51,6 +127,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 2,
     booths_count: 0,
+    portfolios: [],
   },
   {
     id: 9,
@@ -59,6 +136,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: adminAvatar,
     companies_count: 4,
     booths_count: 3,
+    portfolios: [],
   },
   {
     id: 10,
@@ -67,6 +145,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 0,
     booths_count: 0,
+    portfolios: [],
   },
   {
     id: 11,
@@ -75,6 +154,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 2,
     booths_count: 5,
+    portfolios: [],
   },
   {
     id: 12,
@@ -83,6 +163,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: adminAvatar,
     companies_count: 7,
     booths_count: 2,
+    portfolios: [],
   },
   {
     id: 13,
@@ -91,6 +172,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 1,
     booths_count: 0,
+    portfolios: [],
   },
   {
     id: 14,
@@ -99,6 +181,7 @@ export const MOCK_MANAGERS: Manager[] = [
     avatar: null,
     companies_count: 3,
     booths_count: 1,
+    portfolios: [],
   },
 ];
 

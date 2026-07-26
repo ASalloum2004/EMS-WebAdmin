@@ -2,6 +2,23 @@ export type CompanyApiStatus = "approved" | "pending" | "rejected";
 
 export type CompanyDirectoryView = "company" | "manager";
 
+export type ManagerBooth = {
+  id: number;
+  number: string;
+  hall: string;
+  label: string;
+};
+
+export type ManagerPortfolio = {
+  id: number;
+  name: string;
+  business_sector: string;
+  phone: string;
+  status: CompanyApiStatus;
+  logo: string | null;
+  booths: ManagerBooth[];
+};
+
 export type Manager = {
   id: number;
   name: string;
@@ -9,6 +26,7 @@ export type Manager = {
   avatar: string | null;
   companies_count: number;
   booths_count: number;
+  portfolios: ManagerPortfolio[];
 };
 
 export type ManagerSummary = {

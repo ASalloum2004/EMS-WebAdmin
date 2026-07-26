@@ -8,6 +8,10 @@
   padding: 16px 18px;
 }
 
+.manager-table .data-table__row--interactive:hover {
+  background-color: var(--ems-color-pagination-hover-background);
+}
+
 .manager-identity {
   min-width: 0;
   display: inline-flex;
@@ -36,55 +40,12 @@
 }
 
 .manager-table__cell--count {
-  flex: 0 1 100px;
-}
-
-.manager-table__action-cell {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.manager-table__action-label {
-  color: var(--ems-color-muted-light);
-  font-family: var(--ems-font-body);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 14px;
-  text-transform: uppercase;
-}
-
-.manager-table__view-button {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: var(--ems-radius-sm);
-  background-color: var(--ems-color-card-background, var(--ems-color-white));
-  color: var(--ems-color-primary);
-  cursor: pointer;
-}
-
-.manager-table__view-button:hover {
-  border-color: var(--ems-color-primary);
-  background-color: var(
-    --ems-color-primary-soft,
-    var(--ems-color-success-surface)
-  );
-}
-
-.manager-table__view-button:focus-visible {
-  outline: 2px solid var(--ems-color-primary);
-  outline-offset: 2px;
+  flex: 0 1 120px;
 }
 
 @media (max-width: 900px) {
   .manager-table__cell--manager {
-    flex-basis: calc(100% - 60px);
+    flex-basis: 100%;
   }
 
   .manager-table__cell--email {
@@ -101,10 +62,5 @@
   .manager-table__cell--email,
   .manager-table__cell--count {
     flex: 1 1 100%;
-  }
-
-  .manager-table .data-table__actions {
-    width: auto;
-    margin-inline-start: auto;
   }
 }

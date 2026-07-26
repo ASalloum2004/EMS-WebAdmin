@@ -82,6 +82,46 @@ export const en = {
       adminProfileAlt: "Admin profile",
     },
   },
+  visitor: {
+    title: "Visitor Management & Engagement",
+    description:
+      "Manage visitor accounts, registration details, and visitor information.",
+    panelAriaLabel: "Visitor list and controls",
+    summary: {
+      totalVisitors: "Total Visitors",
+      womenVisitors: "Women Visitors",
+      menVisitors: "Men Visitors",
+    },
+    search: {
+      placeholder:
+        "Search visitors by name, email, phone, job, or location...",
+      ariaLabel: "Search visitors by name, email, phone, job, or location",
+    },
+    filters: {
+      filterAriaLabel: "Open visitor date filters",
+      panelAriaLabel: "Visitor date filters",
+      dateFilterLabel: "Date: {{value}}",
+      date: "Registration date",
+      anyTime: "Any Time",
+      today: "Today",
+      last7Days: "Last 7 Days",
+      last30Days: "Last 30 Days",
+    },
+    table: {
+      ariaLabel: "Visitors",
+      visitor: "Visitor",
+      gender: "Gender",
+      job: "Job",
+      email: "Email",
+      phone: "Phone",
+      empty: "No visitors have been registered yet.",
+      noResults: "No visitors match your search or filters.",
+      genders: {
+        female: "Female",
+        male: "Male",
+      },
+    },
+  },
   order: {
     title: "Request",
     description:

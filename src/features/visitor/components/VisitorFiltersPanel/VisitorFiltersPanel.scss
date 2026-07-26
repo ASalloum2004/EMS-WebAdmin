@@ -1,0 +1,97 @@
+.visitor-filters-panel {
+  --visitor-filter-control-background: var(
+    --ems-color-surface-strong,
+    var(--ems-color-surface)
+  );
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-surface));
+  box-shadow: var(--ems-shadow-card);
+}
+
+.visitor-filters-panel__field {
+  width: min(100%, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.visitor-filters-panel__field span {
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.visitor-filters-panel__field select {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--visitor-filter-control-background);
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  outline: none;
+}
+
+.visitor-filters-panel__field select:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+}
+
+.visitor-filters-panel__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.visitor-filters-panel__button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.visitor-filters-panel__button--secondary {
+  background-color: var(--visitor-filter-control-background);
+  color: var(--ems-color-muted);
+}
+
+.visitor-filters-panel__button--primary {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+@media (max-width: 640px) {
+  .visitor-filters-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .visitor-filters-panel__field {
+    width: 100%;
+  }
+
+  .visitor-filters-panel__actions,
+  .visitor-filters-panel__button {
+    flex: 1;
+  }
+}

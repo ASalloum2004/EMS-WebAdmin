@@ -1,0 +1,102 @@
+.visitor-identity {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.visitor-identity__avatar,
+.visitor-identity__avatar-fallback {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 50%;
+}
+
+.visitor-identity__avatar {
+  object-fit: cover;
+}
+
+.visitor-identity__avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--ems-color-success-surface);
+  color: var(--ems-color-primary-dark);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.visitor-identity__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.visitor-identity__name {
+  overflow-wrap: anywhere;
+}
+
+.visitor-identity__location {
+  color: var(--ems-color-data-supporting-text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.visitor-table__cell--visitor {
+  flex: 1 1 225px;
+}
+
+.visitor-table__cell--gender {
+  flex: 0 1 86px;
+}
+
+.visitor-table__cell--job {
+  flex: 0 1 145px;
+}
+
+.visitor-table__cell--email {
+  flex: 0 1 220px;
+}
+
+.visitor-table__cell--phone {
+  flex: 0 1 135px;
+}
+
+.visitor-table__cell--email .data-table__value {
+  overflow-wrap: anywhere;
+}
+
+.visitor-table__cell--phone .data-table__value {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: plaintext;
+}
+
+@media (max-width: 900px) {
+  .visitor-table__cell--visitor {
+    flex-basis: 100%;
+  }
+
+  .visitor-table__cell--job,
+  .visitor-table__cell--email,
+  .visitor-table__cell--gender,
+  .visitor-table__cell--phone {
+    flex: 1 1 160px;
+  }
+}
+
+@media (max-width: 640px) {
+  .visitor-table__cell--job,
+  .visitor-table__cell--email,
+  .visitor-table__cell--gender,
+  .visitor-table__cell--phone {
+    flex-basis: 100%;
+  }
+}

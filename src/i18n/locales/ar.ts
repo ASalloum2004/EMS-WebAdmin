@@ -83,6 +83,46 @@ export const ar: I18nDictionary = {
       adminProfileAlt: "ملف المسؤول",
     },
   },
+  visitor: {
+    title: "إدارة الزوار والتفاعل",
+    description: "إدارة حسابات الزوار وتفاصيل التسجيل ومعلومات الزوار.",
+    panelAriaLabel: "قائمة الزوار وأدوات التحكم",
+    summary: {
+      totalVisitors: "إجمالي الزوار",
+      womenVisitors: "الزائرات",
+      menVisitors: "الزوار الذكور",
+    },
+    search: {
+      placeholder:
+        "ابحث عن الزوار حسب الاسم أو البريد أو الهاتف أو الوظيفة أو الموقع...",
+      ariaLabel:
+        "البحث عن الزوار حسب الاسم أو البريد أو الهاتف أو الوظيفة أو الموقع",
+    },
+    filters: {
+      filterAriaLabel: "فتح عوامل تصفية الزوار حسب التاريخ",
+      panelAriaLabel: "عوامل تصفية الزوار حسب التاريخ",
+      dateFilterLabel: "التاريخ: {{value}}",
+      date: "تاريخ التسجيل",
+      anyTime: "أي وقت",
+      today: "اليوم",
+      last7Days: "آخر 7 أيام",
+      last30Days: "آخر 30 يوماً",
+    },
+    table: {
+      ariaLabel: "الزوار",
+      visitor: "الزائر",
+      gender: "الجنس",
+      job: "الوظيفة",
+      email: "البريد الإلكتروني",
+      phone: "الهاتف",
+      empty: "لم يتم تسجيل أي زوار بعد.",
+      noResults: "لا يوجد زوار يطابقون البحث أو عوامل التصفية.",
+      genders: {
+        female: "أنثى",
+        male: "ذكر",
+      },
+    },
+  },
   order: {
     title: "الطلبات",
     description:

@@ -412,6 +412,14 @@ export const en = {
       ariaLabel: "Order request categories",
     },
     eventRequests: {
+      summary: {
+        totalRequests: "Total Event Requests",
+        pendingRequest: "Pending Event Requests",
+        approved: "Approved Event Requests",
+        loading: "Loading Event Request statistics...",
+        loadError: "Unable to load Event Request statistics.",
+        unavailable: "Event Request statistics unavailable",
+      },
       actions: {
         invalidStatus:
           "This Event Request is no longer pending. The latest status has been refreshed.",

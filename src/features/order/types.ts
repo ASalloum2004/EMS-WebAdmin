@@ -368,6 +368,29 @@ export type BoothRequestStatisticsResponse = {
   data: BoothRequestStatisticsData;
 };
 
+export interface EventRequestStatsResponse {
+  status: boolean;
+  message: string;
+  data: {
+    total_requests: number;
+    pending_requests: number;
+    approved_requests: number;
+    rejected_requests: number;
+  };
+}
+
+export type EventRequestStatsData = EventRequestStatsResponse["data"];
+
+export function getEventRequestSummaryStatistics(
+  statistics: EventRequestStatsData | null,
+): OrderSummaryStatistics {
+  return {
+    approved: statistics?.approved_requests ?? null,
+    pending: statistics?.pending_requests ?? null,
+    total: statistics?.total_requests ?? null,
+  };
+}
+
 export type BoothRequestsResponse = {
   status: boolean;
   message: string;

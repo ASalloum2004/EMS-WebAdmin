@@ -410,6 +410,14 @@ export const ar: I18nDictionary = {
       ariaLabel: "فئات طلبات الحجز",
     },
     eventRequests: {
+      summary: {
+        totalRequests: "إجمالي طلبات الفعاليات",
+        pendingRequest: "طلبات الفعاليات المعلقة",
+        approved: "طلبات الفعاليات الموافق عليها",
+        loading: "جارٍ تحميل إحصاءات طلبات الفعاليات...",
+        loadError: "تعذر تحميل إحصاءات طلبات الفعاليات.",
+        unavailable: "إحصاءات طلبات الفعاليات غير متاحة",
+      },
       actions: {
         invalidStatus:
           "لم يعد طلب الفعالية هذا قيد الانتظار. تم تحديث الحالة الأخيرة.",

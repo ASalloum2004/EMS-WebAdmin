@@ -29,6 +29,11 @@ export {
   normalizeEventRequestsResponse,
 } from "./eventRequestsApi";
 export {
+  EVENT_REQUEST_STATISTICS_PATH,
+  getEventRequestStatistics,
+  normalizeEventRequestStatisticsResponse,
+} from "./eventRequestStatisticsApi";
+export {
   buildEventRequestDetailsPath,
   getEventRequestDetails,
   normalizeEventRequestDetailsResponse,

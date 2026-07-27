@@ -34,6 +34,11 @@ export {
   useEventRequests,
 } from "./useEventRequests";
 export {
+  isLatestEventRequestStatisticsRequest,
+  useEventRequestStatistics,
+  type EventRequestStatisticsState,
+} from "./useEventRequestStatistics";
+export {
   isLatestEventRequestDetailsRequest,
   useEventRequestDetails,
 } from "./useEventRequestDetails";

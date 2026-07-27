@@ -33,8 +33,10 @@ import {
   useEventRequestActions,
   useEventRequestDetails,
   useEventRequests,
+  useEventRequestStatistics,
 } from "../hooks";
 import {
+  getEventRequestSummaryStatistics,
   getOrderSummaryStatistics,
   type BoothRequestApiData,
 } from "../types";
@@ -66,6 +68,10 @@ export function OrderPage() {
     enabled: isEventTab,
     errorFallback: t.order.eventRequests.table.loadError,
   });
+  const eventRequestStatistics = useEventRequestStatistics({
+    enabled: isEventTab,
+    errorFallback: t.order.eventRequests.summary.loadError,
+  });
   const eventRequestDetails = useEventRequestDetails(
     selectedEventRequestId,
     t.order.eventRequests.details.loadError,
@@ -92,8 +98,13 @@ export function OrderPage() {
     await Promise.all([
       eventRequestDetails.refetch(),
       eventRequests.refetch(),
+      eventRequestStatistics.refetch(),
     ]);
-  }, [eventRequestDetails.refetch, eventRequests.refetch]);
+  }, [
+    eventRequestDetails.refetch,
+    eventRequests.refetch,
+    eventRequestStatistics.refetch,
+  ]);
   const eventRequestActions = useEventRequestActions({
     approveConflictFallbackMessage:
       t.order.eventRequests.approveConflict.loadError,
@@ -108,6 +119,9 @@ export function OrderPage() {
   });
   const summaryStatistics = getOrderSummaryStatistics(
     boothRequestStatistics.statistics,
+  );
+  const eventSummaryStatistics = getEventRequestSummaryStatistics(
+    eventRequestStatistics.statistics,
   );
   const columns = useMemo(
     () => getBoothRequestColumns(t, language),
@@ -149,6 +163,40 @@ export function OrderPage() {
       key: "approved",
       label: t.order.summary.approved,
       value: summaryStatistics.approved,
+    },
+  ];
+  const eventSummaryCards: SummaryCard[] = [
+    {
+      icon: (
+        <TotalRequestsIcon
+          aria-hidden="true"
+          size={22}
+          strokeWidth={1.8}
+        />
+      ),
+      key: "total",
+      label: t.order.eventRequests.summary.totalRequests,
+      value: eventSummaryStatistics.total,
+    },
+    {
+      icon: (
+        <PendingRequestIcon
+          aria-hidden="true"
+          size={22}
+          strokeWidth={1.8}
+        />
+      ),
+      key: "pending",
+      label: t.order.eventRequests.summary.pendingRequest,
+      value: eventSummaryStatistics.pending,
+    },
+    {
+      icon: (
+        <ApprovedIcon aria-hidden="true" size={22} strokeWidth={1.8} />
+      ),
+      key: "approved",
+      label: t.order.eventRequests.summary.approved,
+      value: eventSummaryStatistics.approved,
     },
   ];
   const closeRequestDetails = useCallback(() => {
@@ -224,6 +272,53 @@ export function OrderPage() {
               >
                 {t.common.tryAgain}
               </button>
+            </div>
+          ) : null}
+
+          {isEventTab && eventRequestStatistics.error ? (
+            <div className="order-page__state" role="alert">
+              <p>
+                {eventRequestStatistics.error ||
+                  t.order.eventRequests.summary.loadError}
+              </p>
+              <button
+                onClick={() => void eventRequestStatistics.refetch()}
+                type="button"
+              >
+                {t.common.tryAgain}
+              </button>
+            </div>
+          ) : isEventTab && eventRequestStatistics.isInitialLoading ? (
+            <OrderStatsSkeleton
+              loadingMessage={t.order.eventRequests.summary.loading}
+            />
+          ) : isEventTab ? (
+            <div
+              aria-busy={eventRequestStatistics.isRefreshing}
+              className="order-page__summary"
+            >
+              {eventSummaryCards.map((summaryCard) => (
+                <Card
+                  className={`order-page__summary-card order-page__summary-card--${summaryCard.key}`}
+                  icon={summaryCard.icon}
+                  iconClassName="order-page__summary-icon"
+                  key={summaryCard.key}
+                  title={summaryCard.label}
+                  titleClassName="order-page__summary-label"
+                >
+                  <strong
+                    aria-label={
+                      summaryCard.value === null
+                        ? t.order.eventRequests.summary.unavailable
+                        : undefined
+                    }
+                    aria-live="polite"
+                    className="order-page__summary-value"
+                  >
+                    {summaryCard.value ?? "—"}
+                  </strong>
+                </Card>
+              ))}
             </div>
           ) : null}
 

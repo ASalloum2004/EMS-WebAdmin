@@ -26,6 +26,7 @@ function installPageFetch(mode: "approve" | "invalid-reject") {
   let boothStatisticsCount = 0;
   let detailsCount = 0;
   let eventListCount = 0;
+  let eventStatisticsCount = 0;
   let eventStatus = "pending";
   const actionBodies: unknown[] = [];
 
@@ -71,6 +72,20 @@ function installPageFetch(mode: "approve" | "invalid-reject") {
           last_page: 1,
           per_page: 5,
           total: 0,
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/events/requests/stats")) {
+      eventStatisticsCount += 1;
+      return jsonResponse({
+        status: true,
+        message: "Success",
+        data: {
+          approved_requests: eventStatus === "approved" ? 1 : 0,
+          pending_requests: eventStatus === "pending" ? 1 : 0,
+          rejected_requests: eventStatus === "rejected" ? 1 : 0,
+          total_requests: 1,
         },
       });
     }
@@ -166,6 +181,7 @@ function installPageFetch(mode: "approve" | "invalid-reject") {
     boothStatisticsCount: () => boothStatisticsCount,
     detailsCount: () => detailsCount,
     eventListCount: () => eventListCount,
+    eventStatisticsCount: () => eventStatisticsCount,
   };
 }
 
@@ -240,6 +256,7 @@ test("OrderPage confirms normal Event approval then refreshes Event details and 
   assert.deepEqual(requests.actionBodies, [{ force: false }]);
   assert.equal(requests.detailsCount(), 2);
   assert.equal(requests.eventListCount(), 2);
+  assert.equal(requests.eventStatisticsCount(), 2);
   assert.equal(requests.boothListCount(), 1);
   assert.equal(requests.boothStatisticsCount(), 1);
 });
@@ -261,6 +278,7 @@ test("OrderPage refreshes and translates invalid Event status, then clears it on
   assert.equal(requests.actionCount(), 1);
   assert.equal(requests.detailsCount(), 2);
   assert.equal(requests.eventListCount(), 2);
+  assert.equal(requests.eventStatisticsCount(), 2);
   assert.equal(requests.boothListCount(), 1);
   assert.equal(requests.boothStatisticsCount(), 1);
 

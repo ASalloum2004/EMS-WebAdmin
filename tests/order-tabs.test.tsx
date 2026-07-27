@@ -143,6 +143,19 @@ function getStatisticsResponse() {
   });
 }
 
+function getEventStatisticsResponse() {
+  return jsonResponse({
+    status: true,
+    message: "Success",
+    data: {
+      approved_requests: 0,
+      pending_requests: 2,
+      rejected_requests: 9,
+      total_requests: 5,
+    },
+  });
+}
+
 function getDetailsResponse(status: "pending" | "rejected") {
   return jsonResponse({
     status: true,
@@ -250,6 +263,10 @@ function installPageFetch(eventResponder?: EventResponder) {
 
     if (url.pathname.endsWith("/booths/requests/stats")) {
       return getStatisticsResponse();
+    }
+
+    if (url.pathname.endsWith("/events/requests/stats")) {
+      return getEventStatisticsResponse();
     }
 
     if (url.pathname.endsWith("/booths/requests/reject/701")) {
@@ -365,6 +382,12 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
     ),
   );
   assert.equal(pageFetch.eventRequestCount(), 0);
+  assert.equal(
+    pageFetch.requestedUrls.filter((url) =>
+      url.pathname.endsWith("/events/requests/stats"),
+    ).length,
+    0,
+  );
 
   const boothSearch = view.getByRole("searchbox", {
     name: "Search by company name",
@@ -379,6 +402,25 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
   const eventTable = await within(eventPanel).findByRole("region", {
     name: "Event requests",
   });
+
+  await waitFor(() =>
+    assert.equal(
+      pageFetch.requestedUrls.filter((url) =>
+        url.pathname.endsWith("/events/requests/stats"),
+      ).length,
+      1,
+    ),
+  );
+  for (const [label, value] of [
+    ["Total Event Requests", "5"],
+    ["Pending Event Requests", "2"],
+    ["Approved Event Requests", "0"],
+  ]) {
+    const card = view.getByText(label).closest(".card");
+    assert.ok(card);
+    assert.ok(within(card as HTMLElement).getByText(value));
+  }
+  assert.equal(view.queryByText("Rejected Event Requests"), null);
 
   assert.equal(pageFetch.eventRequestCount(), 1);
   assert.ok(within(eventTable).getByText("Backend Publishing Forum"));
@@ -486,8 +528,15 @@ test("Event tab uses real rows, backend search, filters, and pagination while Bo
   )) {
     assert.equal(eventUrl.searchParams.has("filter[company.name]"), false);
   }
+  assert.equal(
+    pageFetch.requestedUrls.filter((url) =>
+      url.pathname.endsWith("/events/requests/stats"),
+    ).length,
+    1,
+  );
 
   fireEvent.click(boothTab);
+  assert.equal(view.queryByText("Total Event Requests"), null);
   assert.equal(
     (view.getByRole("searchbox", {
       name: "Search by company name",

@@ -8,13 +8,19 @@ const CARD_LAYOUTS = [
   { titleWidth: 96, valueWidth: 52 },
 ] as const;
 
-export function OrderStatsSkeleton() {
+interface OrderStatsSkeletonProps {
+  loadingMessage?: string;
+}
+
+export function OrderStatsSkeleton({
+  loadingMessage,
+}: OrderStatsSkeletonProps = {}) {
   const { t } = useI18n();
 
   return (
     <div aria-busy="true" className="order-page__summary order-stats-skeleton">
       <span className="skeleton__loading-message" role="status">
-        {t.order.summary.loading}
+        {loadingMessage ?? t.order.summary.loading}
       </span>
       {CARD_LAYOUTS.map((layout) => (
         <Card

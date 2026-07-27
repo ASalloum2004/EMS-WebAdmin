@@ -1,6 +1,7 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
+import { StrictMode } from "react";
 import {
   act,
   cleanup,
@@ -331,6 +332,247 @@ test("loads, searches, and paginates announcements entirely through the backend"
   );
   assert.ok(searchRequest);
   assert.equal(searchRequest.url.searchParams.get("page"), "1");
+});
+
+test("Strict Mode starts one usable request and re-entry refetches once", async () => {
+  const backend = createAnnouncementBackend();
+  const view = render(
+    <StrictMode>
+      <I18nProvider>
+        <AnnouncementsPage />
+      </I18nProvider>
+    </StrictMode>,
+  );
+
+  assert.ok(
+    view.getByRole("status", { name: "Loading announcements" }),
+  );
+  await view.findByText("Draft Exhibitor Notice");
+
+  const listRequests = backend.requests.filter(
+    ({ method, url }) =>
+      method === "GET" && url.pathname.endsWith("/announcements"),
+  );
+  assert.equal(listRequests.length, 1);
+  assert.equal(
+    view.queryByRole("status", { name: "Loading announcements" }),
+    null,
+  );
+
+  view.unmount();
+  const returnedView = render(
+    <StrictMode>
+      <I18nProvider>
+        <AnnouncementsPage />
+      </I18nProvider>
+    </StrictMode>,
+  );
+
+  assert.ok(
+    returnedView.getByRole("status", {
+      name: "Loading announcements",
+    }),
+  );
+  await returnedView.findByText("Draft Exhibitor Notice");
+
+  const requestsAfterReentry = backend.requests.filter(
+    ({ method, url }) =>
+      method === "GET" && url.pathname.endsWith("/announcements"),
+  );
+  assert.equal(requestsAfterReentry.length, 2);
+});
+
+test("a failed list request exits the skeleton and Retry issues one fresh request", async () => {
+  let listRequestCount = 0;
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    const method = (init?.method ?? "GET").toUpperCase();
+
+    if (url.pathname.endsWith("/profile")) {
+      return jsonResponse({
+        status: true,
+        message: "Success",
+        data: {
+          avatar: null,
+          email: "admin@example.com",
+          id: 1,
+          is_verified: true,
+          name: "Test Admin",
+          type: "admin",
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/announcements") && method === "GET") {
+      listRequestCount += 1;
+
+      if (listRequestCount === 1) {
+        return jsonResponse(
+          { message: "Unable to load announcements." },
+          503,
+        );
+      }
+
+      return jsonResponse({
+        status: true,
+        message: "Announcements retrieved successfully.",
+        data: {
+          data: [],
+          current_page: 1,
+          per_page: 4,
+          total: 0,
+          last_page: 1,
+        },
+      });
+    }
+
+    throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+  };
+
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+
+  assert.ok(
+    view.getByRole("status", { name: "Loading announcements" }),
+  );
+  await view.findByText("Unable to load announcements.");
+  assert.equal(
+    view.queryByRole("status", { name: "Loading announcements" }),
+    null,
+  );
+  assert.equal(listRequestCount, 1);
+
+  fireEvent.click(view.getByRole("button", { name: "Try again" }));
+  await view.findByText("No announcements yet");
+  assert.equal(listRequestCount, 2);
+  assert.equal(
+    view.queryByRole("status", { name: "Loading announcements" }),
+    null,
+  );
+});
+
+test("a stale search response cannot replace a newer result", async () => {
+  let resolveSlowRequest: ((response: Response) => void) | null = null;
+  const searchRequests: string[] = [];
+
+  function listResponse(title: string) {
+    return jsonResponse({
+      status: true,
+      message: "Announcements retrieved successfully.",
+      data: {
+        data: title
+          ? [
+              {
+                id: title === "Newest Result" ? 2 : 1,
+                title,
+                description: `${title} description`,
+                receiver: "all",
+                is_active: false,
+                media: null,
+              },
+            ]
+          : [],
+        current_page: 1,
+        per_page: 4,
+        total: title ? 1 : 0,
+        last_page: 1,
+      },
+    });
+  }
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    const method = (init?.method ?? "GET").toUpperCase();
+
+    if (url.pathname.endsWith("/profile")) {
+      return jsonResponse({
+        status: true,
+        message: "Success",
+        data: {
+          avatar: null,
+          email: "admin@example.com",
+          id: 1,
+          is_verified: true,
+          name: "Test Admin",
+          type: "admin",
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/announcements") && method === "GET") {
+      const search = url.searchParams.get("filter[title]") ?? "";
+      searchRequests.push(search);
+
+      if (!search) {
+        return listResponse("Initial Result");
+      }
+
+      if (search === "slow") {
+        return new Promise<Response>((resolve) => {
+          resolveSlowRequest = resolve;
+        });
+      }
+
+      if (search === "newest") {
+        return listResponse("Newest Result");
+      }
+    }
+
+    throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+  };
+
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+  await view.findByText("Initial Result");
+  const searchInput = view.getByRole("searchbox", {
+    name: "Search announcements by title",
+  });
+
+  fireEvent.change(searchInput, { target: { value: "slow" } });
+  await act(
+    () =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 450);
+      }),
+  );
+  await waitFor(() => assert.ok(searchRequests.includes("slow")));
+
+  fireEvent.change(searchInput, { target: { value: "newest" } });
+  await act(
+    () =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 450);
+      }),
+  );
+  await view.findByText("Newest Result");
+
+  assert.ok(resolveSlowRequest);
+  await act(() => {
+    resolveSlowRequest?.(listResponse("Stale Result"));
+  });
+  await waitFor(() => {
+    assert.ok(view.getByText("Newest Result"));
+    assert.equal(view.queryByText("Stale Result"), null);
+  });
 });
 
 test("sends receiver and Published filters using documented backend parameters", async () => {

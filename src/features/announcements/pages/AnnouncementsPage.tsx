@@ -193,6 +193,7 @@ export function AnnouncementsPage() {
               emptyTitle={emptyTitle}
               error={announcementsState.error}
               isLoading={announcementsState.listLoading}
+              isRefreshing={announcementsState.listRefetching}
               pagination={{
                 currentPage: announcementsState.currentPage,
                 perPage: announcementsState.perPage,

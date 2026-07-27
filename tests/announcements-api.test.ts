@@ -2,12 +2,14 @@ import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 import {
+  AnnouncementListTimeoutError,
   buildAnnouncementsPath,
-  createAnnouncement,
-  mapAnnouncementUpdateValuesToRequest,
-  normalizeAnnouncementDetailsResponse,
+  getAnnouncements,
   normalizeAnnouncementsResponse,
 } from "../src/features/announcements/api/announcementsApi.js";
+import { normalizeAnnouncementDetailsResponse } from "../src/features/announcements/api/announcementDetailsApi.js";
+import { createAnnouncement } from "../src/features/announcements/api/createAnnouncementApi.js";
+import { mapAnnouncementUpdateValuesToRequest } from "../src/features/announcements/mappers/announcementMapper.js";
 import type {
   AnnouncementDetailsResponse,
   AnnouncementListResponse,
@@ -219,5 +221,38 @@ test("update omits preserved media and sends null only for removal", () => {
       is_active: false,
       media: null,
     },
+  );
+});
+
+test("list requests time out instead of remaining pending indefinitely", async () => {
+  globalThis.fetch = async (_input, init) =>
+    new Promise<Response>((_resolve, reject) => {
+      const signal = init?.signal;
+      const rejectAbort = () =>
+        reject(new DOMException("The request was aborted.", "AbortError"));
+
+      if (signal?.aborted) {
+        rejectAbort();
+        return;
+      }
+
+      signal?.addEventListener("abort", rejectAbort, { once: true });
+    });
+
+  await assert.rejects(
+    () => getAnnouncements({}, undefined, 10),
+    AnnouncementListTimeoutError,
+  );
+});
+
+test("status false list responses expose the backend error", () => {
+  assert.throws(
+    () =>
+      normalizeAnnouncementsResponse({
+        status: false,
+        message: "Announcements are temporarily unavailable.",
+        data: null,
+      }),
+    /Announcements are temporarily unavailable\./,
   );
 });

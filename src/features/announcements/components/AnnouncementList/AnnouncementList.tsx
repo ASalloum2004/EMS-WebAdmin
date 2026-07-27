@@ -15,6 +15,7 @@ interface AnnouncementListProps {
   emptyTitle: string;
   error: string;
   isLoading: boolean;
+  isRefreshing: boolean;
   onPageChange: (page: number) => void;
   onRetry: () => void;
   onSelect: (announcementId: number) => void;
@@ -27,6 +28,7 @@ export function AnnouncementList({
   emptyTitle,
   error,
   isLoading,
+  isRefreshing,
   onPageChange,
   onRetry,
   onSelect,
@@ -36,7 +38,7 @@ export function AnnouncementList({
 
   return (
     <Card
-      aria-busy={isLoading}
+      aria-busy={isLoading || isRefreshing}
       className="announcement-list-card"
       title={t.announcements.list.title}
       footer={

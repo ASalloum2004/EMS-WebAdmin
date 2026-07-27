@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  AnnouncementListTimeoutError,
   DEFAULT_ANNOUNCEMENTS_PER_PAGE,
   getAnnouncements,
 } from "../api";
@@ -31,13 +32,22 @@ const initialPagination: AnnouncementPagination = {
 };
 
 function getErrorMessage(error: unknown, fallbackMessage: string) {
+  if (error instanceof AnnouncementListTimeoutError) {
+    return fallbackMessage;
+  }
+
   return error instanceof Error && error.message.trim()
     ? error.message
     : fallbackMessage;
 }
 
 function isAbortError(error: unknown) {
-  return error instanceof DOMException && error.name === "AbortError";
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    error.name === "AbortError"
+  );
 }
 
 function clampPositiveInteger(value: number) {
@@ -62,8 +72,17 @@ function getDraftFilterValue(
   return undefined;
 }
 
+function getRequestKey(params: GetAnnouncementsParams) {
+  return JSON.stringify(params);
+}
+
+interface ActiveAnnouncementsRequest {
+  controller: AbortController;
+  key: string;
+}
+
 interface RequestAnnouncementsOptions {
-  showSkeleton: boolean;
+  loadingMode: "background" | "foreground";
 }
 
 export function useAnnouncements(errorFallback: string) {
@@ -71,6 +90,7 @@ export function useAnnouncements(errorFallback: string) {
   const [pagination, setPagination] =
     useState<AnnouncementPagination>(initialPagination);
   const [listLoading, setListLoading] = useState(true);
+  const [listRefetching, setListRefetching] = useState(false);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -79,21 +99,9 @@ export function useAnnouncements(errorFallback: string) {
   const [appliedFilters, setAppliedFilters] =
     useState<AnnouncementFilters>(emptyFilters);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const automaticRequestKeyRef = useRef<string | null>(null);
-  const controllerRef = useRef<AbortController | null>(null);
-  const isMountedRef = useRef(true);
+  const activeRequestRef = useRef<ActiveAnnouncementsRequest | null>(null);
   const latestRequestIdRef = useRef(0);
   const requestParamsRef = useRef<GetAnnouncementsParams>({});
-
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-      latestRequestIdRef.current += 1;
-      controllerRef.current?.abort();
-    };
-  }, []);
 
   useEffect(() => {
     const nextSearch = searchQuery.trim();
@@ -122,12 +130,14 @@ export function useAnnouncements(errorFallback: string) {
       title: debouncedSearch || undefined,
     }),
     [
-      appliedFilters,
+      appliedFilters.draftStatus,
+      appliedFilters.receiver,
       debouncedSearch,
       pagination.currentPage,
       pagination.perPage,
     ],
   );
+  const requestKey = getRequestKey(requestParams);
   requestParamsRef.current = requestParams;
 
   const requestAnnouncements = useCallback(
@@ -135,24 +145,27 @@ export function useAnnouncements(errorFallback: string) {
       params: GetAnnouncementsParams,
       options: RequestAnnouncementsOptions,
     ) => {
-      controllerRef.current?.abort();
+      activeRequestRef.current?.controller.abort();
+
       const controller = new AbortController();
-      controllerRef.current = controller;
       const requestId = latestRequestIdRef.current + 1;
+      const key = getRequestKey(params);
       latestRequestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key };
 
       setError("");
-      if (options.showSkeleton) {
+      if (options.loadingMode === "foreground") {
         setListLoading(true);
+        setListRefetching(false);
+      } else {
+        setListLoading(false);
+        setListRefetching(true);
       }
 
       try {
         const result = await getAnnouncements(params, controller.signal);
 
-        if (
-          isMountedRef.current &&
-          requestId === latestRequestIdRef.current
-        ) {
+        if (requestId === latestRequestIdRef.current) {
           setAnnouncements(result.announcements);
           setPagination(result.pagination);
         }
@@ -163,24 +176,20 @@ export function useAnnouncements(errorFallback: string) {
           return null;
         }
 
-        if (
-          isMountedRef.current &&
-          requestId === latestRequestIdRef.current
-        ) {
+        if (requestId === latestRequestIdRef.current) {
           setError(getErrorMessage(requestError, errorFallback));
 
-          if (options.showSkeleton) {
+          if (options.loadingMode === "foreground") {
             setAnnouncements([]);
           }
         }
 
         return null;
       } finally {
-        if (
-          isMountedRef.current &&
-          requestId === latestRequestIdRef.current
-        ) {
+        if (requestId === latestRequestIdRef.current) {
+          activeRequestRef.current = null;
           setListLoading(false);
+          setListRefetching(false);
         }
       }
     },
@@ -188,19 +197,32 @@ export function useAnnouncements(errorFallback: string) {
   );
 
   useEffect(() => {
-    const requestKey = JSON.stringify(requestParams);
+    let disposedBeforeStart = false;
+    const params = requestParamsRef.current;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (!disposedBeforeStart) {
+        void requestAnnouncements(params, { loadingMode: "foreground" });
+      }
+    });
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestAnnouncements(requestParams, { showSkeleton: true });
-  }, [requestAnnouncements, requestParams]);
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        latestRequestIdRef.current += 1;
+        activeRequestRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
+  }, [requestAnnouncements, requestKey]);
 
   const refetch = useCallback(
     (showSkeleton = false) =>
-      requestAnnouncements(requestParamsRef.current, { showSkeleton }),
+      requestAnnouncements(requestParamsRef.current, {
+        loadingMode: showSkeleton ? "foreground" : "background",
+      }),
     [requestAnnouncements],
   );
 
@@ -259,6 +281,7 @@ export function useAnnouncements(errorFallback: string) {
     },
     hasActiveCriteria: Boolean(debouncedSearch || hasActiveFilters),
     listLoading,
+    listRefetching,
     perPage: pagination.perPage,
     refetch,
     searchQuery,

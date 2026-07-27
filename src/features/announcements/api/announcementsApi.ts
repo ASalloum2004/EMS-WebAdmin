@@ -1,24 +1,24 @@
-import { apiRequest, resolveApiMediaUrl } from "../../../api";
+import { apiRequest } from "../../../api";
+import {
+  getAnnouncementApiReceiver,
+  isAnnouncementApiDto,
+  mapAnnouncementApiDto,
+} from "../mappers";
 import type {
-  Announcement,
-  AnnouncementActionResult,
-  AnnouncementApiDto,
-  AnnouncementCreateRequest,
-  AnnouncementDetailsResponse,
-  AnnouncementFormReceiver,
-  AnnouncementFormValues,
-  AnnouncementListResponse,
-  AnnouncementUpdateRequest,
-  AnnouncementUpdateValues,
   GetAnnouncementsParams,
   GetAnnouncementsResult,
 } from "../types";
+import { ANNOUNCEMENTS_PATH } from "./announcementApiShared";
 
-export const ANNOUNCEMENTS_PATH = "announcements";
 export const DEFAULT_ANNOUNCEMENTS_PER_PAGE = 4;
-export const ANNOUNCEMENT_TITLE_MAX_LENGTH = 255;
-export const ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH = 2048;
-export const ANNOUNCEMENT_MEDIA_MAX_LENGTH = 8192;
+export const ANNOUNCEMENTS_LIST_TIMEOUT_MS = 12_000;
+
+export class AnnouncementListTimeoutError extends Error {
+  constructor() {
+    super("The announcements request timed out.");
+    this.name = "AnnouncementListTimeoutError";
+  }
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -40,57 +40,6 @@ function getNonNegativeInteger(value: unknown) {
     : undefined;
 }
 
-function normalizeReceiver(receiver: string): Announcement["receiver"] {
-  const normalizedReceiver = receiver.trim().toLocaleLowerCase();
-
-  if (normalizedReceiver === "exhibitors") {
-    return "exhibitors";
-  }
-
-  if (normalizedReceiver === "visitors") {
-    return "visitors";
-  }
-
-  if (normalizedReceiver === "all") {
-    return "all";
-  }
-
-  return "unknown";
-}
-
-function getApiReceiver(
-  receiver: AnnouncementFormReceiver,
-): AnnouncementCreateRequest["receiver"] {
-  return receiver === "exhibitors" ? "Exhibitors" : receiver;
-}
-
-function isAnnouncementApiDto(value: unknown): value is AnnouncementApiDto {
-  return (
-    isRecord(value) &&
-    getPositiveInteger(value.id) !== undefined &&
-    typeof value.title === "string" &&
-    typeof value.description === "string" &&
-    typeof value.receiver === "string" &&
-    typeof value.is_active === "boolean" &&
-    (typeof value.media === "string" || value.media === null)
-  );
-}
-
-export function mapAnnouncementApiDto(
-  apiAnnouncement: AnnouncementApiDto,
-): Announcement {
-  return {
-    id: apiAnnouncement.id,
-    title: apiAnnouncement.title,
-    description: apiAnnouncement.description,
-    receiver: normalizeReceiver(apiAnnouncement.receiver),
-    isDraft: apiAnnouncement.is_active,
-    media: resolveApiMediaUrl(apiAnnouncement.media, {
-      allowInlineMedia: true,
-    }),
-  };
-}
-
 export function buildAnnouncementsPath(
   params: GetAnnouncementsParams = {},
 ) {
@@ -105,7 +54,10 @@ export function buildAnnouncementsPath(
   }
 
   if (params.receiver) {
-    queryParams.set("filter[receiver]", getApiReceiver(params.receiver));
+    queryParams.set(
+      "filter[receiver]",
+      getAnnouncementApiReceiver(params.receiver),
+    );
   }
 
   if (params.isDraft !== undefined) {
@@ -119,11 +71,23 @@ export function buildAnnouncementsPath(
 }
 
 export function normalizeAnnouncementsResponse(
-  response: AnnouncementListResponse,
+  response: unknown,
   requestedParams: GetAnnouncementsParams = {},
 ): GetAnnouncementsResult {
+  if (!isRecord(response)) {
+    throw new Error("Unexpected announcements response format.");
+  }
+
+  if (response.status === false) {
+    throw new Error(
+      typeof response.message === "string" && response.message.trim()
+        ? response.message
+        : "The announcements could not be loaded.",
+    );
+  }
+
   if (
-    !response.status ||
+    response.status !== true ||
     !isRecord(response.data) ||
     !Array.isArray(response.data.data) ||
     !response.data.data.every(isAnnouncementApiDto)
@@ -160,152 +124,43 @@ export function normalizeAnnouncementsResponse(
 export async function getAnnouncements(
   params: GetAnnouncementsParams = {},
   signal?: AbortSignal,
+  timeoutMs = ANNOUNCEMENTS_LIST_TIMEOUT_MS,
 ) {
-  const response = await apiRequest<AnnouncementListResponse>(
-    buildAnnouncementsPath(params),
-    {
-      cache: "no-store",
-      method: "GET",
-      requiresAuth: true,
-      signal,
-    },
-  );
+  const requestController = new AbortController();
+  let didTimeout = false;
+  const abortFromCaller = () => requestController.abort();
 
-  return normalizeAnnouncementsResponse(response, params);
-}
-
-function buildAnnouncementPath(announcementId: number) {
-  if (getPositiveInteger(announcementId) === undefined) {
-    throw new Error("A valid announcement ID is required.");
+  if (signal?.aborted) {
+    requestController.abort();
+  } else {
+    signal?.addEventListener("abort", abortFromCaller, { once: true });
   }
 
-  return `${ANNOUNCEMENTS_PATH}/${announcementId}`;
-}
+  const timeoutId = globalThis.setTimeout(() => {
+    didTimeout = true;
+    requestController.abort();
+  }, timeoutMs);
 
-export function normalizeAnnouncementDetailsResponse(
-  response: AnnouncementDetailsResponse,
-) {
-  if (!response.status || !isAnnouncementApiDto(response.data)) {
-    throw new Error("Unexpected announcement details response format.");
+  try {
+    const response = await apiRequest<unknown>(
+      buildAnnouncementsPath(params),
+      {
+        cache: "no-store",
+        method: "GET",
+        requiresAuth: true,
+        signal: requestController.signal,
+      },
+    );
+
+    return normalizeAnnouncementsResponse(response, params);
+  } catch (error) {
+    if (didTimeout) {
+      throw new AnnouncementListTimeoutError();
+    }
+
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", abortFromCaller);
   }
-
-  return mapAnnouncementApiDto(response.data);
-}
-
-export async function getAnnouncement(
-  announcementId: number,
-  signal?: AbortSignal,
-) {
-  const response = await apiRequest<AnnouncementDetailsResponse>(
-    buildAnnouncementPath(announcementId),
-    {
-      cache: "no-store",
-      method: "GET",
-      requiresAuth: true,
-      signal,
-    },
-  );
-
-  return normalizeAnnouncementDetailsResponse(response);
-}
-
-export function mapAnnouncementFormValuesToRequest(
-  formValues: AnnouncementFormValues,
-): AnnouncementCreateRequest {
-  return {
-    title: formValues.title.trim(),
-    description: formValues.description.trim(),
-    receiver: getApiReceiver(formValues.receiver),
-    is_active: formValues.isDraft,
-    media: formValues.media,
-  };
-}
-
-export function mapAnnouncementUpdateValuesToRequest(
-  formValues: AnnouncementUpdateValues,
-): AnnouncementUpdateRequest {
-  const request: AnnouncementUpdateRequest = {
-    title: formValues.title.trim(),
-    description: formValues.description.trim(),
-    receiver: getApiReceiver(formValues.receiver),
-    is_active: formValues.isDraft,
-  };
-
-  if (formValues.mediaUpdate === "replace") {
-    request.media = formValues.media;
-  } else if (formValues.mediaUpdate === "remove") {
-    request.media = null;
-  }
-
-  return request;
-}
-
-function normalizeActionResponse(response: unknown): AnnouncementActionResult {
-  if (!isRecord(response)) {
-    return { message: "" };
-  }
-
-  if (response.status === false) {
-    const message =
-      typeof response.message === "string" && response.message.trim()
-        ? response.message
-        : "The announcement request was not completed.";
-
-    throw new Error(message);
-  }
-
-  return {
-    message:
-      typeof response.message === "string" ? response.message.trim() : "",
-  };
-}
-
-export async function createAnnouncement(
-  formValues: AnnouncementFormValues,
-  signal?: AbortSignal,
-) {
-  const response = await apiRequest<unknown>(ANNOUNCEMENTS_PATH, {
-    body: JSON.stringify(mapAnnouncementFormValuesToRequest(formValues)),
-    method: "POST",
-    requiresAuth: true,
-    signal,
-  });
-
-  return normalizeActionResponse(response);
-}
-
-export async function updateAnnouncement(
-  announcementId: number,
-  formValues: AnnouncementUpdateValues,
-  signal?: AbortSignal,
-) {
-  const response = await apiRequest<unknown>(
-    buildAnnouncementPath(announcementId),
-    {
-      body: JSON.stringify(
-        mapAnnouncementUpdateValuesToRequest(formValues),
-      ),
-      method: "PATCH",
-      requiresAuth: true,
-      signal,
-    },
-  );
-
-  return normalizeActionResponse(response);
-}
-
-export async function deleteAnnouncement(
-  announcementId: number,
-  signal?: AbortSignal,
-) {
-  const response = await apiRequest<unknown>(
-    buildAnnouncementPath(announcementId),
-    {
-      method: "DELETE",
-      requiresAuth: true,
-      signal,
-    },
-  );
-
-  return normalizeActionResponse(response);
 }

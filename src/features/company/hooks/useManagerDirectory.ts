@@ -71,6 +71,7 @@ export function useManagerDirectory(
 
   return {
     ...state,
+    isLoading: state.isLoading || (enabled && !hasRequestedRef.current),
     refetch,
   };
 }

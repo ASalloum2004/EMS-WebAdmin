@@ -5,6 +5,7 @@ import { ManagementLayout } from "../../../layouts";
 import {
   CompanyDetailsModal,
   CompanyFiltersPanel,
+  CompanyListSkeleton,
   CompanyTable,
   CompanyViewTabs,
   ManagerSummaryCards,
@@ -137,12 +138,8 @@ export function CompanyPage() {
             <div className="company-page__divider" />
 
             {companiesState.isLoading ? (
-              <p className="company-page__state" role="status">
-                {t.company.table.loading}
-              </p>
-            ) : null}
-
-            {!companiesState.isLoading && companiesState.error ? (
+              <CompanyListSkeleton />
+            ) : companiesState.error ? (
               <div className="company-page__state" role="alert">
                 <p>{companiesState.error || t.company.table.loadError}</p>
                 <button
@@ -152,19 +149,15 @@ export function CompanyPage() {
                   {t.common.tryAgain}
                 </button>
               </div>
-            ) : null}
-
-            {!companiesState.isLoading && !companiesState.error ? (
+            ) : (
               <CompanyTable
                 companies={companiesState.companies}
                 emptyMessage={emptyMessage}
                 onOpenCompany={companyDetails.openCompany}
               />
-            ) : null}
+            )}
 
-            {!companiesState.isLoading &&
-            !companiesState.error &&
-            companiesState.companies.length ? (
+            {!companiesState.error && companiesState.companies.length ? (
               <TableFooter
                 className="company-page__footer"
                 currentPage={companiesState.currentPage}

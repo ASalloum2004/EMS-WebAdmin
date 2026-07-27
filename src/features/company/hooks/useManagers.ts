@@ -44,7 +44,7 @@ export function useManagers(errorFallback: string) {
   const [managers, setManagers] = useState<ManagerListItem[]>([]);
   const [pagination, setPagination] =
     useState<ManagerPagination>(initialPagination);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

@@ -1,0 +1,20 @@
+.directory-cards-skeleton__card .skeleton {
+  max-width: 100%;
+}
+
+.directory-cards-skeleton__icon {
+  overflow: hidden;
+  background-color: transparent;
+}
+
+.directory-cards-skeleton__icon .skeleton {
+  border-radius: 12px;
+}
+
+.directory-cards-skeleton__label {
+  width: 100%;
+}
+
+.directory-cards-skeleton__value {
+  display: block;
+}

@@ -9,3 +9,4 @@ export * from "./ManagerDetailsModal";
 export * from "./ManagerSummaryCards";
 export * from "./ManagerTable";
 export * from "./ManagerView";
+export * from "./skeletons";

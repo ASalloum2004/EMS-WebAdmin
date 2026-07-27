@@ -9,6 +9,7 @@ import type {
 } from "../../types";
 import { CompanyLogo, getCompanyInitials } from "../CompanyLogo";
 import { CompanyStatusBadge } from "../CompanyStatusBadge";
+import { CompanyDetailsSkeleton } from "../skeletons";
 import "./CompanyDetailsModal.scss";
 
 const FOCUSABLE_SELECTOR = [
@@ -241,25 +242,15 @@ export function CompanyDetailsModal({
 
         <div className="company-details-modal__scroll-area">
           {!detailsState || detailsState.isLoading ? (
-            <div
-              aria-live="polite"
-              className="company-details-modal__state"
-              role="status"
-            >
-              <p>{t.company.details.loading}</p>
-            </div>
-          ) : null}
-
-          {detailsState?.error ? (
+            <CompanyDetailsSkeleton />
+          ) : detailsState.error ? (
             <div className="company-details-modal__state" role="alert">
               <p>{detailsState.error}</p>
               <button onClick={() => onRetry(company.id)} type="button">
                 {t.common.tryAgain}
               </button>
             </div>
-          ) : null}
-
-          {detailsState?.details && !detailsState.isLoading ? (
+          ) : detailsState.details ? (
             <CompanyDetailsContent
               company={company}
               details={detailsState.details}

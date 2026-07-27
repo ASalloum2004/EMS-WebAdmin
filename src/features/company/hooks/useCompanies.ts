@@ -47,7 +47,7 @@ export function useCompanies(errorFallback: string) {
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [pagination, setPagination] =
     useState<CompanyPagination>(initialPagination);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

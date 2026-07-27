@@ -1,0 +1,11 @@
+.company-details-skeleton .skeleton {
+  max-width: 100%;
+}
+
+.company-details-skeleton__manager-copy {
+  min-width: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 5px;
+}

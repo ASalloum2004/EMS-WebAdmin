@@ -1,0 +1,13 @@
+.manager-details-skeleton {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+
+.manager-details-skeleton .skeleton {
+  max-width: 100%;
+}
+
+.manager-details-skeleton__portfolio-card {
+  min-width: 0;
+}

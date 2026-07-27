@@ -4,6 +4,7 @@ import { useI18n } from "../../../../i18n";
 import { useManagerDetails, useManagers } from "../../hooks";
 import type { ManagerListItem, ManagerSearchField } from "../../types";
 import { ManagerDetailsModal } from "../ManagerDetailsModal";
+import { ManagerListSkeleton } from "../skeletons";
 import { ManagerTable } from "../ManagerTable";
 import "./ManagerView.scss";
 
@@ -98,12 +99,8 @@ export function ManagerView() {
         <div className="company-page__divider" />
 
         {managersState.isLoading ? (
-          <p className="company-page__state" role="status">
-            {t.company.manager.table.loading}
-          </p>
-        ) : null}
-
-        {!managersState.isLoading && managersState.error ? (
+          <ManagerListSkeleton />
+        ) : managersState.error ? (
           <div className="company-page__state" role="alert">
             <p>{managersState.error || t.company.manager.table.loadError}</p>
             <button
@@ -113,19 +110,15 @@ export function ManagerView() {
               {t.common.tryAgain}
             </button>
           </div>
-        ) : null}
-
-        {!managersState.isLoading && !managersState.error ? (
+        ) : (
           <ManagerTable
             emptyMessage={emptyMessage}
             managers={managersState.managers}
             onOpenManager={handleOpenManager}
           />
-        ) : null}
+        )}
 
-        {!managersState.isLoading &&
-        !managersState.error &&
-        managersState.managers.length ? (
+        {!managersState.error && managersState.managers.length ? (
           <TableFooter
             className="manager-view__footer"
             currentPage={managersState.currentPage}

@@ -9,6 +9,7 @@ import type {
 } from "../../types";
 import { CompanyLogo } from "../CompanyLogo";
 import { ManagerAvatar } from "../ManagerAvatar";
+import { ManagerDetailsSkeleton } from "../skeletons";
 import "./ManagerDetailsModal.scss";
 
 const EMPTY_VALUE = "—";
@@ -290,16 +291,8 @@ export function ManagerDetailsModal({
 
         <div className="manager-details-modal__scroll-area">
           {!detailsState || detailsState.isLoading ? (
-            <div
-              aria-live="polite"
-              className="manager-details-modal__state"
-              role="status"
-            >
-              <p>{t.company.manager.details.loading}</p>
-            </div>
-          ) : null}
-
-          {detailsState?.error ? (
+            <ManagerDetailsSkeleton />
+          ) : detailsState.error ? (
             <div className="manager-details-modal__state" role="alert">
               <p>{detailsState.error}</p>
               <button
@@ -309,9 +302,7 @@ export function ManagerDetailsModal({
                 {t.common.tryAgain}
               </button>
             </div>
-          ) : null}
-
-          {detailsState?.details && !detailsState.isLoading ? (
+          ) : detailsState.details ? (
             <ManagerDetailsContent
               details={detailsState.details}
               manager={manager}

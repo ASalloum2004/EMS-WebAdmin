@@ -2,6 +2,7 @@ import { Building2, PanelsTopLeft, Users } from "lucide-react";
 import { Card } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type { ManagerDirectory } from "../../types";
+import { DirectoryCardsSkeleton } from "../skeletons";
 import "./ManagerSummaryCards.scss";
 
 type ManagerSummaryCardsProps = {
@@ -14,6 +15,11 @@ export function ManagerSummaryCards({
   isLoading,
 }: ManagerSummaryCardsProps) {
   const { language, t } = useI18n();
+
+  if (isLoading) {
+    return <DirectoryCardsSkeleton />;
+  }
+
   const formatter = new Intl.NumberFormat(
     language === "ar" ? "ar-SY" : "en-US",
   );
@@ -39,7 +45,7 @@ export function ManagerSummaryCards({
   ] as const;
 
   return (
-    <div className="manager-summary">
+    <div aria-busy="false" className="manager-summary">
       {cards.map((card) => (
         <Card
           className="manager-summary__card"
@@ -51,15 +57,11 @@ export function ManagerSummaryCards({
         >
           <strong className="manager-summary__value">
             <span
-              aria-busy={isLoading}
               aria-label={
                 card.value === null
-                  ? isLoading
-                    ? t.company.manager.summary.loading
-                    : t.company.manager.summary.unavailable
+                  ? t.company.manager.summary.unavailable
                   : undefined
               }
-              aria-live="polite"
             >
               {card.value === null ? "—" : formatter.format(card.value)}
             </span>

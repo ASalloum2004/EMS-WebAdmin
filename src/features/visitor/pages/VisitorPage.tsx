@@ -8,7 +8,12 @@ import {
 } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
-import { VisitorFiltersPanel, getVisitorColumns } from "../components";
+import {
+  VisitorFiltersPanel,
+  VisitorStatsSkeleton,
+  VisitorTableSkeleton,
+  getVisitorColumns,
+} from "../components";
 import { useVisitors, useVisitorStatistics } from "../hooks";
 import type { VisitorStatisticsData } from "../types";
 import "./VisitorPage.scss";
@@ -59,7 +64,13 @@ export function VisitorPage() {
           <p>{t.visitor.description}</p>
         </header>
 
-        <div className="visitor-page__summary">
+        {visitorStatistics.isInitialLoading ? (
+          <VisitorStatsSkeleton />
+        ) : (
+        <div
+          aria-busy={visitorStatistics.isRefreshing}
+          className="visitor-page__summary"
+        >
           {summaryCards.map((summaryCard) => {
             const value =
               visitorStatistics.statistics?.[summaryCard.key] ?? null;
@@ -74,12 +85,9 @@ export function VisitorPage() {
                 titleClassName="visitor-page__summary-label"
               >
                 <strong
-                  aria-busy={visitorStatistics.isLoading}
                   aria-label={
                     value === null
-                      ? visitorStatistics.isLoading
-                        ? t.visitor.summary.loading
-                        : t.visitor.summary.unavailable
+                      ? t.visitor.summary.unavailable
                       : undefined
                   }
                   aria-live="polite"
@@ -91,6 +99,7 @@ export function VisitorPage() {
             );
           })}
         </div>
+        )}
 
         {visitorStatistics.error ? (
           <div className="visitor-page__state" role="alert">
@@ -107,7 +116,7 @@ export function VisitorPage() {
         ) : null}
 
         <Card
-          aria-busy={visitorsState.isLoading}
+          aria-busy={visitorsState.isLoading || visitorsState.isRefreshing}
           aria-label={t.visitor.panelAriaLabel}
           bodyClassName="visitor-page__panel-body"
           className="visitor-page__panel"
@@ -133,11 +142,7 @@ export function VisitorPage() {
             />
           ) : null}
 
-          {visitorsState.isLoading ? (
-            <p className="visitor-page__state" role="status">
-              {t.visitor.table.loading}
-            </p>
-          ) : null}
+          {visitorsState.isLoading ? <VisitorTableSkeleton /> : null}
 
           {!visitorsState.isLoading && visitorsState.error ? (
             <div className="visitor-page__state" role="alert">

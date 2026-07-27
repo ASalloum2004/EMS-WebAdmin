@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   VisitorStatisticsData,
   VisitorStatisticsResponse,
@@ -28,13 +28,17 @@ export function normalizeVisitorStatisticsResponse(
   return statistics;
 }
 
-export async function getVisitorStatistics(): Promise<VisitorStatisticsData> {
+export async function getVisitorStatistics(
+  signal?: AbortSignal,
+): Promise<VisitorStatisticsData> {
   const response = await apiRequest<VisitorStatisticsResponse>(
     VISITOR_STATISTICS_PATH,
     {
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

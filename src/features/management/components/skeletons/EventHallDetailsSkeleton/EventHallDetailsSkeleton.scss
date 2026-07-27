@@ -1,0 +1,14 @@
+.event-hall-details-skeleton {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  pointer-events: none;
+}
+
+.event-hall-details-skeleton .management-event-hall-details__summary-grid > div,
+.event-hall-details-skeleton .management-event-hall-details__event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

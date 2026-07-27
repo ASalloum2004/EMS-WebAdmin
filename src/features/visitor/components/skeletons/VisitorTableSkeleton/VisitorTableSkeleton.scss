@@ -1,0 +1,18 @@
+.visitor-table-skeleton {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.visitor-table-skeleton__identity {
+  width: 100%;
+}
+
+.visitor-table-skeleton__table .data-table__row {
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .visitor-table-skeleton__identity .visitor-identity__copy {
+    max-width: calc(100% - 56px);
+  }
+}

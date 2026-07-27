@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import {
   DEFAULT_EVENT_REQUESTS_PER_PAGE,
   getEventRequests,
@@ -45,6 +46,11 @@ function getRequestKey(params: GetEventRequestsParams) {
   return JSON.stringify(params);
 }
 
+interface ActiveEventRequestsRequest {
+  controller: AbortController;
+  key: string;
+}
+
 export function isLatestEventRequestsRequest(
   requestId: number,
   latestRequestId: number,
@@ -62,11 +68,14 @@ export function useEventRequests({
   const [pagination, setPagination] =
     useState<EventRequestsPagination>(initialPagination);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedTitle, setDebouncedTitle] = useState("");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveEventRequestsRequest | null>(null);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
   const requestParamsRef = useRef<GetEventRequestsParams>({});
   const currentPage = pagination.currentPage;
   const perPage = pagination.perPage;
@@ -122,16 +131,23 @@ export function useEventRequests({
         } satisfies GetEventRequestsResult;
       }
 
+      activeRequestRef.current?.controller.abort();
+
+      const controller = new AbortController();
       const requestId = requestIdRef.current + 1;
+      const requestKey = getRequestKey(params);
       requestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key: requestKey };
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedRef.current);
+      setIsRefreshing(hasLoadedRef.current);
 
       try {
-        const result = await getEventRequests(params);
+        const result = await getEventRequests(params, controller.signal);
 
         if (isLatestEventRequestsRequest(requestId, requestIdRef.current)) {
+          hasLoadedRef.current = true;
           setRequests(result.requests);
           setPagination(result.pagination);
         }
@@ -148,15 +164,24 @@ export function useEventRequests({
           },
         } satisfies GetEventRequestsResult;
 
+        if (isAbortError(requestError)) {
+          return preservedResult;
+        }
+
         if (isLatestEventRequestsRequest(requestId, requestIdRef.current)) {
           setError(getErrorMessage(requestError, errorFallback));
-          setRequests([]);
+
+          if (!hasLoadedRef.current) {
+            setRequests([]);
+          }
         }
 
         return preservedResult;
       } finally {
         if (isLatestEventRequestsRequest(requestId, requestIdRef.current)) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -170,17 +195,42 @@ export function useEventRequests({
 
   useEffect(() => {
     if (!enabled) {
+      requestIdRef.current += 1;
+      hasLoadedRef.current = false;
+      activeRequestRef.current?.controller.abort();
+      activeRequestRef.current = null;
+      automaticRequestKeyRef.current = null;
+      setIsLoading(false);
+      setIsRefreshing(false);
       return;
     }
 
     const requestKey = getRequestKey(requestParams);
+    let disposedBeforeStart = false;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (
+        disposedBeforeStart ||
+        automaticRequestKeyRef.current === requestKey
+      ) {
+        return;
+      }
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestEventRequests(requestParams);
+      automaticRequestKeyRef.current = requestKey;
+      void requestEventRequests(requestParams);
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        automaticRequestKeyRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
   }, [enabled, requestEventRequests, requestParams]);
 
   const setCurrentPage = useCallback(
@@ -202,7 +252,10 @@ export function useEventRequests({
     currentPage: pagination.currentPage,
     error,
     filters,
-    isLoading,
+    isLoading:
+      isLoading ||
+      (enabled && !hasLoadedRef.current && automaticRequestKeyRef.current === null),
+    isRefreshing,
     perPage: pagination.perPage,
     refetch,
     requests,

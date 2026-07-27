@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   EventRequestsResponse,
   EventRequestUiItem,
@@ -149,12 +149,15 @@ export function normalizeEventRequestsResponse(
 
 export async function getEventRequests(
   params: GetEventRequestsParams = {},
+  signal?: AbortSignal,
 ): Promise<GetEventRequestsResult> {
   const response = await apiRequest<EventRequestsResponse>(
     buildEventRequestsPath(params),
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

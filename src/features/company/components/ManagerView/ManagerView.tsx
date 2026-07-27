@@ -61,7 +61,7 @@ export function ManagerView() {
   return (
     <>
       <section
-        aria-busy={managersState.isLoading}
+        aria-busy={managersState.isLoading || managersState.isRefreshing}
         aria-label={t.company.manager.panelAriaLabel}
         className="company-page__panel manager-view"
         id="company-directory-manager-panel"
@@ -98,9 +98,23 @@ export function ManagerView() {
 
         <div className="company-page__divider" />
 
+        {!managersState.isLoading &&
+        managersState.error &&
+        managersState.managers.length ? (
+          <div className="company-page__state" role="alert">
+            <p>{managersState.error || t.company.manager.table.loadError}</p>
+            <button
+              onClick={() => void managersState.refetch()}
+              type="button"
+            >
+              {t.common.tryAgain}
+            </button>
+          </div>
+        ) : null}
+
         {managersState.isLoading ? (
           <ManagerListSkeleton />
-        ) : managersState.error ? (
+        ) : managersState.error && !managersState.managers.length ? (
           <div className="company-page__state" role="alert">
             <p>{managersState.error || t.company.manager.table.loadError}</p>
             <button
@@ -118,7 +132,7 @@ export function ManagerView() {
           />
         )}
 
-        {!managersState.error && managersState.managers.length ? (
+        {!managersState.isLoading && managersState.managers.length ? (
           <TableFooter
             className="manager-view__footer"
             currentPage={managersState.currentPage}

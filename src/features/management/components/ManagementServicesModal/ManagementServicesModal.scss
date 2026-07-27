@@ -86,6 +86,22 @@
   letter-spacing: 0;
 }
 
+.management-services-modal__empty p {
+  margin: 0;
+}
+
+.management-services-modal__empty button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .management-services-modal__copy h2 {
   color: var(--ems-color-heading);
   font-size: 22px;

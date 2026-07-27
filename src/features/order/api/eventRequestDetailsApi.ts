@@ -1,4 +1,8 @@
-import { apiRequest, resolveApiMediaUrl } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   EventRequestDetails,
   EventRequestDetailsApiData,
@@ -191,12 +195,15 @@ export function normalizeEventRequestDetailsResponse(
 
 export async function getEventRequestDetails(
   eventRequestId: number,
+  signal?: AbortSignal,
 ): Promise<EventRequestDetails> {
   const response = await apiRequest<EventRequestDetailsResponse>(
     buildEventRequestDetailsPath(eventRequestId),
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

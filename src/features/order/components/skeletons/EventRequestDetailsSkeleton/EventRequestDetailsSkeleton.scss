@@ -1,0 +1,34 @@
+.event-request-details-skeleton {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.event-request-details-skeleton__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.event-request-details-skeleton__facts > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 13px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+}
+
+.event-request-details-skeleton__facts > span:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .event-request-details-skeleton__facts {
+    grid-template-columns: 1fr;
+  }
+
+  .event-request-details-skeleton__facts > span:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}

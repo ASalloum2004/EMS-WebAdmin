@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
@@ -59,12 +59,15 @@ export function normalizeBoothRequestDetailsResponse(
 
 export async function getBoothRequestDetails(
   boothRequestId: number,
+  signal?: AbortSignal,
 ): Promise<BoothRequestDetailsApiData> {
   const response = await apiRequest<BoothRequestDetailsResponse>(
     buildBoothRequestDetailsPath(boothRequestId),
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

@@ -61,7 +61,7 @@ export function getProfileErrorMessage(
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const hasRequestedProfile = useRef(false);
 
   const refreshProfile = useCallback(async () => {

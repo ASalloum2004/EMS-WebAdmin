@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   CompaniesApiResponse,
   CompanyListApiData,
@@ -137,6 +137,7 @@ export function normalizeCompaniesResponse(
 
 export async function getCompanies(
   params: GetCompaniesParams = {},
+  signal?: AbortSignal,
 ): Promise<GetCompaniesResult> {
   const response = await apiRequest<CompaniesApiResponse>(
     buildCompaniesPath(params),
@@ -144,6 +145,8 @@ export async function getCompanies(
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

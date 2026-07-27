@@ -30,6 +30,7 @@ export function ManagerAvatar({
       {avatarSource && !hasAvatarError ? (
         <img
           alt=""
+          loading="lazy"
           onError={() => setHasAvatarError(true)}
           src={avatarSource}
         />

@@ -1,12 +1,15 @@
 import { ProfileLayout } from "../../../layouts";
+import { useI18n } from "../../../i18n";
 import { SignOutCard } from "../../auth/components";
 import {
   ChangePasswordCard,
   LanguageSettingsCard,
   ProfileIdentityCard,
+  ProfileIdentitySkeleton,
   ThemeSettingsCard,
 } from "../components";
 import { useProfile } from "../hooks";
+import "./ProfilePage.scss";
 
 export function ProfilePage() {
   return (
@@ -17,6 +20,7 @@ export function ProfilePage() {
 }
 
 function ProfilePageContent() {
+  const { t } = useI18n();
   const {
     avatarUrl,
     cancelNameEdit,
@@ -24,11 +28,13 @@ function ProfilePageContent() {
     email,
     error,
     feedbackMessage,
+    isLoading,
     isEditingName,
     isUpdating,
     name,
     nameInputValue,
     role,
+    refreshProfile,
     saveName,
     startNameEdit,
     uploadAvatar,
@@ -36,7 +42,21 @@ function ProfilePageContent() {
 
   return (
     <>
-      <ProfileIdentityCard
+      {isLoading ? (
+        <ProfileIdentitySkeleton />
+      ) : error ? (
+        <section
+          aria-live="polite"
+          className="profile-page__load-error"
+          role="alert"
+        >
+          <p>{error}</p>
+          <button type="button" onClick={() => void refreshProfile()}>
+            {t.common.tryAgain}
+          </button>
+        </section>
+      ) : (
+        <ProfileIdentityCard
         name={name}
         role={role}
         email={email}
@@ -50,13 +70,8 @@ function ProfilePageContent() {
         onEditName={startNameEdit}
         onNameInputChange={changeNameInput}
         onSaveName={saveName}
-      />
-
-      {error ? (
-        <p aria-live="polite" role="alert">
-          {error}
-        </p>
-      ) : null}
+        />
+      )}
 
       <div className="profile-layout__settings-grid">
         <div className="profile-layout__settings-column">

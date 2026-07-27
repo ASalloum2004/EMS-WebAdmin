@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   GetManagersParams,
   GetManagersResult,
@@ -120,6 +120,7 @@ export function normalizeManagersResponse(
 
 export async function getManagers(
   params: GetManagersParams = {},
+  signal?: AbortSignal,
 ): Promise<GetManagersResult> {
   const response = await apiRequest<ManagersApiResponse>(
     buildManagersPath(params),
@@ -127,6 +128,8 @@ export async function getManagers(
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

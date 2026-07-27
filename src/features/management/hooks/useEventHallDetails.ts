@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { getEventHallDetails } from "../api";
 import type { EventHallDetails } from "../types";
 
@@ -34,6 +35,7 @@ export function useEventHallDetails({
   const isOpenRef = useRef(false);
   const loadingEventHallIdRef = useRef<number | null>(null);
   const latestRequestIdRef = useRef(0);
+  const activeRequestRef = useRef<AbortController | null>(null);
   const selectedEventHallIdRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -41,20 +43,30 @@ export function useEventHallDetails({
 
     return () => {
       isMountedRef.current = false;
+      latestRequestIdRef.current += 1;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
     };
   }, []);
 
   const loadDetails = useCallback(
     async (eventHallId: number) => {
+      activeRequestRef.current?.abort();
+
+      const controller = new AbortController();
       const requestId = latestRequestIdRef.current + 1;
       latestRequestIdRef.current = requestId;
+      activeRequestRef.current = controller;
       loadingEventHallIdRef.current = eventHallId;
       setEventHallDetails(null);
       setError("");
       setIsLoading(true);
 
       try {
-        const details = await getEventHallDetails(eventHallId);
+        const details = await getEventHallDetails(
+          eventHallId,
+          controller.signal,
+        );
 
         if (
           isMountedRef.current &&
@@ -70,6 +82,10 @@ export function useEventHallDetails({
 
         return details;
       } catch (detailsError) {
+        if (isAbortError(detailsError)) {
+          return null;
+        }
+
         if (
           isMountedRef.current &&
           isOpenRef.current &&
@@ -94,6 +110,7 @@ export function useEventHallDetails({
           )
         ) {
           loadingEventHallIdRef.current = null;
+          activeRequestRef.current = null;
           setIsLoading(false);
         }
       }
@@ -125,6 +142,8 @@ export function useEventHallDetails({
 
   const closeDetails = useCallback(() => {
     latestRequestIdRef.current += 1;
+    activeRequestRef.current?.abort();
+    activeRequestRef.current = null;
     loadingEventHallIdRef.current = null;
     selectedEventHallIdRef.current = null;
     isOpenRef.current = false;

@@ -4,6 +4,7 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { ApproveEventRequestConflictModal } from "../ApproveEventRequestConflictModal";
 import { ApproveEventRequestConfirmModal } from "../ApproveEventRequestConfirmModal";
 import { RejectEventRequestConfirmModal } from "../RejectEventRequestConfirmModal";
+import { EventRequestDetailsSkeleton } from "../skeletons";
 import { EventRequestDetailsFooter } from "./EventRequestDetailsFooter";
 import { EventRequestDetailsHeader } from "./EventRequestDetailsHeader";
 import type { EventRequestDetailsModalProps } from "./EventRequestDetailsModal.types";
@@ -283,7 +284,9 @@ export function EventRequestDetailsModal({
           />
 
           <div className="event-request-details-modal__scroll-area">
-            {details ? (
+            {isLoading && !details ? (
+              <EventRequestDetailsSkeleton />
+            ) : details ? (
               <>
                 <EventRequestLogoShowcase
                   logo={details.logo}

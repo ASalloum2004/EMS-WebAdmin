@@ -109,7 +109,9 @@ export function CompanyPage() {
           <ManagerView />
         ) : (
           <section
-            aria-busy={companiesState.isLoading}
+            aria-busy={
+              companiesState.isLoading || companiesState.isRefreshing
+            }
             aria-label={t.company.panelAriaLabel}
             className="company-page__panel"
             id="company-directory-company-panel"
@@ -140,9 +142,23 @@ export function CompanyPage() {
 
             <div className="company-page__divider" />
 
+            {!companiesState.isLoading &&
+            companiesState.error &&
+            companiesState.companies.length ? (
+              <div className="company-page__state" role="alert">
+                <p>{companiesState.error || t.company.table.loadError}</p>
+                <button
+                  onClick={() => void companiesState.refetch()}
+                  type="button"
+                >
+                  {t.common.tryAgain}
+                </button>
+              </div>
+            ) : null}
+
             {companiesState.isLoading ? (
               <CompanyListSkeleton />
-            ) : companiesState.error ? (
+            ) : companiesState.error && !companiesState.companies.length ? (
               <div className="company-page__state" role="alert">
                 <p>{companiesState.error || t.company.table.loadError}</p>
                 <button
@@ -161,7 +177,6 @@ export function CompanyPage() {
             )}
 
             {!companiesState.isLoading &&
-            !companiesState.error &&
             companiesState.companies.length ? (
               <TableFooter
                 className="company-page__footer"

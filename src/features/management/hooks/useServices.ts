@@ -148,6 +148,7 @@ export function useServices({
   return {
     services: servicesList.services,
     isLoading: servicesList.isLoading,
+    isRefreshing: servicesList.isRefreshing,
     error: servicesList.error,
     refetch: servicesList.refetch,
     currentPage: pagination.currentPage,

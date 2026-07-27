@@ -16,6 +16,7 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { ApproveBoothRequestConflictModal } from "../ApproveBoothRequestConflictModal";
 import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmModal";
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
+import { BoothRequestDetailsSkeleton } from "../skeletons";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
 import { BoothRequestDetailsMainColumn } from "./BoothRequestDetailsMainColumn";
 import {
@@ -363,9 +364,7 @@ export function BoothRequestDetailsModal({
             <p id="booth-request-details-company-meta">
               <CompanyIcon aria-hidden="true" size={15} strokeWidth={1.8} />
               {getTrimmedString(details?.company.business_sector) ||
-                (isLoading
-                  ? t.order.details.loading
-                  : t.order.details.emptyValue)}
+                (isLoading ? "" : t.order.details.emptyValue)}
             </p>
           </div>
           <ModalCloseButton
@@ -376,6 +375,10 @@ export function BoothRequestDetailsModal({
         </header>
 
         <div className="booth-request-details-modal__scroll-area">
+          {isLoading && !details ? (
+            <BoothRequestDetailsSkeleton />
+          ) : (
+          <>
           <div
             aria-label={t.order.details.gallery.title}
             className="booth-request-details-modal__gallery"
@@ -408,9 +411,7 @@ export function BoothRequestDetailsModal({
               role={error ? "alert" : "status"}
             >
               <p>
-                {isLoading
-                  ? t.order.details.loading
-                  : error || t.order.details.loadError}
+                {error || t.order.details.loadError}
               </p>
               {error ? (
                 <button onClick={onRetry} type="button">
@@ -418,6 +419,8 @@ export function BoothRequestDetailsModal({
                 </button>
               ) : null}
             </div>
+          )}
+          </>
           )}
         </div>
 

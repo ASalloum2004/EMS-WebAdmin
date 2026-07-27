@@ -37,6 +37,7 @@ export function CompanyLogo({
       {logoSource && !hasLogoError ? (
         <img
           alt=""
+          loading="lazy"
           onError={() => setHasLogoError(true)}
           src={logoSource}
         />

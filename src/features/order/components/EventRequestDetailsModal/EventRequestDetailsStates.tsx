@@ -2,7 +2,6 @@ import type { EventRequestDetailsStatesProps } from "./EventRequestDetailsModal.
 
 export function EventRequestDetailsStates({
   error,
-  isLoading,
   onRetry,
   t,
 }: EventRequestDetailsStatesProps) {
@@ -14,7 +13,7 @@ export function EventRequestDetailsStates({
       className="event-request-details-modal__request-state"
       role={error ? "alert" : "status"}
     >
-      <p>{isLoading ? labels.loading : error || labels.loadError}</p>
+      <p>{error || labels.loadError}</p>
       {error ? (
         <button onClick={onRetry} type="button">
           {t.common.tryAgain}

@@ -14,7 +14,10 @@ import { useI18n } from "../../../i18n";
 import { AdminLayout } from "../../../layouts";
 import {
   BoothRequestDetailsModal,
+  BoothRequestListSkeleton,
   EventRequestDetailsModal,
+  EventRequestListSkeleton,
+  OrderStatsSkeleton,
   getBoothRequestCompanyDisplayName,
   getBoothRequestColumns,
   getEventRequestColumns,
@@ -178,8 +181,13 @@ export function OrderPage() {
             <p>{t.order.description}</p>
           </header>
 
-          {isBoothTab ? (
-            <div className="order-page__summary">
+          {isBoothTab && boothRequestStatistics.isInitialLoading ? (
+            <OrderStatsSkeleton />
+          ) : isBoothTab ? (
+            <div
+              aria-busy={boothRequestStatistics.isRefreshing}
+              className="order-page__summary"
+            >
               {summaryCards.map((summaryCard) => (
                 <Card
                   className={`order-page__summary-card order-page__summary-card--${summaryCard.key}`}
@@ -190,12 +198,9 @@ export function OrderPage() {
                   titleClassName="order-page__summary-label"
                 >
                   <strong
-                    aria-busy={boothRequestStatistics.isLoading}
                     aria-label={
                       summaryCard.value === null
-                        ? boothRequestStatistics.isLoading
-                          ? t.order.summary.loading
-                          : t.order.summary.unavailable
+                        ? t.order.summary.unavailable
                         : undefined
                     }
                     aria-live="polite"
@@ -234,6 +239,9 @@ export function OrderPage() {
 
             {isBoothTab ? (
               <div
+                aria-busy={
+                  boothRequests.isLoading || boothRequests.isRefreshing
+                }
                 aria-labelledby="orders-booth-tab"
                 className="order-page__tabpanel"
                 id="orders-booth-panel"
@@ -260,9 +268,7 @@ export function OrderPage() {
                 ) : null}
 
                 {boothRequests.isLoading ? (
-                  <p className="order-page__state">
-                    {t.order.table.loading}
-                  </p>
+                  <BoothRequestListSkeleton />
                 ) : null}
 
                 {!boothRequests.isLoading && boothRequests.error ? (
@@ -277,7 +283,8 @@ export function OrderPage() {
                   </div>
                 ) : null}
 
-                {!boothRequests.isLoading && !boothRequests.error ? (
+                {!boothRequests.isLoading &&
+                (!boothRequests.error || boothRequests.requests.length) ? (
                   <DataTable
                     ariaLabel={t.order.table.ariaLabel}
                     className="order-page__table"
@@ -293,7 +300,6 @@ export function OrderPage() {
                 ) : null}
 
                 {!boothRequests.isLoading &&
-                !boothRequests.error &&
                 boothRequests.requests.length ? (
                   <TableFooter
                     className="order-page__footer"
@@ -309,6 +315,9 @@ export function OrderPage() {
 
             {isEventTab ? (
               <div
+                aria-busy={
+                  eventRequests.isLoading || eventRequests.isRefreshing
+                }
                 aria-labelledby="orders-event-tab"
                 className="order-page__tabpanel"
                 id="orders-event-panel"
@@ -344,9 +353,7 @@ export function OrderPage() {
                 ) : null}
 
                 {eventRequests.isLoading ? (
-                  <p className="order-page__state">
-                    {t.order.eventRequests.table.loading}
-                  </p>
+                  <EventRequestListSkeleton />
                 ) : null}
 
                 {!eventRequests.isLoading && eventRequests.error ? (
@@ -364,7 +371,8 @@ export function OrderPage() {
                   </div>
                 ) : null}
 
-                {!eventRequests.isLoading && !eventRequests.error ? (
+                {!eventRequests.isLoading &&
+                (!eventRequests.error || eventRequests.requests.length) ? (
                   <DataTable
                     ariaLabel={t.order.eventRequests.table.ariaLabel}
                     className="order-page__table event-request-table"
@@ -382,7 +390,6 @@ export function OrderPage() {
                 ) : null}
 
                 {!eventRequests.isLoading &&
-                !eventRequests.error &&
                 eventRequests.requests.length ? (
                   <TableFooter
                     className="order-page__footer"

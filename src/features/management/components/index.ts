@@ -4,3 +4,4 @@ export * from "./ManagementFiltersPanel";
 export * from "./ManagementHeader";
 export * from "./ManagementServicesModal";
 export * from "./ManagementTabs";
+export * from "./skeletons";

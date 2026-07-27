@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   GetServicesParams,
   GetServicesResult,
@@ -221,6 +221,7 @@ export function normalizeServicesResponse(
 
 export async function getServices(
   params?: GetServicesParams,
+  signal?: AbortSignal,
 ): Promise<GetServicesResult> {
   const path = buildServicesPath(params);
 
@@ -229,6 +230,8 @@ export async function getServices(
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

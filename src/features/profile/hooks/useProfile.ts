@@ -34,7 +34,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const [localProfile, setLocalProfile] =
     useState<AdminProfile | null>(initialProfile);
   const [localError, setLocalError] = useState("");
-  const [localIsLoading, setLocalIsLoading] = useState(false);
+  const [localIsLoading, setLocalIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);

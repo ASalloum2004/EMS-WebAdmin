@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   EventHall,
   EventHallsResponse,
@@ -30,12 +30,15 @@ export function buildEventHallsPath(params?: GetEventHallsParams) {
 
 export async function getEventHalls(
   params?: GetEventHallsParams,
+  signal?: AbortSignal,
 ): Promise<EventHall[]> {
   const response = await apiRequest<EventHallsResponse>(
     buildEventHallsPath(params),
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

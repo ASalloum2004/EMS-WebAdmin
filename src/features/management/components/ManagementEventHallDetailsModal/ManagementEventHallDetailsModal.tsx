@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ModalCloseButton } from "../../../../components";
 import { useI18n, type SupportedLanguage } from "../../../../i18n";
 import type { EventHallDetails, EventHallEventDetails } from "../../types";
+import { EventHallDetailsSkeleton } from "../skeletons";
 import "./ManagementEventHallDetailsModal.scss";
 
 const FOCUSABLE_SELECTOR = [
@@ -291,16 +292,16 @@ export function ManagementEventHallDetailsModal({
         </header>
 
         <div className="management-event-hall-details__scroll-area">
-          {!details ? (
+          {isLoading && !details ? (
+            <EventHallDetailsSkeleton />
+          ) : !details ? (
             <div
               aria-live="polite"
               className="management-event-hall-details__state"
               role={error ? "alert" : "status"}
             >
               <p>
-                {isLoading
-                  ? translations.loading
-                  : error || translations.errorFallback}
+                {error || translations.errorFallback}
               </p>
               {error ? (
                 <button type="button" onClick={onRetry}>

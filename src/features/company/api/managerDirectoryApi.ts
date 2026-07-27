@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   ManagerDirectory,
   ManagerDirectoryApiResponse,
@@ -32,13 +32,17 @@ export function normalizeManagerDirectoryResponse(
   };
 }
 
-export async function getManagerDirectory(): Promise<ManagerDirectory> {
+export async function getManagerDirectory(
+  signal?: AbortSignal,
+): Promise<ManagerDirectory> {
   const response = await apiRequest<ManagerDirectoryApiResponse>(
     MANAGER_DIRECTORY_PATH,
     {
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

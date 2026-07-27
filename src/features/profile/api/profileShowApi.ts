@@ -1,4 +1,8 @@
-import { API_BASE_URL, apiRequest } from "../../../api";
+import {
+  API_BASE_URL,
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+} from "../../../api";
 import type {
   AdminProfile,
   AdminProfileApiData,
@@ -41,10 +45,12 @@ export function mapProfileResponse(data: AdminProfileApiData): AdminProfile {
   };
 }
 
-export async function getProfile(): Promise<AdminProfile> {
+export async function getProfile(signal?: AbortSignal): Promise<AdminProfile> {
   const response = await apiRequest<AdminProfileResponse>("profile", {
     method: "GET",
     requiresAuth: true,
+    signal,
+    timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
   });
 
   return mapProfileResponse(response.data);

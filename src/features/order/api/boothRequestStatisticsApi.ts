@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   BoothRequestStatisticsData,
   BoothRequestStatisticsResponse,
@@ -28,13 +28,17 @@ export function normalizeBoothRequestStatisticsResponse(
   return statistics;
 }
 
-export async function getBoothRequestStatistics(): Promise<BoothRequestStatisticsData> {
+export async function getBoothRequestStatistics(
+  signal?: AbortSignal,
+): Promise<BoothRequestStatisticsData> {
   const response = await apiRequest<BoothRequestStatisticsResponse>(
     BOOTH_REQUEST_STATISTICS_PATH,
     {
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

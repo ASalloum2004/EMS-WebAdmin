@@ -6,6 +6,7 @@ import {
 } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import { useServices } from "../../hooks";
+import { ServicesTableSkeleton } from "../skeletons";
 import "./ManagementServicesModal.scss";
 
 const SERVICES_PER_PAGE = 3;
@@ -47,7 +48,9 @@ export function ManagementServicesModal({
   const {
     services,
     isLoading,
+    isRefreshing,
     error,
+    refetch,
     currentPage,
     setCurrentPage,
     perPage,
@@ -112,6 +115,7 @@ export function ManagementServicesModal({
       />
 
       <section
+        aria-busy={isLoading || isRefreshing}
         className="management-services-modal__panel"
         role="dialog"
         aria-modal="true"
@@ -369,6 +373,10 @@ export function ManagementServicesModal({
           </form>
         ) : null}
 
+        {isLoading ? (
+          <ServicesTableSkeleton />
+        ) : !error || services.length ? (
+        <>
         <div
           className="management-services-modal__table"
           role="table"
@@ -448,24 +456,25 @@ export function ManagementServicesModal({
           </div>
         </div>
 
-        <TableFooter
-          currentPage={currentPage}
-          perPage={perPage}
-          totalItems={totalItems}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-
-        {isLoading ? (
-          <p className="management-services-modal__empty">
-            {t.management.servicesModal.loading}
-          </p>
+        {services.length ? (
+          <TableFooter
+            currentPage={currentPage}
+            perPage={perPage}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        ) : null}
+        </>
         ) : null}
 
         {error ? (
-          <p className="management-services-modal__empty" role="alert">
-            {error || t.management.servicesModal.loadError}
-          </p>
+          <div className="management-services-modal__empty" role="alert">
+            <p>{error || t.management.servicesModal.loadError}</p>
+            <button type="button" onClick={() => void refetch()}>
+              {t.common.tryAgain}
+            </button>
+          </div>
         ) : null}
 
         {!isLoading && !error && !services.length ? (

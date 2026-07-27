@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { getBoothRequestDetails } from "../api";
 import type { BoothRequestDetailsApiData } from "../types";
 
@@ -33,6 +34,7 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
   const isMountedRef = useRef(true);
   const lastAutomaticallyRequestedIdRef = useRef<number | null>(null);
   const latestRequestIdRef = useRef(0);
+  const activeRequestRef = useRef<AbortController | null>(null);
   const selectedRequestIdRef = useRef(boothRequestId);
   selectedRequestIdRef.current = boothRequestId;
 
@@ -41,12 +43,19 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
 
     return () => {
       isMountedRef.current = false;
+      latestRequestIdRef.current += 1;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
     };
   }, []);
 
   const loadDetails = useCallback(async (requestedId: number) => {
+    activeRequestRef.current?.abort();
+
+    const controller = new AbortController();
     const requestId = latestRequestIdRef.current + 1;
     latestRequestIdRef.current = requestId;
+    activeRequestRef.current = controller;
 
     setState({
       boothRequestId: requestedId,
@@ -56,7 +65,10 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
     });
 
     try {
-      const details = await getBoothRequestDetails(requestedId);
+      const details = await getBoothRequestDetails(
+        requestedId,
+        controller.signal,
+      );
 
       if (
         isMountedRef.current &&
@@ -76,6 +88,10 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
 
       return details;
     } catch (requestError) {
+      if (isAbortError(requestError)) {
+        return null;
+      }
+
       if (
         isMountedRef.current &&
         selectedRequestIdRef.current === requestedId &&
@@ -96,6 +112,10 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
       }
 
       return null;
+    } finally {
+      if (requestId === latestRequestIdRef.current) {
+        activeRequestRef.current = null;
+      }
     }
   }, []);
 
@@ -103,6 +123,8 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
     if (boothRequestId === null) {
       lastAutomaticallyRequestedIdRef.current = null;
       latestRequestIdRef.current += 1;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
       setState((currentState) =>
         currentState.boothRequestId === null &&
         currentState.details === null &&

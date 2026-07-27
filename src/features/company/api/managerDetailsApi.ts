@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   ManagerBooth,
   ManagerBoothApiData,
@@ -72,6 +72,7 @@ export function normalizeManagerDetailsResponse(
 
 export async function getManagerDetails(
   managerId: number,
+  signal?: AbortSignal,
 ): Promise<ManagerDetails> {
   const response = await apiRequest<ManagerDetailsApiResponse>(
     buildManagerDetailsPath(managerId),
@@ -79,6 +80,8 @@ export async function getManagerDetails(
       cache: "no-store",
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

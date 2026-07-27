@@ -1,0 +1,8 @@
+.management-table-skeleton {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.management-table-skeleton .data-table__row {
+  cursor: default;
+}

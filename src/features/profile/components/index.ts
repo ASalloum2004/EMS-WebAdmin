@@ -3,3 +3,4 @@ export * from "./LanguageSettingCard";
 export * from "./ChangePasswordCard";
 export * from "./ChangePasswordModal";
 export * from "./ThemeSettingsCard";
+export * from "./skeletons";

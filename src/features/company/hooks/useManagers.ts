@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { DEFAULT_MANAGERS_PER_PAGE, getManagers } from "../api";
 import type {
   GetManagersParams,
@@ -33,6 +34,11 @@ function getRequestKey(params: GetManagersParams) {
   return JSON.stringify(params);
 }
 
+interface ActiveManagersRequest {
+  controller: AbortController;
+  key: string;
+}
+
 export function isLatestManagersRequest(
   requestId: number,
   latestRequestId: number,
@@ -45,13 +51,16 @@ export function useManagers(errorFallback: string) {
   const [pagination, setPagination] =
     useState<ManagerPagination>(initialPagination);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [searchField, setSearchFieldState] =
     useState<ManagerSearchField>("name");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveManagersRequest | null>(null);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
   const requestParamsRef = useRef<GetManagersParams>({});
   const currentPage = pagination.currentPage;
 
@@ -89,16 +98,23 @@ export function useManagers(errorFallback: string) {
 
   const requestManagers = useCallback(
     async (params: GetManagersParams) => {
+      activeRequestRef.current?.controller.abort();
+
+      const controller = new AbortController();
       const requestId = requestIdRef.current + 1;
+      const requestKey = getRequestKey(params);
       requestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key: requestKey };
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedRef.current);
+      setIsRefreshing(hasLoadedRef.current);
 
       try {
-        const result = await getManagers(params);
+        const result = await getManagers(params, controller.signal);
 
         if (isLatestManagersRequest(requestId, requestIdRef.current)) {
+          hasLoadedRef.current = true;
           setManagers(result.managers);
           setPagination(result.pagination);
         }
@@ -115,15 +131,24 @@ export function useManagers(errorFallback: string) {
           },
         } satisfies GetManagersResult;
 
+        if (isAbortError(requestError)) {
+          return preservedResult;
+        }
+
         if (isLatestManagersRequest(requestId, requestIdRef.current)) {
           setError(getErrorMessage(requestError, errorFallback));
-          setManagers([]);
+
+          if (!hasLoadedRef.current) {
+            setManagers([]);
+          }
         }
 
         return preservedResult;
       } finally {
         if (isLatestManagersRequest(requestId, requestIdRef.current)) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -137,13 +162,31 @@ export function useManagers(errorFallback: string) {
 
   useEffect(() => {
     const requestKey = getRequestKey(requestParams);
+    let disposedBeforeStart = false;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (
+        disposedBeforeStart ||
+        automaticRequestKeyRef.current === requestKey
+      ) {
+        return;
+      }
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestManagers(requestParams);
+      automaticRequestKeyRef.current = requestKey;
+      void requestManagers(requestParams);
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        automaticRequestKeyRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
   }, [requestManagers, requestParams]);
 
   const setCurrentPage = useCallback(
@@ -174,6 +217,7 @@ export function useManagers(errorFallback: string) {
     error,
     hasActiveSearch: Boolean(debouncedSearch),
     isLoading,
+    isRefreshing,
     managers,
     perPage: pagination.perPage,
     refetch,

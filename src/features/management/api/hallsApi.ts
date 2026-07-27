@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type { HallApiData, HallsResponse } from "../types";
 
 type NestedHallsResponse = Omit<HallsResponse, "data"> & {
@@ -20,10 +20,12 @@ function isNestedHallsData(
   );
 }
 
-export async function getHalls(): Promise<HallApiData[]> {
+export async function getHalls(signal?: AbortSignal): Promise<HallApiData[]> {
   const response = await apiRequest<HallsApiResponse>("halls", {
     method: "GET",
     requiresAuth: true,
+    signal,
+    timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
   });
 
   if (Array.isArray(response.data)) {

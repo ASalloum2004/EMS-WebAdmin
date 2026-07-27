@@ -1,4 +1,4 @@
-import { apiRequest } from "../../../api";
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
 import type {
   BoothApiData,
   BoothsResponse,
@@ -140,12 +140,15 @@ export function normalizeBoothsResponse(
 
 export async function getBooths(
   params: GetBoothsParams = {},
+  signal?: AbortSignal,
 ): Promise<GetBoothsResult> {
   const response = await apiRequest<BoothsResponse>(
     buildBoothsPath(params),
     {
       method: "GET",
       requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
     },
   );
 

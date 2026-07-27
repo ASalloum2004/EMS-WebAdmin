@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { getEventHalls, updateEventHallPrice } from "../api";
 import type {
   EventHall,
@@ -131,6 +132,7 @@ export function useEventHalls({
   const [eventHalls, setEventHalls] = useState<EventHall[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [filters, setFilters] = useState<EventHallClientFilters>(
     createEmptyEventHallFilters,
   );
@@ -141,6 +143,8 @@ export function useEventHalls({
   const [updateError, setUpdateError] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const hasRequestedEventHalls = useRef(false);
+  const hasLoadedEventHalls = useRef(false);
+  const activeRequestRef = useRef<AbortController | null>(null);
   const isUpdatingRef = useRef(false);
   const appliedParamsRef = useRef<GetEventHallsParams>({});
   const latestRequestIdRef = useRef(0);
@@ -162,28 +166,38 @@ export function useEventHalls({
         return [];
       }
 
+      activeRequestRef.current?.abort();
+
+      const controller = new AbortController();
       const requestId = latestRequestIdRef.current + 1;
       latestRequestIdRef.current = requestId;
+      activeRequestRef.current = controller;
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedEventHalls.current);
+      setIsRefreshing(hasLoadedEventHalls.current);
 
       try {
-        const nextEventHalls = await getEventHalls(params);
+        const nextEventHalls = await getEventHalls(params, controller.signal);
 
         if (
           isLatestEventHallsRequest(requestId, latestRequestIdRef.current)
         ) {
+          hasLoadedEventHalls.current = true;
           setEventHalls(nextEventHalls);
         }
 
         return nextEventHalls;
       } catch (eventHallsError) {
+        if (isAbortError(eventHallsError)) {
+          return [];
+        }
+
         if (
           isLatestEventHallsRequest(requestId, latestRequestIdRef.current)
         ) {
           setError(getErrorMessage(eventHallsError, errorFallback));
-          if (!preserveRowsOnError) {
+          if (!preserveRowsOnError && !hasLoadedEventHalls.current) {
             setEventHalls([]);
           }
         }
@@ -197,7 +211,9 @@ export function useEventHalls({
         if (
           isLatestEventHallsRequest(requestId, latestRequestIdRef.current)
         ) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -209,12 +225,36 @@ export function useEventHalls({
   }, [requestEventHalls]);
 
   useEffect(() => {
-    if (!enabled || hasRequestedEventHalls.current) {
+    if (!enabled) {
+      latestRequestIdRef.current += 1;
+      hasRequestedEventHalls.current = false;
+      hasLoadedEventHalls.current = false;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+      setIsLoading(false);
+      setIsRefreshing(false);
       return;
     }
 
-    hasRequestedEventHalls.current = true;
-    void refetch();
+    let disposedBeforeStart = false;
+
+    queueMicrotask(() => {
+      if (disposedBeforeStart || hasRequestedEventHalls.current) {
+        return;
+      }
+
+      hasRequestedEventHalls.current = true;
+      void refetch();
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      latestRequestIdRef.current += 1;
+      hasRequestedEventHalls.current = false;
+      hasLoadedEventHalls.current = false;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+    };
   }, [enabled, refetch]);
 
   const toggleFilterPanel = useCallback(() => {
@@ -274,6 +314,7 @@ export function useEventHalls({
         if (updatedEventHall?.id === eventHallId) {
           latestRequestIdRef.current += 1;
           setIsLoading(false);
+          setIsRefreshing(false);
           setEventHalls((currentEventHalls) =>
             currentEventHalls.map((eventHall) =>
               eventHall.id === eventHallId ? updatedEventHall : eventHall,
@@ -323,7 +364,12 @@ export function useEventHalls({
     filters,
     clearUpdateError,
     isFilterPanelOpen,
-    isLoading,
+    isLoading:
+      isLoading ||
+      (enabled &&
+        !hasLoadedEventHalls.current &&
+        !hasRequestedEventHalls.current),
+    isRefreshing,
     isUpdating,
     refetch,
     setDraftFilters,

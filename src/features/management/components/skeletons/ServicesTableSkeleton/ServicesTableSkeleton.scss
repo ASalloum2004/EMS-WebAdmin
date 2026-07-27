@@ -1,0 +1,10 @@
+.services-table-skeleton {
+  min-width: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .services-table-skeleton .management-services-modal__table-head {
+    display: none;
+  }
+}

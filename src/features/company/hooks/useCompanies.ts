@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { DEFAULT_COMPANIES_PER_PAGE, getCompanies } from "../api";
 import type {
   CompanyListItem,
@@ -36,6 +37,11 @@ function getRequestKey(params: GetCompaniesParams) {
   return JSON.stringify(params);
 }
 
+interface ActiveCompaniesRequest {
+  controller: AbortController;
+  key: string;
+}
+
 export function isLatestCompaniesRequest(
   requestId: number,
   latestRequestId: number,
@@ -48,11 +54,14 @@ export function useCompanies(errorFallback: string, enabled = true) {
   const [pagination, setPagination] =
     useState<CompanyPagination>(initialPagination);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveCompaniesRequest | null>(null);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
   const wasEnabledRef = useRef(false);
   const requestParamsRef = useRef<GetCompaniesParams>({});
   const currentPage = pagination.currentPage;
@@ -100,16 +109,23 @@ export function useCompanies(errorFallback: string, enabled = true) {
 
   const requestCompanies = useCallback(
     async (params: GetCompaniesParams) => {
+      activeRequestRef.current?.controller.abort();
+
+      const controller = new AbortController();
       const requestId = requestIdRef.current + 1;
+      const requestKey = getRequestKey(params);
       requestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key: requestKey };
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedRef.current);
+      setIsRefreshing(hasLoadedRef.current);
 
       try {
-        const result = await getCompanies(params);
+        const result = await getCompanies(params, controller.signal);
 
         if (isLatestCompaniesRequest(requestId, requestIdRef.current)) {
+          hasLoadedRef.current = true;
           setCompanies(result.companies);
           setPagination(result.pagination);
         }
@@ -126,15 +142,24 @@ export function useCompanies(errorFallback: string, enabled = true) {
           },
         } satisfies GetCompaniesResult;
 
+        if (isAbortError(requestError)) {
+          return preservedResult;
+        }
+
         if (isLatestCompaniesRequest(requestId, requestIdRef.current)) {
           setError(getErrorMessage(requestError, errorFallback));
-          setCompanies([]);
+
+          if (!hasLoadedRef.current) {
+            setCompanies([]);
+          }
         }
 
         return preservedResult;
       } finally {
         if (isLatestCompaniesRequest(requestId, requestIdRef.current)) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -151,19 +176,41 @@ export function useCompanies(errorFallback: string, enabled = true) {
       wasEnabledRef.current = false;
       automaticRequestKeyRef.current = null;
       requestIdRef.current += 1;
+      hasLoadedRef.current = false;
+      activeRequestRef.current?.controller.abort();
+      activeRequestRef.current = null;
       setIsLoading(false);
+      setIsRefreshing(false);
       return;
     }
 
     wasEnabledRef.current = true;
     const requestKey = getRequestKey(requestParams);
+    let disposedBeforeStart = false;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (
+        disposedBeforeStart ||
+        automaticRequestKeyRef.current === requestKey
+      ) {
+        return;
+      }
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestCompanies(requestParams);
+      automaticRequestKeyRef.current = requestKey;
+      void requestCompanies(requestParams);
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        automaticRequestKeyRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
   }, [enabled, requestCompanies, requestParams]);
 
   const setCurrentPage = useCallback(
@@ -190,7 +237,8 @@ export function useCompanies(errorFallback: string, enabled = true) {
     filters,
     hasActiveFilters,
     hasActiveCriteria,
-    isLoading: isLoading || (enabled && !wasEnabledRef.current),
+    isLoading: isLoading || (enabled && !hasLoadedRef.current),
+    isRefreshing,
     perPage: pagination.perPage,
     refetch,
     searchValue,

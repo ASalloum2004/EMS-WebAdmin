@@ -1,0 +1,13 @@
+.profile-identity-skeleton {
+  pointer-events: none;
+}
+
+.profile-identity-skeleton__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-identity-skeleton .profile-identity-card__header {
+  gap: 8px;
+}

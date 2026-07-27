@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { getManagerDirectory } from "../api";
 import type { ManagerDirectory } from "../types";
 
@@ -25,10 +26,15 @@ export function useManagerDirectory(
   const [state, setState] = useState<ManagerDirectoryState>(initialState);
   const hasRequestedRef = useRef(false);
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<AbortController | null>(null);
 
   const refetch = useCallback(async () => {
+    activeRequestRef.current?.abort();
+
+    const controller = new AbortController();
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
+    activeRequestRef.current = controller;
     setState((currentState) => ({
       ...currentState,
       error: "",
@@ -36,7 +42,7 @@ export function useManagerDirectory(
     }));
 
     try {
-      const directory = await getManagerDirectory();
+      const directory = await getManagerDirectory(controller.signal);
 
       if (requestId === requestIdRef.current) {
         setState({
@@ -48,6 +54,10 @@ export function useManagerDirectory(
 
       return directory;
     } catch (requestError) {
+      if (isAbortError(requestError)) {
+        return null;
+      }
+
       if (requestId === requestIdRef.current) {
         setState({
           directory: null,
@@ -57,16 +67,48 @@ export function useManagerDirectory(
       }
 
       return null;
+    } finally {
+      if (requestId === requestIdRef.current) {
+        activeRequestRef.current = null;
+        setState((currentState) => ({
+          ...currentState,
+          isLoading: false,
+        }));
+      }
     }
   }, [errorFallback]);
 
   useEffect(() => {
-    if (!enabled || hasRequestedRef.current) {
+    if (!enabled) {
+      requestIdRef.current += 1;
+      hasRequestedRef.current = false;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+      setState((currentState) => ({
+        ...currentState,
+        isLoading: false,
+      }));
       return;
     }
 
-    hasRequestedRef.current = true;
-    void refetch();
+    let disposedBeforeStart = false;
+
+    queueMicrotask(() => {
+      if (disposedBeforeStart || hasRequestedRef.current) {
+        return;
+      }
+
+      hasRequestedRef.current = true;
+      void refetch();
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      requestIdRef.current += 1;
+      hasRequestedRef.current = false;
+      activeRequestRef.current?.abort();
+      activeRequestRef.current = null;
+    };
   }, [enabled, refetch]);
 
   return {

@@ -71,6 +71,7 @@ function VisitorIdentity({ visitor }: { visitor: VisitorApiData }) {
         <img
           alt=""
           className="visitor-identity__avatar"
+          loading="lazy"
           onError={() => setHasImageError(true)}
           src={visitor.avatar ?? undefined}
         />

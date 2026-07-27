@@ -50,9 +50,9 @@ export function EventRequestDetailsHeader({
               {statusLabel}
             </span>
           </div>
-        ) : (
-          <p>{isLoading ? labels.loading : error || labels.loadError}</p>
-        )}
+        ) : !isLoading ? (
+          <p>{error || labels.loadError}</p>
+        ) : null}
       </div>
       <ModalCloseButton
         ariaLabel={labels.closeAriaLabel}

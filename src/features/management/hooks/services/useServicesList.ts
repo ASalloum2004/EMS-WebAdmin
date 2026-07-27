@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "../../../../api";
 import { getServices } from "../../api";
 import type { GetServicesResult, ServiceApiData } from "../../types";
 
@@ -11,6 +12,11 @@ export function isLatestServicesRequest(
   latestRequestId: number,
 ) {
   return requestId === latestRequestId;
+}
+
+interface ActiveServicesRequest {
+  controller: AbortController;
+  key: string;
 }
 
 type UseServicesListOptions = {
@@ -37,9 +43,21 @@ export function useServicesList({
   sort,
 }: UseServicesListOptions) {
   const [services, setServices] = useState<ServiceApiData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(enabled);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveServicesRequest | null>(null);
+  const hasLoadedRef = useRef(false);
+  const requestKey = JSON.stringify({
+    currentPage,
+    isActive,
+    maxPrice,
+    minPrice,
+    perPage,
+    searchName,
+    sort,
+  });
 
   const refetch = useCallback(async () => {
     if (!enabled) {
@@ -49,24 +67,33 @@ export function useServicesList({
       } satisfies GetServicesResult;
     }
 
+    activeRequestRef.current?.controller.abort();
+
+    const controller = new AbortController();
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
+    activeRequestRef.current = { controller, key: requestKey };
 
     setError("");
-    setIsLoading(true);
+    setIsLoading(!hasLoadedRef.current);
+    setIsRefreshing(hasLoadedRef.current);
 
     try {
-      const result = await getServices({
-        isActive,
-        maxPrice,
-        minPrice,
-        name: searchName,
-        page: currentPage,
-        perPage,
-        sort,
-      });
+      const result = await getServices(
+        {
+          isActive,
+          maxPrice,
+          minPrice,
+          name: searchName,
+          page: currentPage,
+          perPage,
+          sort,
+        },
+        controller.signal,
+      );
 
       if (isLatestServicesRequest(requestId, requestIdRef.current)) {
+        hasLoadedRef.current = true;
         setServices(result.services);
         onResult?.(result);
       }
@@ -78,16 +105,25 @@ export function useServicesList({
         pagination: {},
       } satisfies GetServicesResult;
 
+      if (isAbortError(servicesError)) {
+        return emptyResult;
+      }
+
       if (isLatestServicesRequest(requestId, requestIdRef.current)) {
         setError(getErrorMessage(servicesError, "Failed to load services."));
-        setServices([]);
-        onResult?.(emptyResult);
+
+        if (!hasLoadedRef.current) {
+          setServices([]);
+          onResult?.(emptyResult);
+        }
       }
 
       return emptyResult;
     } finally {
       if (isLatestServicesRequest(requestId, requestIdRef.current)) {
+        activeRequestRef.current = null;
         setIsLoading(false);
+        setIsRefreshing(false);
       }
     }
   }, [
@@ -100,6 +136,7 @@ export function useServicesList({
     perPage,
     searchName,
     sort,
+    requestKey,
   ]);
 
   const clearListError = useCallback(() => {
@@ -108,15 +145,38 @@ export function useServicesList({
 
   useEffect(() => {
     if (!enabled) {
+      requestIdRef.current += 1;
+      activeRequestRef.current?.controller.abort();
+      activeRequestRef.current = null;
+      setIsLoading(false);
+      setIsRefreshing(false);
       return;
     }
 
-    void refetch();
-  }, [enabled, refetch]);
+    let disposedBeforeStart = false;
+
+    queueMicrotask(() => {
+      if (!disposedBeforeStart) {
+        void refetch();
+      }
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
+  }, [enabled, refetch, requestKey]);
 
   return {
     services,
     isLoading,
+    isRefreshing,
     error,
     refetch,
     clearListError,

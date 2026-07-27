@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import {
   DEFAULT_BOOTH_REQUESTS_PER_PAGE,
   getBoothRequests,
@@ -30,6 +31,11 @@ function getRequestKey(params: GetBoothRequestsParams) {
   return JSON.stringify(params);
 }
 
+interface ActiveBoothRequestsRequest {
+  controller: AbortController;
+  key: string;
+}
+
 export function isLatestBoothRequestsRequest(
   requestId: number,
   latestRequestId: number,
@@ -50,12 +56,15 @@ export function useBoothRequests() {
   const [requests, setRequests] = useState<BoothRequestApiData[]>([]);
   const [pagination, setPagination] =
     useState<BoothRequestsPagination>(initialPagination);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedCompanyName, setDebouncedCompanyName] = useState("");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveBoothRequestsRequest | null>(null);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
   const requestParamsRef = useRef<GetBoothRequestsParams>({});
   const currentPage = pagination.currentPage;
   const perPage = pagination.perPage;
@@ -111,16 +120,23 @@ export function useBoothRequests() {
 
   const requestBoothRequests = useCallback(
     async (params: GetBoothRequestsParams) => {
+      activeRequestRef.current?.controller.abort();
+
+      const controller = new AbortController();
       const requestId = requestIdRef.current + 1;
+      const requestKey = getRequestKey(params);
       requestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key: requestKey };
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedRef.current);
+      setIsRefreshing(hasLoadedRef.current);
 
       try {
-        const result = await getBoothRequests(params);
+        const result = await getBoothRequests(params, controller.signal);
 
         if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
+          hasLoadedRef.current = true;
           setRequests(result.requests);
           setPagination(result.pagination);
         }
@@ -137,17 +153,25 @@ export function useBoothRequests() {
           },
         } satisfies GetBoothRequestsResult;
 
+        if (isAbortError(requestError)) {
+          return preservedResult;
+        }
+
         if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
           setError(
             getErrorMessage(requestError, "Failed to load booth requests."),
           );
-          setRequests([]);
+          if (!hasLoadedRef.current) {
+            setRequests([]);
+          }
         }
 
         return preservedResult;
       } finally {
         if (isLatestBoothRequestsRequest(requestId, requestIdRef.current)) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -161,13 +185,31 @@ export function useBoothRequests() {
 
   useEffect(() => {
     const requestKey = getRequestKey(requestParams);
+    let disposedBeforeStart = false;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (
+        disposedBeforeStart ||
+        automaticRequestKeyRef.current === requestKey
+      ) {
+        return;
+      }
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestBoothRequests(requestParams);
+      automaticRequestKeyRef.current = requestKey;
+      void requestBoothRequests(requestParams);
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        automaticRequestKeyRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
   }, [requestBoothRequests, requestParams]);
 
   const setCurrentPage = useCallback(
@@ -190,6 +232,7 @@ export function useBoothRequests() {
     error,
     filters,
     isLoading,
+    isRefreshing,
     perPage: pagination.perPage,
     refetch,
     requests,

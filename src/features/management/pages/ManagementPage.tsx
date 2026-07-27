@@ -14,6 +14,7 @@ import { ManagementEventHallEditModal } from "../components/ManagementEventHallE
 import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
 import { ManagementHeader } from "../components/ManagementHeader";
 import { ManagementServicesModal } from "../components/ManagementServicesModal";
+import { ManagementTableSkeleton } from "../components";
 import {
   ManagementTabs,
   type ManagementTab,
@@ -48,14 +49,16 @@ export function ManagementPage() {
     error: hallsError,
     halls,
     isLoading: isHallsLoading,
+    isRefreshing: isHallsRefreshing,
     refetch: refetchHalls,
-  } = useHalls();
+  } = useHalls(isHallTab);
   const {
     booths,
     clearUpdateError,
     currentPage,
     error: boothsError,
     isLoading: isBoothsLoading,
+    isRefreshing: isBoothsRefreshing,
     isUpdating: isUpdatingBooth,
     perPage,
     refetch: refetchBooths,
@@ -198,6 +201,13 @@ export function ManagementPage() {
         />
 
         <section
+          aria-busy={
+            (isHallTab && (isHallsLoading || isHallsRefreshing)) ||
+            (isBoothTab && (isBoothsLoading || isBoothsRefreshing)) ||
+            (isEventHallTab &&
+              (eventHallFiltering.isLoading ||
+                eventHallFiltering.isRefreshing))
+          }
           className="management-page__panel"
           aria-label={t.management.search.managementAriaLabel}
         >
@@ -264,9 +274,7 @@ export function ManagementPage() {
           <div className="management-page__divider" />
 
           {isHallTab && isHallsLoading ? (
-            <p className="management-page__state">
-              {t.management.halls.loading}
-            </p>
+            <ManagementTableSkeleton variant="hall" />
           ) : null}
 
           {isHallTab && !isHallsLoading && hallsError ? (
@@ -282,7 +290,10 @@ export function ManagementPage() {
             <p className="management-page__state">{t.management.halls.empty}</p>
           ) : null}
 
-          {isHallTab && !isHallsLoading && !hallsError && hasHalls ? (
+          {isHallTab &&
+          !isHallsLoading &&
+          (!hallsError || hasHalls) &&
+          hasHalls ? (
             <DataTable
               ariaLabel={t.management.halls.ariaLabel}
               columns={hallColumns}
@@ -292,9 +303,7 @@ export function ManagementPage() {
           ) : null}
 
           {isBoothTab && isBoothsLoading ? (
-            <p className="management-page__state">
-              {t.management.booths.loading}
-            </p>
+            <ManagementTableSkeleton variant="booth" />
           ) : null}
 
           {isBoothTab && !isBoothsLoading && boothsError ? (
@@ -315,7 +324,10 @@ export function ManagementPage() {
             </p>
           ) : null}
 
-          {isBoothTab && !isBoothsLoading && !boothsError && hasBooths ? (
+          {isBoothTab &&
+          !isBoothsLoading &&
+          (!boothsError || hasBooths) &&
+          hasBooths ? (
             <DataTable
               actions={boothActions}
               ariaLabel={t.management.booths.ariaLabel}
@@ -328,7 +340,6 @@ export function ManagementPage() {
 
           {isBoothTab &&
           !isBoothsLoading &&
-          !boothsError &&
           hasBooths ? (
             <TableFooter
               className="management-page__footer"
@@ -341,9 +352,7 @@ export function ManagementPage() {
           ) : null}
 
           {isEventHallTab && eventHallFiltering.isLoading ? (
-            <p className="management-page__state">
-              {t.management.eventHalls.loading}
-            </p>
+            <ManagementTableSkeleton variant="eventHall" />
           ) : null}
 
           {isEventHallTab &&
@@ -365,7 +374,7 @@ export function ManagementPage() {
 
           {isEventHallTab &&
           !eventHallFiltering.isLoading &&
-          !eventHallFiltering.error ? (
+          (!eventHallFiltering.error || visibleEventHalls.length) ? (
             <DataTable
               actions={eventHallActions}
               ariaLabel={t.management.eventHalls.ariaLabel}

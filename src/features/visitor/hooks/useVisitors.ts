@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { isAbortError } from "../../../api";
 import { DEFAULT_VISITORS_PER_PAGE, getVisitors } from "../api";
 import type {
   GetVisitorsParams,
@@ -36,6 +37,11 @@ function getRequestKey(params: GetVisitorsParams) {
   return JSON.stringify(params);
 }
 
+interface ActiveVisitorsRequest {
+  controller: AbortController;
+  key: string;
+}
+
 export function isLatestVisitorsRequest(
   requestId: number,
   latestRequestId: number,
@@ -47,12 +53,15 @@ export function useVisitors(errorFallback: string) {
   const [visitors, setVisitors] = useState<VisitorApiData[]>([]);
   const [pagination, setPagination] =
     useState<VisitorPagination>(initialPagination);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const requestIdRef = useRef(0);
+  const activeRequestRef = useRef<ActiveVisitorsRequest | null>(null);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const hasLoadedRef = useRef(false);
   const requestParamsRef = useRef<GetVisitorsParams>({});
   const currentPage = pagination.currentPage;
   const perPage = pagination.perPage;
@@ -101,16 +110,23 @@ export function useVisitors(errorFallback: string) {
 
   const requestVisitors = useCallback(
     async (params: GetVisitorsParams) => {
+      activeRequestRef.current?.controller.abort();
+
+      const controller = new AbortController();
       const requestId = requestIdRef.current + 1;
+      const requestKey = getRequestKey(params);
       requestIdRef.current = requestId;
+      activeRequestRef.current = { controller, key: requestKey };
 
       setError("");
-      setIsLoading(true);
+      setIsLoading(!hasLoadedRef.current);
+      setIsRefreshing(hasLoadedRef.current);
 
       try {
-        const result = await getVisitors(params);
+        const result = await getVisitors(params, controller.signal);
 
         if (isLatestVisitorsRequest(requestId, requestIdRef.current)) {
+          hasLoadedRef.current = true;
           setVisitors(result.visitors);
           setPagination(result.pagination);
         }
@@ -127,15 +143,24 @@ export function useVisitors(errorFallback: string) {
           },
         } satisfies GetVisitorsResult;
 
+        if (isAbortError(requestError)) {
+          return preservedResult;
+        }
+
         if (isLatestVisitorsRequest(requestId, requestIdRef.current)) {
           setError(getErrorMessage(requestError, errorFallback));
-          setVisitors([]);
+
+          if (!hasLoadedRef.current) {
+            setVisitors([]);
+          }
         }
 
         return preservedResult;
       } finally {
         if (isLatestVisitorsRequest(requestId, requestIdRef.current)) {
+          activeRequestRef.current = null;
           setIsLoading(false);
+          setIsRefreshing(false);
         }
       }
     },
@@ -149,13 +174,31 @@ export function useVisitors(errorFallback: string) {
 
   useEffect(() => {
     const requestKey = getRequestKey(requestParams);
+    let disposedBeforeStart = false;
 
-    if (automaticRequestKeyRef.current === requestKey) {
-      return;
-    }
+    queueMicrotask(() => {
+      if (
+        disposedBeforeStart ||
+        automaticRequestKeyRef.current === requestKey
+      ) {
+        return;
+      }
 
-    automaticRequestKeyRef.current = requestKey;
-    void requestVisitors(requestParams);
+      automaticRequestKeyRef.current = requestKey;
+      void requestVisitors(requestParams);
+    });
+
+    return () => {
+      disposedBeforeStart = true;
+      const activeRequest = activeRequestRef.current;
+
+      if (activeRequest?.key === requestKey) {
+        requestIdRef.current += 1;
+        activeRequestRef.current = null;
+        automaticRequestKeyRef.current = null;
+        activeRequest.controller.abort();
+      }
+    };
   }, [requestParams, requestVisitors]);
 
   const setCurrentPage = useCallback(
@@ -182,6 +225,7 @@ export function useVisitors(errorFallback: string) {
     filters,
     hasActiveCriteria,
     isLoading,
+    isRefreshing,
     perPage: pagination.perPage,
     refetch,
     searchValue,

@@ -3,6 +3,8 @@ import { getAuthSession } from "../features/auth/utils/authStorage";
 export const API_BASE_URL =
   "https://violations-salt-hybrid-springer.trycloudflare.com/api/v1/admin/";
 
+export const CONTENT_REQUEST_TIMEOUT_MS = 15_000;
+
 type ApiErrorBody = {
   error?: string;
   errors?: Record<string, unknown>;
@@ -11,6 +13,7 @@ type ApiErrorBody = {
 
 type ApiRequestOptions = RequestInit & {
   requiresAuth?: boolean;
+  timeoutMs?: number;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -32,6 +35,22 @@ export class ApiRequestError extends Error {
     this.responseMessage = responseMessage;
     this.status = status;
   }
+}
+
+export class ApiRequestTimeoutError extends Error {
+  constructor() {
+    super("The request timed out. Please try again.");
+    this.name = "ApiRequestTimeoutError";
+  }
+}
+
+export function isAbortError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    error.name === "AbortError"
+  );
 }
 
 function buildApiUrl(path: string) {
@@ -119,39 +138,83 @@ export async function apiRequest<TResponse>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<TResponse> {
-  const { requiresAuth = false, headers, body, ...requestOptions } = options;
-  const hasFormDataBody = isFormDataBody(body);
-
-  const response = await fetch(buildApiUrl(path), {
-    ...requestOptions,
+  const {
+    requiresAuth = false,
+    headers,
     body,
-    headers: buildRequestHeaders(headers, requiresAuth, hasFormDataBody),
-  });
+    signal: callerSignal,
+    timeoutMs,
+    ...requestOptions
+  } = options;
+  const hasFormDataBody = isFormDataBody(body);
+  const hasTimeout =
+    typeof timeoutMs === "number" &&
+    Number.isFinite(timeoutMs) &&
+    timeoutMs > 0;
+  const requestController = hasTimeout ? new AbortController() : null;
+  let didTimeout = false;
+  const abortFromCaller = () => {
+    requestController?.abort(callerSignal?.reason);
+  };
 
-  if (!response.ok) {
-    let message = `Request failed with status ${response.status}`;
-    let errors: Record<string, unknown> | undefined;
-    let responseMessage: string | null | undefined;
-
-    try {
-      const errorBody = await readJsonResponse<ApiErrorBody>(response);
-      responseMessage =
-        typeof errorBody.message === "string" || errorBody.message === null
-          ? errorBody.message
-          : undefined;
-      message = errorBody.message ?? errorBody.error ?? message;
-      errors = isJsonRecord(errorBody.errors) ? errorBody.errors : undefined;
-    } catch {
-      // Keep the fallback message when the API does not return JSON.
-    }
-
-    throw new ApiRequestError(
-      message,
-      response.status,
-      errors,
-      responseMessage,
-    );
+  if (requestController && callerSignal?.aborted) {
+    abortFromCaller();
+  } else if (requestController) {
+    callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
   }
 
-  return readJsonResponse<TResponse>(response);
+  const timeoutId = requestController
+    ? globalThis.setTimeout(() => {
+        didTimeout = true;
+        requestController.abort();
+      }, timeoutMs)
+    : undefined;
+
+  try {
+    const response = await fetch(buildApiUrl(path), {
+      ...requestOptions,
+      body,
+      headers: buildRequestHeaders(headers, requiresAuth, hasFormDataBody),
+      signal: requestController?.signal ?? callerSignal,
+    });
+
+    if (!response.ok) {
+      let message = `Request failed with status ${response.status}`;
+      let errors: Record<string, unknown> | undefined;
+      let responseMessage: string | null | undefined;
+
+      try {
+        const errorBody = await readJsonResponse<ApiErrorBody>(response);
+        responseMessage =
+          typeof errorBody.message === "string" || errorBody.message === null
+            ? errorBody.message
+            : undefined;
+        message = errorBody.message ?? errorBody.error ?? message;
+        errors = isJsonRecord(errorBody.errors) ? errorBody.errors : undefined;
+      } catch {
+        // Keep the fallback message when the API does not return JSON.
+      }
+
+      throw new ApiRequestError(
+        message,
+        response.status,
+        errors,
+        responseMessage,
+      );
+    }
+
+    return readJsonResponse<TResponse>(response);
+  } catch (error) {
+    if (didTimeout) {
+      throw new ApiRequestTimeoutError();
+    }
+
+    throw error;
+  } finally {
+    if (timeoutId !== undefined) {
+      globalThis.clearTimeout(timeoutId);
+    }
+
+    callerSignal?.removeEventListener("abort", abortFromCaller);
+  }
 }

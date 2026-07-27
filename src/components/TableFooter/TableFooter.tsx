@@ -10,6 +10,7 @@ export type TableFooterProps = {
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
   perPageOptions?: readonly number[];
+  showItemRange?: boolean;
   showPageSizeSelector?: boolean;
   className?: string;
   showSinglePage?: boolean;
@@ -62,6 +63,7 @@ export function TableFooter({
   onPageChange,
   onPerPageChange,
   perPageOptions = [],
+  showItemRange = false,
   showPageSizeSelector = true,
   className,
   showSinglePage = false,
@@ -101,6 +103,16 @@ export function TableFooter({
     () => getPageNumbers(activePage, safeTotalPages),
     [activePage, safeTotalPages],
   );
+  const rangeStart = safeTotalItems
+    ? (activePage - 1) * safePerPage + 1
+    : 0;
+  const rangeEnd = safeTotalItems
+    ? Math.min(activePage * safePerPage, safeTotalItems)
+    : 0;
+  const itemRangeLabel = t.common.paginationRange
+    .replace("{{start}}", String(rangeStart))
+    .replace("{{end}}", String(rangeEnd))
+    .replace("{{total}}", String(safeTotalItems));
 
   function handlePageChange(page: number) {
     const nextPage = clampPage(page, safeTotalPages);
@@ -132,21 +144,29 @@ export function TableFooter({
 
   return (
     <nav className={classNames("table-footer", className)}>
-      {showPageSizeSelector && onPerPageChange ? (
-        <label className="table-footer__page-size">
-          <span>{t.common.rowsPerPage}</span>
-          <select
-            aria-label={t.common.rowsPerPage}
-            onChange={(event) => handlePerPageChange(event.target.value)}
-            value={safePerPage}
-          >
-            {safePerPageOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+      {(showItemRange || (showPageSizeSelector && onPerPageChange)) ? (
+        <div className="table-footer__meta">
+          {showItemRange ? (
+            <span className="table-footer__range">{itemRangeLabel}</span>
+          ) : null}
+
+          {showPageSizeSelector && onPerPageChange ? (
+            <label className="table-footer__page-size">
+              <span>{t.common.rowsPerPage}</span>
+              <select
+                aria-label={t.common.rowsPerPage}
+                onChange={(event) => handlePerPageChange(event.target.value)}
+                value={safePerPage}
+              >
+                {safePerPageOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="table-footer__controls">

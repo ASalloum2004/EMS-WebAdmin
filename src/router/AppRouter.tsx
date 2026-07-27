@@ -2,6 +2,7 @@ import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { AnnouncementsPage } from "../features/announcements";
 import { CompanyPage } from "../features/company";
 import { ManagementPage } from "../features/management";
+import { NotificationsPage } from "../features/notifications";
 import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
 import { VisitorPage } from "../features/visitor";
@@ -58,6 +59,14 @@ export function AppRouter() {
     return (
       <AuthGuard>
         <AnnouncementsPage />
+      </AuthGuard>
+    );
+  }
+
+  if (path === "/notifications") {
+    return (
+      <AuthGuard>
+        <NotificationsPage />
       </AuthGuard>
     );
   }

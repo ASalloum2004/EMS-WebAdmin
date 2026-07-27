@@ -5,9 +5,16 @@
   justify-content: center;
 }
 
-.table-footer__page-size {
+.table-footer__meta {
   position: absolute;
   inset-inline-start: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.table-footer__range,
+.table-footer__page-size {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -110,8 +117,10 @@
     gap: 10px;
   }
 
-  .table-footer__page-size {
+  .table-footer__meta {
     position: static;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .table-footer__button {

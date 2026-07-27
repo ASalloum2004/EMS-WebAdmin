@@ -1,0 +1,19 @@
+.activity-table-skeleton .skeleton {
+  max-width: 100%;
+}
+
+.activity-table-skeleton__identity {
+  border-inline-start-color: var(--ems-color-border-soft);
+}
+
+.activity-table-skeleton__copy {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.activity-table-skeleton__table .data-table__row {
+  cursor: default;
+}

@@ -1,0 +1,60 @@
+import type { ReportItem } from "../types";
+
+export const reportMockData: ReportItem[] = [
+  {
+    id: 1,
+    title: "Exhibitor portal access issue",
+    description: "A user reported being unable to open the exhibitor portal.",
+    type: "issue",
+    status: "pending",
+    createdAt: "2026-07-27T10:05:00Z",
+  },
+  {
+    id: 2,
+    title: "Incorrect booth information",
+    description: "A company reported outdated booth details in its profile.",
+    type: "complaint",
+    status: "in_review",
+    createdAt: "2026-07-26T15:30:00Z",
+  },
+  {
+    id: 3,
+    title: "Blocked emergency exit",
+    description: "A safety alert was submitted for an exhibition hall.",
+    type: "safety",
+    status: "in_review",
+    createdAt: "2026-07-26T09:50:00Z",
+  },
+  {
+    id: 4,
+    title: "Duplicate company listing",
+    description: "Two company profiles appear to represent the same exhibitor.",
+    type: "other",
+    status: "resolved",
+    createdAt: "2026-07-25T13:15:00Z",
+  },
+  {
+    id: 5,
+    title: "Missing visitor confirmation",
+    description: "A visitor did not receive a registration confirmation.",
+    type: "issue",
+    status: "pending",
+    createdAt: "2026-07-24T17:40:00Z",
+  },
+  {
+    id: 6,
+    title: "Inappropriate profile content",
+    description: "A platform profile was flagged for an admin review.",
+    type: "complaint",
+    status: "resolved",
+    createdAt: "2026-07-23T12:00:00Z",
+  },
+  {
+    id: 7,
+    title: "Unsecured equipment near entrance",
+    description: "Equipment placement may obstruct the main visitor route.",
+    type: "safety",
+    status: "pending",
+    createdAt: "2026-07-22T08:35:00Z",
+  },
+];

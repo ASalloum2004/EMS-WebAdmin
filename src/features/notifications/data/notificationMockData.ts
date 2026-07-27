@@ -1,0 +1,68 @@
+import type { NotificationItem } from "../types";
+
+export const notificationMockData: NotificationItem[] = [
+  {
+    id: 1,
+    title: "Company registration approved",
+    description: "Atlas Events can now access all exhibitor tools.",
+    type: "success",
+    status: "unread",
+    createdAt: "2026-07-27T09:35:00Z",
+  },
+  {
+    id: 2,
+    title: "Booth request needs attention",
+    description: "A new booth request is waiting for an admin review.",
+    type: "warning",
+    status: "unread",
+    createdAt: "2026-07-27T08:10:00Z",
+  },
+  {
+    id: 3,
+    title: "Payment could not be verified",
+    description: "The latest service payment requires manual verification.",
+    type: "error",
+    status: "unread",
+    createdAt: "2026-07-26T16:45:00Z",
+  },
+  {
+    id: 4,
+    title: "Visitor directory updated",
+    description: "New visitor registrations were added to the directory.",
+    type: "info",
+    status: "read",
+    createdAt: "2026-07-26T12:20:00Z",
+  },
+  {
+    id: 5,
+    title: "Event hall booking confirmed",
+    description: "The requested event hall schedule has been confirmed.",
+    type: "success",
+    status: "read",
+    createdAt: "2026-07-25T14:05:00Z",
+  },
+  {
+    id: 6,
+    title: "Profile information is incomplete",
+    description: "A company profile is missing its business description.",
+    type: "warning",
+    status: "read",
+    createdAt: "2026-07-24T11:40:00Z",
+  },
+  {
+    id: 7,
+    title: "Announcement published",
+    description: "The scheduled platform announcement is now visible.",
+    type: "info",
+    status: "read",
+    createdAt: "2026-07-23T15:15:00Z",
+  },
+  {
+    id: 8,
+    title: "Data export completed",
+    description: "The requested visitor data export is ready to download.",
+    type: "success",
+    status: "read",
+    createdAt: "2026-07-22T10:25:00Z",
+  },
+];

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Image, Paperclip } from "lucide-react";
-import { Card, Skeleton, TableFooter } from "../../../../components";
+import { Card, TableFooter } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import { isImageMedia } from "../../data/announcementMedia";
 import type {
   Announcement,
   AnnouncementPagination,
 } from "../../types";
+import { AnnouncementListSkeleton } from "../skeletons";
 import "./AnnouncementList.scss";
 
 interface AnnouncementListProps {
@@ -56,9 +57,7 @@ export function AnnouncementList({
       }
       footerClassName="announcement-list-card__footer"
     >
-      {isLoading ? (
-        <AnnouncementListSkeleton label={t.announcements.list.loading} />
-      ) : null}
+      {isLoading ? <AnnouncementListSkeleton /> : null}
 
       {!isLoading && error ? (
         <div className="announcement-list__state" role="alert">
@@ -151,27 +150,6 @@ function AnnouncementMedia({ media }: { media: string }) {
         />
       )}
     </span>
-  );
-}
-
-function AnnouncementListSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      aria-label={label}
-      className="announcement-list announcement-list--skeleton"
-      role="status"
-    >
-      {Array.from({ length: 4 }, (_, index) => (
-        <div className="announcement-list__skeleton-row" key={index}>
-          <Skeleton height={44} variant="rect" width={44} />
-          <span className="announcement-list__skeleton-copy">
-            <Skeleton height={18} width="58%" />
-            <Skeleton height={14} width="92%" />
-            <Skeleton height={14} width="70%" />
-          </span>
-        </div>
-      ))}
-    </div>
   );
 }
 

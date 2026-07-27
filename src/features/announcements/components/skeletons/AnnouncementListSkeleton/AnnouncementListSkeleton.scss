@@ -1,0 +1,19 @@
+.announcement-list-skeleton .skeleton {
+  max-width: 100%;
+}
+
+.announcement-list-skeleton__row {
+  cursor: default;
+  pointer-events: none;
+}
+
+.announcement-list-skeleton__copy {
+  gap: 6px;
+}
+
+@media (max-width: 520px) {
+  .announcement-list-skeleton__media {
+    width: 38px;
+    height: 38px;
+  }
+}

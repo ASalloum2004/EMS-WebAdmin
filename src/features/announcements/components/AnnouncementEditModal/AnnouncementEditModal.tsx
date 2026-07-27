@@ -8,7 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { ImagePlus, Paperclip, Trash2, X } from "lucide-react";
-import { ModalCloseButton, Skeleton } from "../../../../components";
+import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import {
   ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH,
@@ -27,6 +27,7 @@ import type {
   AnnouncementMediaUpdate,
   AnnouncementUpdateValues,
 } from "../../types";
+import { AnnouncementDetailsSkeleton } from "../skeletons";
 import "./AnnouncementEditModal.scss";
 
 const receiverOptions: AnnouncementFormReceiver[] = [
@@ -216,9 +217,7 @@ export function AnnouncementEditModal({
           />
         </header>
 
-        {detailsLoading ? (
-          <AnnouncementEditSkeleton label={t.announcements.edit.loading} />
-        ) : null}
+        {detailsLoading ? <AnnouncementDetailsSkeleton /> : null}
 
         {!detailsLoading && detailsError ? (
           <div className="announcement-edit-modal__state" role="alert">
@@ -443,21 +442,6 @@ export function AnnouncementEditModal({
           </>
         ) : null}
       </form>
-    </div>
-  );
-}
-
-function AnnouncementEditSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      aria-label={label}
-      className="announcement-edit-modal__skeleton"
-      role="status"
-    >
-      <Skeleton height={44} width="100%" />
-      <Skeleton height={132} width="100%" />
-      <Skeleton height={48} width="100%" />
-      <Skeleton height={72} width="100%" />
     </div>
   );
 }

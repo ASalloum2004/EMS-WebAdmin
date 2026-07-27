@@ -290,10 +290,16 @@ test("loads, searches, and paginates announcements entirely through the backend"
     </I18nProvider>,
   );
 
-  assert.ok(
-    view.getByRole("status", { name: "Loading announcements" }),
+  assert.equal(
+    view.getByRole("status").textContent,
+    "Loading announcements",
   );
+  assert.ok(view.container.querySelector(".announcement-list-skeleton"));
   await view.findByText("Draft Exhibitor Notice");
+  assert.equal(
+    view.container.querySelector(".announcement-list-skeleton"),
+    null,
+  );
   assert.ok(view.getAllByText("Draft").length >= 1);
   assert.ok(view.getAllByText("Published").length >= 1);
   assert.equal(view.queryByText("Active"), null);
@@ -344,8 +350,9 @@ test("Strict Mode starts one usable request and re-entry refetches once", async 
     </StrictMode>,
   );
 
-  assert.ok(
-    view.getByRole("status", { name: "Loading announcements" }),
+  assert.equal(
+    view.getByRole("status").textContent,
+    "Loading announcements",
   );
   await view.findByText("Draft Exhibitor Notice");
 
@@ -355,7 +362,7 @@ test("Strict Mode starts one usable request and re-entry refetches once", async 
   );
   assert.equal(listRequests.length, 1);
   assert.equal(
-    view.queryByRole("status", { name: "Loading announcements" }),
+    view.queryByText("Loading announcements"),
     null,
   );
 
@@ -368,10 +375,9 @@ test("Strict Mode starts one usable request and re-entry refetches once", async 
     </StrictMode>,
   );
 
-  assert.ok(
-    returnedView.getByRole("status", {
-      name: "Loading announcements",
-    }),
+  assert.equal(
+    returnedView.getByRole("status").textContent,
+    "Loading announcements",
   );
   await returnedView.findByText("Draft Exhibitor Notice");
 
@@ -442,12 +448,13 @@ test("a failed list request exits the skeleton and Retry issues one fresh reques
     </I18nProvider>,
   );
 
-  assert.ok(
-    view.getByRole("status", { name: "Loading announcements" }),
+  assert.equal(
+    view.getByRole("status").textContent,
+    "Loading announcements",
   );
   await view.findByText("Unable to load announcements.");
   assert.equal(
-    view.queryByRole("status", { name: "Loading announcements" }),
+    view.queryByText("Loading announcements"),
     null,
   );
   assert.equal(listRequestCount, 1);
@@ -456,7 +463,7 @@ test("a failed list request exits the skeleton and Retry issues one fresh reques
   await view.findByText("No announcements yet");
   assert.equal(listRequestCount, 2);
   assert.equal(
-    view.queryByRole("status", { name: "Loading announcements" }),
+    view.queryByText("Loading announcements"),
     null,
   );
 });
@@ -628,10 +635,12 @@ test("creates, fetches details, updates, and confirms deletion through the backe
   const editDialog = view.getByRole("dialog", {
     name: "Edit Announcement",
   });
+  assert.equal(
+    within(editDialog).getByRole("status").textContent,
+    "Loading announcement details",
+  );
   assert.ok(
-    within(editDialog).getByRole("status", {
-      name: "Loading announcement details",
-    }),
+    editDialog.querySelector(".announcement-details-skeleton"),
   );
   const titleInput = (await within(editDialog).findByLabelText(
     "Title",

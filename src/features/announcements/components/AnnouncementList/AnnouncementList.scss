@@ -142,21 +142,6 @@
   color: var(--ems-color-status-negative-text);
 }
 
-.announcement-list__skeleton-row {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: 12px;
-  padding: 14px;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: var(--ems-radius-md);
-}
-
-.announcement-list__skeleton-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .announcement-list__state {
   min-height: 260px;
   display: flex;

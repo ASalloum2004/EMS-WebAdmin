@@ -43,3 +43,8 @@
   outline: 2px solid var(--modal-close-button-danger);
   outline-offset: 2px;
 }
+
+.modal-close-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

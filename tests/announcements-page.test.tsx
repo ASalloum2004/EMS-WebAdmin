@@ -1,55 +1,266 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
-import { cleanup, fireEvent, render, within } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { AnnouncementsPage } from "../src/features/announcements/pages/AnnouncementsPage.js";
+import type { AnnouncementApiDto } from "../src/features/announcements/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
 
 const originalFetch = globalThis.fetch;
+const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
+  globalThis,
+  "sessionStorage",
+);
 
-function jsonResponse(body: unknown) {
+interface RecordedRequest {
+  body: Record<string, unknown> | null;
+  method: string;
+  url: URL;
+}
+
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: { "Content-Type": "application/json" },
-    status: 200,
+    status,
   });
 }
 
-function installProfileFetch() {
-  const requestedPaths: string[] = [];
+function parseBody(body: BodyInit | null | undefined) {
+  if (typeof body !== "string") {
+    return null;
+  }
 
-  globalThis.fetch = async (input) => {
-    const requestedUrl = new URL(
+  const value: unknown = JSON.parse(body);
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function createAnnouncementBackend() {
+  let announcements: AnnouncementApiDto[] = [
+    {
+      id: 1,
+      title: "Draft Exhibitor Notice",
+      description: "A draft announcement for exhibitors.",
+      receiver: "Exhibitors",
+      is_active: true,
+      media: null,
+    },
+    {
+      id: 2,
+      title: "Published Exhibitor Notice",
+      description: "A published announcement for exhibitors.",
+      receiver: "Exhibitors",
+      is_active: false,
+      media: null,
+    },
+    {
+      id: 3,
+      title: "Visitor Registration Guide",
+      description: "Registration guidance for visitors.",
+      receiver: "visitors",
+      is_active: false,
+      media: null,
+    },
+    {
+      id: 4,
+      title: "All Users Draft",
+      description: "A platform-wide draft.",
+      receiver: "all",
+      is_active: true,
+      media: null,
+    },
+    {
+      id: 5,
+      title: "Second Page Announcement",
+      description: "This record verifies backend pagination.",
+      receiver: "all",
+      is_active: false,
+      media: null,
+    },
+  ];
+  const requests: RecordedRequest[] = [];
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
       typeof input === "string"
         ? input
         : input instanceof URL
           ? input.toString()
           : input.url,
     );
-    requestedPaths.push(requestedUrl.pathname);
+    const method = (init?.method ?? "GET").toUpperCase();
+    const body = parseBody(init?.body);
+    requests.push({ body, method, url });
 
-    if (!requestedUrl.pathname.endsWith("/profile")) {
-      throw new Error(`Unexpected request: ${requestedUrl.pathname}`);
+    if (url.pathname.endsWith("/profile")) {
+      return jsonResponse({
+        status: true,
+        message: "Success",
+        data: {
+          avatar: null,
+          email: "admin@example.com",
+          id: 1,
+          is_verified: true,
+          name: "Test Admin",
+          type: "admin",
+        },
+      });
     }
 
-    return jsonResponse({
-      status: true,
-      message: "Success",
-      data: {
-        avatar: null,
-        email: "admin@example.com",
-        id: 1,
-        is_verified: true,
-        name: "Test Admin",
-        type: "admin",
-      },
-    });
+    if (url.pathname.endsWith("/announcements") && method === "GET") {
+      const titleFilter = url.searchParams
+        .get("filter[title]")
+        ?.toLocaleLowerCase();
+      const receiverFilter = url.searchParams.get("filter[receiver]");
+      const draftFilter = url.searchParams.get("filter[is_active]");
+      const page = Number(url.searchParams.get("page") ?? "1");
+      const perPage = Number(url.searchParams.get("per_page") ?? "4");
+      const filtered = announcements.filter((announcement) => {
+        const matchesTitle = titleFilter
+          ? announcement.title.toLocaleLowerCase().includes(titleFilter)
+          : true;
+        const matchesReceiver = receiverFilter
+          ? announcement.receiver.toLocaleLowerCase() ===
+            receiverFilter.toLocaleLowerCase()
+          : true;
+        const matchesDraft =
+          draftFilter === null
+            ? true
+            : announcement.is_active === (draftFilter === "true");
+
+        return matchesTitle && matchesReceiver && matchesDraft;
+      });
+      const pageStart = (page - 1) * perPage;
+
+      return jsonResponse({
+        status: true,
+        message: "Announcements retrieved successfully.",
+        data: {
+          data: filtered.slice(pageStart, pageStart + perPage),
+          current_page: page,
+          per_page: perPage,
+          total: filtered.length,
+          last_page: Math.max(1, Math.ceil(filtered.length / perPage)),
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/announcements") && method === "POST") {
+      const nextId = Math.max(0, ...announcements.map(({ id }) => id)) + 1;
+      const created: AnnouncementApiDto = {
+        id: nextId,
+        title: String(body?.title ?? ""),
+        description: String(body?.description ?? ""),
+        receiver: String(body?.receiver ?? "all"),
+        is_active: body?.is_active === true,
+        media: typeof body?.media === "string" ? body.media : null,
+      };
+      announcements = [created, ...announcements];
+
+      return jsonResponse({
+        status: true,
+        message: "Announcement created successfully.",
+        data: created,
+      });
+    }
+
+    const announcementMatch = url.pathname.match(/\/announcements\/(\d+)$/);
+
+    if (announcementMatch) {
+      const announcementId = Number(announcementMatch[1]);
+      const existingAnnouncement = announcements.find(
+        ({ id }) => id === announcementId,
+      );
+
+      if (!existingAnnouncement) {
+        return jsonResponse({ message: "Announcement not found." }, 404);
+      }
+
+      if (method === "GET") {
+        return jsonResponse({
+          status: true,
+          message: "Announcement retrieved successfully.",
+          data: existingAnnouncement,
+        });
+      }
+
+      if (method === "PATCH") {
+        const updatedAnnouncement: AnnouncementApiDto = {
+          ...existingAnnouncement,
+          title: String(body?.title ?? existingAnnouncement.title),
+          description: String(
+            body?.description ?? existingAnnouncement.description,
+          ),
+          receiver: String(body?.receiver ?? existingAnnouncement.receiver),
+          is_active:
+            typeof body?.is_active === "boolean"
+              ? body.is_active
+              : existingAnnouncement.is_active,
+          media:
+            body && Object.hasOwn(body, "media")
+              ? typeof body.media === "string"
+                ? body.media
+                : null
+              : existingAnnouncement.media,
+        };
+        announcements = announcements.map((announcement) =>
+          announcement.id === announcementId
+            ? updatedAnnouncement
+            : announcement,
+        );
+
+        return jsonResponse({
+          status: true,
+          message: "Announcement updated successfully.",
+          data: updatedAnnouncement,
+        });
+      }
+
+      if (method === "DELETE") {
+        announcements = announcements.filter(
+          ({ id }) => id !== announcementId,
+        );
+
+        return jsonResponse({
+          status: true,
+          message: "Announcement deleted successfully.",
+          data: null,
+        });
+      }
+    }
+
+    throw new Error(`Unexpected request: ${method} ${url.pathname}`);
   };
 
-  return requestedPaths;
+  return { requests };
 }
 
 beforeEach(() => {
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    value: window.sessionStorage,
+  });
   window.localStorage.setItem("ems-language", "en");
+  window.sessionStorage.setItem(
+    "auth_session",
+    JSON.stringify({
+      token: "announcement-page-token",
+      user: {
+        email: "admin@example.com",
+        id: "1",
+        name: "Test Admin",
+        role: "admin",
+      },
+    }),
+  );
 });
 
 afterEach(() => {
@@ -57,112 +268,231 @@ afterEach(() => {
   document.body.style.overflow = "";
   globalThis.fetch = originalFetch;
   window.localStorage.clear();
+  window.sessionStorage.clear();
+
+  if (sessionStorageDescriptor) {
+    Object.defineProperty(
+      globalThis,
+      "sessionStorage",
+      sessionStorageDescriptor,
+    );
+  } else {
+    Reflect.deleteProperty(globalThis, "sessionStorage");
+  }
 });
 
-test("AnnouncementsPage edits and deletes local announcements without displaying unsupported fields", async () => {
-  const requestedPaths = installProfileFetch();
+test("loads, searches, and paginates announcements entirely through the backend", async () => {
+  const backend = createAnnouncementBackend();
   const view = render(
     <I18nProvider>
       <AnnouncementsPage />
     </I18nProvider>,
   );
 
-  assert.ok(view.getByRole("heading", { name: "Announcements", level: 1 }));
-  assert.equal(view.queryByText("#101"), null);
-  assert.equal(view.queryByText(/Yesterday|days ago|ago$/), null);
+  assert.ok(
+    view.getByRole("status", { name: "Loading announcements" }),
+  );
+  await view.findByText("Draft Exhibitor Notice");
+  assert.ok(view.getAllByText("Draft").length >= 1);
+  assert.ok(view.getAllByText("Published").length >= 1);
+  assert.equal(view.queryByText("Active"), null);
+  assert.equal(view.queryByText("Inactive"), null);
 
+  fireEvent.click(view.getByRole("button", { name: "2" }));
+  await view.findByText("Second Page Announcement");
+  assert.equal(view.queryByText("Draft Exhibitor Notice"), null);
+
+  const pageTwoRequest = backend.requests.find(
+    ({ method, url }) =>
+      method === "GET" &&
+      url.pathname.endsWith("/announcements") &&
+      url.searchParams.get("page") === "2",
+  );
+  assert.ok(pageTwoRequest);
+  assert.equal(pageTwoRequest.url.searchParams.get("per_page"), "4");
+
+  const searchInput = view.getByRole("searchbox", {
+    name: "Search announcements by title",
+  });
+  fireEvent.change(searchInput, {
+    target: { value: "Visitor Registration" },
+  });
+  await act(
+    () =>
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 450);
+      }),
+  );
+  await view.findByText("Visitor Registration Guide");
+
+  const searchRequest = backend.requests.find(
+    ({ url }) =>
+      url.searchParams.get("filter[title]") === "Visitor Registration",
+  );
+  assert.ok(searchRequest);
+  assert.equal(searchRequest.url.searchParams.get("page"), "1");
+});
+
+test("sends receiver and Published filters using documented backend parameters", async () => {
+  const backend = createAnnouncementBackend();
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+
+  await view.findByText("Draft Exhibitor Notice");
+  fireEvent.click(
+    view.getByRole("button", { name: "Open announcement filters" }),
+  );
+  const filters = view.getByRole("group", {
+    name: "Announcement filters",
+  });
+  fireEvent.change(within(filters).getByLabelText("Target Audience"), {
+    target: { value: "exhibitors" },
+  });
+  fireEvent.change(within(filters).getByLabelText("Publication State"), {
+    target: { value: "published" },
+  });
+  fireEvent.click(within(filters).getByRole("button", { name: "Apply" }));
+
+  await view.findByText("Published Exhibitor Notice");
+  assert.equal(view.queryByText("Draft Exhibitor Notice"), null);
+  await waitFor(() => {
+    assert.ok(
+      backend.requests.some(
+        ({ url }) =>
+          url.searchParams.get("filter[receiver]") === "Exhibitors" &&
+          url.searchParams.get("filter[is_active]") === "false",
+      ),
+    );
+  });
+});
+
+test("creates, fetches details, updates, and confirms deletion through the backend", async () => {
+  const backend = createAnnouncementBackend();
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+
+  await view.findByText("Draft Exhibitor Notice");
   fireEvent.click(
     view.getByRole("button", {
-      name: "Edit announcement Welcome, Exhibitors",
+      name: "Edit announcement Draft Exhibitor Notice",
     }),
   );
   const editDialog = view.getByRole("dialog", {
     name: "Edit Announcement",
   });
-  const titleInput = within(editDialog).getByLabelText(
+  assert.ok(
+    within(editDialog).getByRole("status", {
+      name: "Loading announcement details",
+    }),
+  );
+  const titleInput = (await within(editDialog).findByLabelText(
     "Title",
-  ) as HTMLInputElement;
+  )) as HTMLInputElement;
   const descriptionInput = within(editDialog).getByLabelText(
     "Description",
   ) as HTMLTextAreaElement;
-
-  assert.equal(titleInput.value, "Welcome, Exhibitors");
-  assert.ok(descriptionInput.value.includes("exhibitor workspace"));
-  assert.equal(within(editDialog).queryByText("101"), null);
+  assert.equal(titleInput.value, "Draft Exhibitor Notice");
 
   fireEvent.change(titleInput, {
-    target: { value: "Updated Exhibitor Welcome" },
+    target: { value: "Updated Backend Announcement" },
   });
   fireEvent.change(descriptionInput, {
-    target: { value: "Updated local announcement description." },
+    target: { value: "Updated through PATCH." },
+  });
+  const saveButton = within(editDialog).getByRole("button", {
+    name: "Save Changes",
+  }) as HTMLButtonElement;
+  assert.equal(saveButton.disabled, false);
+  fireEvent.click(saveButton);
+
+  await waitFor(() => {
+    assert.ok(backend.requests.some(({ method }) => method === "PATCH"));
+  });
+
+  await waitFor(() => {
+    assert.equal(
+      view.queryByRole("dialog", { name: "Edit Announcement" }),
+      null,
+    );
+  });
+  await view.findByText("Updated Backend Announcement");
+  const patchRequest = backend.requests.find(
+    ({ method }) => method === "PATCH",
+  );
+  assert.ok(patchRequest);
+  assert.equal(patchRequest.body?.is_active, true);
+  assert.equal(Object.hasOwn(patchRequest.body ?? {}, "media"), false);
+
+  const composeTitle = view.getByLabelText("Title") as HTMLInputElement;
+  const composeDescription = view.getByLabelText(
+    "Description",
+  ) as HTMLTextAreaElement;
+  fireEvent.change(composeTitle, {
+    target: { value: "Published from Composer" },
+  });
+  fireEvent.change(composeDescription, {
+    target: { value: "Created through POST." },
   });
   fireEvent.click(
-    within(editDialog).getByRole("button", { name: "Save Changes" }),
+    view.getByRole("checkbox", { name: /Save as Draft/ }),
+  );
+  fireEvent.click(
+    view.getByRole("button", { name: "Create Announcement" }),
   );
 
-  assert.equal(view.queryByRole("dialog", { name: "Edit Announcement" }), null);
-  assert.ok(view.getByText("Updated Exhibitor Welcome"));
-  assert.ok(view.getByText("Updated local announcement description."));
+  await waitFor(() => assert.equal(composeTitle.value, ""));
+  const postRequest = backend.requests.find(({ method }) => method === "POST");
+  assert.ok(postRequest);
+  assert.equal(postRequest.body?.is_active, false);
+  await view.findByText("Published from Composer");
 
   fireEvent.click(
     view.getByRole("button", {
-      name: "Edit announcement Updated Exhibitor Welcome",
+      name: "Edit announcement Updated Backend Announcement",
     }),
   );
+  const secondEditDialog = await view.findByRole("dialog", {
+    name: "Edit Announcement",
+  });
+  await within(secondEditDialog).findByLabelText("Title");
   fireEvent.click(
-    within(view.getByRole("dialog", { name: "Edit Announcement" })).getByRole(
-      "button",
-      { name: "Delete" },
-    ),
+    within(secondEditDialog).getByRole("button", { name: "Delete" }),
+  );
+  assert.equal(
+    backend.requests.some(({ method }) => method === "DELETE"),
+    false,
   );
 
   const deleteDialog = view.getByRole("alertdialog", {
     name: "Delete Announcement?",
   });
-  assert.ok(within(deleteDialog).getByText(/Updated Exhibitor Welcome/));
-  assert.ok(view.getByText("Updated Exhibitor Welcome"));
+  assert.ok(
+    within(deleteDialog).getByText(/Updated Backend Announcement/),
+  );
   fireEvent.click(
     within(deleteDialog).getByRole("button", {
       name: "Delete Announcement",
     }),
   );
-
-  assert.equal(view.queryByText("Updated Exhibitor Welcome"), null);
-  assert.ok(requestedPaths.every((path) => path.endsWith("/profile")));
-});
-
-test("AnnouncementsPage creates, searches, and paginates entirely in local state", async () => {
-  installProfileFetch();
-  const view = render(
-    <I18nProvider>
-      <AnnouncementsPage />
-    </I18nProvider>,
-  );
-  const titleInput = view.getByLabelText("Title");
-  const descriptionInput = view.getByLabelText("Description");
-
-  fireEvent.change(titleInput, { target: { value: "Visitor Welcome Desk" } });
-  fireEvent.change(descriptionInput, {
-    target: { value: "The welcome desk is ready to help all visitors." },
+  await waitFor(() => {
+    assert.ok(
+      backend.requests.some(({ method }) => method === "DELETE"),
+    );
   });
-  fireEvent.click(view.getByLabelText("Visitors"));
-  fireEvent.click(view.getByRole("button", { name: "Create Announcement" }));
 
-  assert.ok(view.getByText("Visitor Welcome Desk"));
-  assert.ok(view.getByText("The welcome desk is ready to help all visitors."));
-
-  const searchInput = view.getByRole("searchbox", {
-    name: "Search announcements by title",
+  await waitFor(() => {
+    assert.equal(
+      view.queryByRole("alertdialog", { name: "Delete Announcement?" }),
+      null,
+    );
   });
-  fireEvent.change(searchInput, { target: { value: "Registration Guide" } });
-  assert.ok(view.getByText("Visitor Registration Guide"));
-  assert.equal(view.queryByText("Visitor Welcome Desk"), null);
-
-  fireEvent.change(searchInput, { target: { value: "not a matching title" } });
-  assert.ok(view.getByText("No announcements found"));
-
-  fireEvent.change(searchInput, { target: { value: "" } });
-  fireEvent.click(view.getByRole("button", { name: "2" }));
-  assert.ok(view.getByText("Event Program Update"));
-  assert.equal(view.queryByText("Visitor Welcome Desk"), null);
+  await waitFor(() => {
+    assert.equal(view.queryByText("Updated Backend Announcement"), null);
+  });
 });

@@ -6,12 +6,16 @@ import "./AnnouncementDeleteDialog.scss";
 
 interface AnnouncementDeleteDialogProps {
   announcement: Announcement;
+  error: string;
+  isPending: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
 export function AnnouncementDeleteDialog({
   announcement,
+  error,
+  isPending,
   onCancel,
   onConfirm,
 }: AnnouncementDeleteDialogProps) {
@@ -25,20 +29,20 @@ export function AnnouncementDeleteDialog({
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !isPending) {
         onCancel();
       }
     }
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onCancel]);
+  }, [isPending, onCancel]);
 
   return (
     <div className="announcement-delete-dialog">
       <div
         className="announcement-delete-dialog__backdrop"
-        onClick={onCancel}
+        onClick={isPending ? undefined : onCancel}
       />
       <section
         className="announcement-delete-dialog__panel"
@@ -54,10 +58,16 @@ export function AnnouncementDeleteDialog({
           <h2 id={titleId}>{t.announcements.deleteDialog.title}</h2>
           <p id={messageId}>{message}</p>
         </div>
+        {error ? (
+          <p className="announcement-delete-dialog__error" role="alert">
+            {error}
+          </p>
+        ) : null}
         <div className="announcement-delete-dialog__actions">
           <button
             className="announcement-delete-dialog__button announcement-delete-dialog__button--cancel"
             type="button"
+            disabled={isPending}
             onClick={onCancel}
           >
             {t.common.cancel}
@@ -65,14 +75,16 @@ export function AnnouncementDeleteDialog({
           <button
             className="announcement-delete-dialog__button announcement-delete-dialog__button--confirm"
             type="button"
+            disabled={isPending}
             onClick={onConfirm}
           >
             <Trash2 aria-hidden="true" size={17} strokeWidth={1.9} />
-            {t.announcements.deleteDialog.confirm}
+            {isPending
+              ? t.announcements.deleteDialog.deleting
+              : t.announcements.deleteDialog.confirm}
           </button>
         </div>
       </section>
     </div>
   );
 }
-

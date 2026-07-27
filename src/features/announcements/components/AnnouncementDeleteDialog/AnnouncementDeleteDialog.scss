@@ -48,6 +48,20 @@
   font-family: var(--ems-font-body);
 }
 
+.announcement-delete-dialog__error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--ems-color-danger);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-danger-surface);
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+}
+
 .announcement-delete-dialog__copy h2 {
   color: var(--ems-color-heading);
   font-size: 20px;
@@ -103,6 +117,11 @@
   outline-offset: 2px;
 }
 
+.announcement-delete-dialog__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 @media (max-width: 520px) {
   .announcement-delete-dialog {
     padding: 16px;
@@ -118,4 +137,3 @@
     flex-direction: column-reverse;
   }
 }
-

@@ -1,75 +1,108 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
 } from "react";
 import { ImagePlus, Paperclip, Trash2, X } from "lucide-react";
-import { ModalCloseButton } from "../../../../components";
+import { ModalCloseButton, Skeleton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import {
+  ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH,
+  ANNOUNCEMENT_MEDIA_MAX_LENGTH,
+  ANNOUNCEMENT_TITLE_MAX_LENGTH,
+} from "../../api";
+import {
+  getMediaLength,
   isImageMedia,
   readMediaFile,
 } from "../../data/announcementMedia";
 import type {
   Announcement,
-  AnnouncementDraft,
-  AnnouncementReceiver,
+  AnnouncementFieldErrors,
+  AnnouncementFormReceiver,
+  AnnouncementMediaUpdate,
+  AnnouncementUpdateValues,
 } from "../../types";
 import "./AnnouncementEditModal.scss";
 
-const receiverOptions: AnnouncementReceiver[] = [
+const receiverOptions: AnnouncementFormReceiver[] = [
   "exhibitors",
   "visitors",
   "all",
 ];
 
 interface AnnouncementEditModalProps {
-  announcement: Announcement;
+  announcement: Announcement | null;
+  detailsError: string;
+  detailsLoading: boolean;
+  fieldErrors: AnnouncementFieldErrors;
   isDeleteDialogOpen: boolean;
+  isUpdatePending: boolean;
+  onClearErrors: () => void;
   onClose: () => void;
   onDelete: () => void;
-  onSave: (announcement: AnnouncementDraft) => void;
-}
-
-function normalizeReceiver(receiver: string): AnnouncementReceiver {
-  const normalizedReceiver = receiver.trim().toLocaleLowerCase();
-
-  if (normalizedReceiver === "exhibitors") {
-    return "exhibitors";
-  }
-
-  if (normalizedReceiver === "visitors") {
-    return "visitors";
-  }
-
-  return "all";
+  onRetry: () => void;
+  onSave: (announcement: AnnouncementUpdateValues) => Promise<boolean>;
+  updateError: string;
 }
 
 export function AnnouncementEditModal({
   announcement,
+  detailsError,
+  detailsLoading,
+  fieldErrors,
   isDeleteDialogOpen,
+  isUpdatePending,
+  onClearErrors,
   onClose,
   onDelete,
+  onRetry,
   onSave,
+  updateError,
 }: AnnouncementEditModalProps) {
   const { t } = useI18n();
   const titleId = useId();
   const mediaInputId = useId();
-  const [title, setTitle] = useState(announcement.title);
-  const [description, setDescription] = useState(announcement.description);
-  const [receiver, setReceiver] = useState<AnnouncementReceiver>(() =>
-    normalizeReceiver(announcement.receiver),
-  );
-  const [isActive, setIsActive] = useState(announcement.is_active);
-  const [media, setMedia] = useState<string | null>(announcement.media);
+  const mediaErrorId = useId();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [receiver, setReceiver] =
+    useState<AnnouncementFormReceiver>("all");
+  const [isDraft, setIsDraft] = useState(true);
+  const [media, setMedia] = useState<string | null>(null);
   const [mediaName, setMediaName] = useState("");
+  const [mediaError, setMediaError] = useState("");
+  const [mediaUpdate, setMediaUpdate] =
+    useState<AnnouncementMediaUpdate>("preserve");
   const [mediaInputKey, setMediaInputKey] = useState(0);
-  const isSaveDisabled = !title.trim() || !description.trim();
+  const mediaReadIdRef = useRef(0);
+  const isSaveDisabled =
+    isUpdatePending || !title.trim() || !description.trim();
+
+  useLayoutEffect(() => {
+    if (!announcement) {
+      return;
+    }
+
+    setTitle(announcement.title);
+    setDescription(announcement.description);
+    setReceiver(
+      announcement.receiver === "unknown" ? "all" : announcement.receiver,
+    );
+    setIsDraft(announcement.isDraft);
+    setMedia(announcement.media);
+    setMediaName("");
+    setMediaError("");
+    setMediaUpdate("preserve");
+    setMediaInputKey((currentKey) => currentKey + 1);
+  }, [announcement]);
 
   useEffect(() => {
-    if (isDeleteDialogOpen) {
+    if (isDeleteDialogOpen || isUpdatePending) {
       return undefined;
     }
 
@@ -81,21 +114,26 @@ export function AnnouncementEditModal({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isDeleteDialogOpen, onClose]);
+  }, [isDeleteDialogOpen, isUpdatePending, onClose]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
+      mediaReadIdRef.current += 1;
       document.body.style.overflow = previousOverflow;
     };
   }, []);
 
   function clearMedia() {
+    mediaReadIdRef.current += 1;
     setMedia(null);
     setMediaName("");
+    setMediaError("");
+    setMediaUpdate("remove");
     setMediaInputKey((currentKey) => currentKey + 1);
+    onClearErrors();
   }
 
   async function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
@@ -105,38 +143,65 @@ export function AnnouncementEditModal({
       return;
     }
 
+    const mediaReadId = mediaReadIdRef.current + 1;
+    mediaReadIdRef.current = mediaReadId;
+    setMediaError("");
+    onClearErrors();
+
     try {
-      setMedia(await readMediaFile(file));
+      const nextMedia = await readMediaFile(file);
+
+      if (mediaReadId !== mediaReadIdRef.current) {
+        return;
+      }
+
+      if (getMediaLength(nextMedia) > ANNOUNCEMENT_MEDIA_MAX_LENGTH) {
+        setMediaError(t.announcements.media.tooLarge);
+        setMediaInputKey((currentKey) => currentKey + 1);
+        return;
+      }
+
+      setMedia(nextMedia);
       setMediaName(file.name);
+      setMediaUpdate("replace");
     } catch {
-      clearMedia();
+      if (mediaReadId === mediaReadIdRef.current) {
+        setMediaError(t.announcements.media.readError);
+      }
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isSaveDisabled) {
+    if (!announcement || isSaveDisabled || mediaError) {
       return;
     }
 
-    onSave({
+    await onSave({
       description: description.trim(),
-      is_active: isActive,
+      isDraft,
       media,
+      mediaUpdate,
       receiver,
       title: title.trim(),
     });
   }
 
+  const canClose = !isUpdatePending && !isDeleteDialogOpen;
+
   return (
     <div className="announcement-edit-modal" role="presentation">
-      <div className="announcement-edit-modal__backdrop" onClick={onClose} />
+      <div
+        className="announcement-edit-modal__backdrop"
+        onClick={canClose ? onClose : undefined}
+      />
       <form
+        aria-busy={detailsLoading || isUpdatePending}
+        aria-labelledby={titleId}
+        aria-modal="true"
         className="announcement-edit-modal__panel"
         role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
         onSubmit={handleSubmit}
       >
         <header className="announcement-edit-modal__header">
@@ -146,141 +211,253 @@ export function AnnouncementEditModal({
           </div>
           <ModalCloseButton
             ariaLabel={t.announcements.edit.closeAriaLabel}
+            disabled={!canClose}
             onClick={onClose}
           />
         </header>
 
-        <div className="announcement-edit-modal__body">
-          <label className="announcement-form__field">
-            <span>{t.announcements.fields.title}</span>
-            <input
-              required
-              type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-          </label>
+        {detailsLoading ? (
+          <AnnouncementEditSkeleton label={t.announcements.edit.loading} />
+        ) : null}
 
-          <label className="announcement-form__field">
-            <span>{t.announcements.fields.description}</span>
-            <textarea
-              required
-              rows={7}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </label>
-
-          <fieldset className="announcement-form__audience">
-            <legend>{t.announcements.fields.receiver}</legend>
-            <div className="announcement-form__audience-options">
-              {receiverOptions.map((option) => (
-                <label key={option}>
-                  <input
-                    checked={receiver === option}
-                    name="edit-announcement-receiver"
-                    type="radio"
-                    value={option}
-                    onChange={() => setReceiver(option)}
-                  />
-                  <span>{t.announcements.audience[option]}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <label className="announcement-form__status">
-            <input
-              checked={isActive}
-              type="checkbox"
-              onChange={(event) => setIsActive(event.target.checked)}
-            />
-            <span>
-              <strong>{t.announcements.fields.active}</strong>
-              <small>{t.announcements.fields.activeHelper}</small>
-            </span>
-          </label>
-
-          <div className="announcement-form__media-field">
-            <span className="announcement-form__label">
-              {t.announcements.fields.media}
-            </span>
-
-            {media ? (
-              <div className="announcement-form__media-preview">
-                {isImageMedia(media) ? (
-                  <img src={media} alt={t.announcements.media.previewAlt} />
-                ) : (
-                  <Paperclip aria-hidden="true" size={20} strokeWidth={1.8} />
-                )}
-                <span>{mediaName || t.announcements.media.attached}</span>
-                <button
-                  aria-label={t.announcements.media.remove}
-                  type="button"
-                  onClick={clearMedia}
-                >
-                  <X aria-hidden="true" size={17} />
-                </button>
-              </div>
-            ) : (
-              <div className="announcement-edit-modal__no-media">
-                <span>{t.announcements.media.none}</span>
-                <label htmlFor={mediaInputId}>
-                  <ImagePlus aria-hidden="true" size={17} strokeWidth={1.8} />
-                  {t.announcements.media.add}
-                </label>
-              </div>
-            )}
-
-            {media ? (
-              <label
-                className="announcement-edit-modal__replace-media"
-                htmlFor={mediaInputId}
-              >
-                <ImagePlus aria-hidden="true" size={17} strokeWidth={1.8} />
-                {t.announcements.media.replace}
-              </label>
-            ) : null}
-
-            <input
-              accept="image/*,application/pdf"
-              id={mediaInputId}
-              key={mediaInputKey}
-              className="announcement-form__file-input"
-              type="file"
-              onChange={handleMediaChange}
-            />
+        {!detailsLoading && detailsError ? (
+          <div className="announcement-edit-modal__state" role="alert">
+            <p>{detailsError}</p>
+            <button onClick={onRetry} type="button">
+              {t.common.tryAgain}
+            </button>
           </div>
-        </div>
+        ) : null}
 
-        <footer className="announcement-edit-modal__actions">
-          <button
-            className="announcement-edit-modal__button announcement-edit-modal__button--delete"
-            type="button"
-            onClick={onDelete}
-          >
-            <Trash2 aria-hidden="true" size={17} strokeWidth={1.9} />
-            {t.announcements.actions.delete}
-          </button>
-          <span className="announcement-edit-modal__action-group">
-            <button
-              className="announcement-edit-modal__button announcement-edit-modal__button--secondary"
-              type="button"
-              onClick={onClose}
-            >
-              {t.common.cancel}
-            </button>
-            <button
-              className="announcement-edit-modal__button announcement-edit-modal__button--primary"
-              disabled={isSaveDisabled}
-              type="submit"
-            >
-              {t.announcements.actions.save}
-            </button>
-          </span>
-        </footer>
+        {!detailsLoading && !detailsError && announcement ? (
+          <>
+            <div className="announcement-edit-modal__body">
+              <label className="announcement-form__field">
+                <span>{t.announcements.fields.title}</span>
+                <input
+                  aria-invalid={Boolean(fieldErrors.title)}
+                  disabled={isUpdatePending}
+                  maxLength={ANNOUNCEMENT_TITLE_MAX_LENGTH}
+                  required
+                  type="text"
+                  value={title}
+                  onChange={(event) => {
+                    setTitle(event.target.value);
+                    onClearErrors();
+                  }}
+                />
+                {fieldErrors.title ? (
+                  <span className="announcement-form__error" role="alert">
+                    {fieldErrors.title}
+                  </span>
+                ) : null}
+              </label>
+
+              <label className="announcement-form__field">
+                <span>{t.announcements.fields.description}</span>
+                <textarea
+                  aria-invalid={Boolean(fieldErrors.description)}
+                  disabled={isUpdatePending}
+                  maxLength={ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH}
+                  required
+                  rows={7}
+                  value={description}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                    onClearErrors();
+                  }}
+                />
+                {fieldErrors.description ? (
+                  <span className="announcement-form__error" role="alert">
+                    {fieldErrors.description}
+                  </span>
+                ) : null}
+              </label>
+
+              <fieldset className="announcement-form__audience">
+                <legend>{t.announcements.fields.receiver}</legend>
+                <div className="announcement-form__audience-options">
+                  {receiverOptions.map((option) => (
+                    <label key={option}>
+                      <input
+                        checked={receiver === option}
+                        disabled={isUpdatePending}
+                        name="edit-announcement-receiver"
+                        type="radio"
+                        value={option}
+                        onChange={() => {
+                          setReceiver(option);
+                          onClearErrors();
+                        }}
+                      />
+                      <span>{t.announcements.audience[option]}</span>
+                    </label>
+                  ))}
+                </div>
+                {fieldErrors.receiver ? (
+                  <span className="announcement-form__error" role="alert">
+                    {fieldErrors.receiver}
+                  </span>
+                ) : null}
+              </fieldset>
+
+              <label className="announcement-form__status">
+                <input
+                  checked={isDraft}
+                  disabled={isUpdatePending}
+                  type="checkbox"
+                  onChange={(event) => {
+                    setIsDraft(event.target.checked);
+                    onClearErrors();
+                  }}
+                />
+                <span>
+                  <strong>{t.announcements.fields.draft}</strong>
+                  <small>{t.announcements.fields.draftHelper}</small>
+                </span>
+              </label>
+
+              <div className="announcement-form__media-field">
+                <span className="announcement-form__label">
+                  {t.announcements.fields.media}
+                </span>
+
+                {media ? (
+                  <div className="announcement-form__media-preview">
+                    {isImageMedia(media) ? (
+                      <img
+                        alt={t.announcements.media.previewAlt}
+                        loading="lazy"
+                        src={media}
+                      />
+                    ) : (
+                      <Paperclip
+                        aria-hidden="true"
+                        size={20}
+                        strokeWidth={1.8}
+                      />
+                    )}
+                    <span>{
+                      mediaName || t.announcements.media.attached
+                    }</span>
+                    <button
+                      aria-label={t.announcements.media.remove}
+                      disabled={isUpdatePending}
+                      type="button"
+                      onClick={clearMedia}
+                    >
+                      <X aria-hidden="true" size={17} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="announcement-edit-modal__no-media">
+                    <span>{t.announcements.media.none}</span>
+                    <label htmlFor={mediaInputId}>
+                      <ImagePlus
+                        aria-hidden="true"
+                        size={17}
+                        strokeWidth={1.8}
+                      />
+                      {t.announcements.media.add}
+                    </label>
+                  </div>
+                )}
+
+                {media ? (
+                  <label
+                    className="announcement-edit-modal__replace-media"
+                    htmlFor={mediaInputId}
+                  >
+                    <ImagePlus
+                      aria-hidden="true"
+                      size={17}
+                      strokeWidth={1.8}
+                    />
+                    {t.announcements.media.replace}
+                  </label>
+                ) : null}
+
+                <input
+                  accept="image/*,application/pdf"
+                  aria-describedby={
+                    mediaError || fieldErrors.media
+                      ? mediaErrorId
+                      : undefined
+                  }
+                  aria-invalid={Boolean(mediaError || fieldErrors.media)}
+                  className="announcement-form__file-input"
+                  disabled={isUpdatePending}
+                  id={mediaInputId}
+                  key={mediaInputKey}
+                  type="file"
+                  onChange={handleMediaChange}
+                />
+                {mediaError || fieldErrors.media ? (
+                  <span
+                    className="announcement-form__error"
+                    id={mediaErrorId}
+                    role="alert"
+                  >
+                    {mediaError || fieldErrors.media}
+                  </span>
+                ) : null}
+              </div>
+
+              {updateError ? (
+                <p className="announcement-form__feedback" role="alert">
+                  {updateError}
+                </p>
+              ) : null}
+            </div>
+
+            <footer className="announcement-edit-modal__actions">
+              <button
+                className="announcement-edit-modal__button announcement-edit-modal__button--delete"
+                disabled={isUpdatePending}
+                type="button"
+                onClick={onDelete}
+              >
+                <Trash2 aria-hidden="true" size={17} strokeWidth={1.9} />
+                {t.announcements.actions.delete}
+              </button>
+              <span className="announcement-edit-modal__action-group">
+                <button
+                  className="announcement-edit-modal__button announcement-edit-modal__button--secondary"
+                  disabled={isUpdatePending}
+                  type="button"
+                  onClick={onClose}
+                >
+                  {t.common.cancel}
+                </button>
+                <button
+                  className="announcement-edit-modal__button announcement-edit-modal__button--primary"
+                  disabled={isSaveDisabled || Boolean(mediaError)}
+                  type="submit"
+                >
+                  {isUpdatePending
+                    ? t.announcements.actions.saving
+                    : t.announcements.actions.save}
+                </button>
+              </span>
+            </footer>
+          </>
+        ) : null}
       </form>
     </div>
   );
 }
 
+function AnnouncementEditSkeleton({ label }: { label: string }) {
+  return (
+    <div
+      aria-label={label}
+      className="announcement-edit-modal__skeleton"
+      role="status"
+    >
+      <Skeleton height={44} width="100%" />
+      <Skeleton height={132} width="100%" />
+      <Skeleton height={48} width="100%" />
+      <Skeleton height={72} width="100%" />
+    </div>
+  );
+}

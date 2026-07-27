@@ -132,6 +132,28 @@
   box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
 }
 
+.announcement-form__error,
+.announcement-form__feedback {
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 17px;
+}
+
+.announcement-form__error {
+  display: block;
+  margin-top: 6px;
+}
+
+.announcement-form__feedback {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ems-color-danger);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-danger-surface);
+}
+
 .announcement-form__file-input {
   position: absolute;
   width: 1px;
@@ -281,4 +303,3 @@
     grid-template-columns: 1fr;
   }
 }
-

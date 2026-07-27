@@ -132,14 +132,56 @@
   color: var(--ems-color-primary-dark);
 }
 
-.announcement-list__badge--active {
+.announcement-list__badge--published {
   background-color: var(--ems-color-status-positive-surface);
   color: var(--ems-color-status-positive-text);
 }
 
-.announcement-list__badge--inactive {
+.announcement-list__badge--draft {
   background-color: var(--ems-color-status-negative-surface);
   color: var(--ems-color-status-negative-text);
+}
+
+.announcement-list__skeleton-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+}
+
+.announcement-list__skeleton-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.announcement-list__state {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  text-align: center;
+}
+
+.announcement-list__state p {
+  margin: 0;
+}
+
+.announcement-list__state button {
+  padding: 9px 14px;
+  border: 1px solid var(--ems-color-primary);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .announcement-list__empty {

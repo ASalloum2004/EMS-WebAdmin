@@ -20,6 +20,37 @@
   font-family: var(--ems-font-body);
 }
 
+.announcements-page__feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 14px;
+  border: 1px solid var(--ems-color-status-positive-text);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.announcements-page__feedback button {
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--ems-radius-sm);
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.announcements-page__feedback button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .announcements-page__header h1 {
   color: var(--ems-color-heading);
   font-size: 30px;
@@ -70,4 +101,3 @@
     line-height: 34px;
   }
 }
-

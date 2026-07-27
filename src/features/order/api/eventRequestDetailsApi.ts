@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiRequest } from "../../../api";
+import { apiRequest, resolveApiMediaUrl } from "../../../api";
 import type {
   EventRequestDetails,
   EventRequestDetailsApiData,
@@ -10,8 +10,6 @@ import type {
 
 const unexpectedResponseMessage =
   "Unexpected event request details response format.";
-const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i;
-const URL_SCHEME_PATTERN = /^[a-z][a-z\d+\-.]*:/i;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -32,29 +30,7 @@ function isPositiveInteger(value: unknown): value is number {
 export function resolveEventRequestLogoUrl(
   logo: string | null | undefined,
 ) {
-  const trimmedLogo = logo?.trim();
-
-  if (!trimmedLogo) {
-    return null;
-  }
-
-  if (URL_SCHEME_PATTERN.test(trimmedLogo)) {
-    if (!ABSOLUTE_HTTP_URL_PATTERN.test(trimmedLogo)) {
-      return null;
-    }
-
-    try {
-      return new URL(trimmedLogo).toString();
-    } catch {
-      return null;
-    }
-  }
-
-  try {
-    return new URL(trimmedLogo, `${new URL(API_BASE_URL).origin}/`).toString();
-  } catch {
-    return null;
-  }
+  return resolveApiMediaUrl(logo);
 }
 
 function isOptionalNullableString(value: unknown) {

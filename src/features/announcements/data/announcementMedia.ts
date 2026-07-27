@@ -21,3 +21,6 @@ export function readMediaFile(file: File) {
   });
 }
 
+export function getMediaLength(media: string) {
+  return media.length;
+}

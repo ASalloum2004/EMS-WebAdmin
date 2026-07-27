@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import type { Manager } from "../../types";
 import { getCompanyInitials } from "../CompanyLogo";
 import "./ManagerAvatar.scss";
 
 type ManagerAvatarProps = {
   large?: boolean;
-  manager: Pick<Manager, "avatar" | "name">;
+  manager: {
+    avatar: string | null;
+    name: string;
+  };
 };
 
 export function ManagerAvatar({

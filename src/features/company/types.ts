@@ -2,37 +2,133 @@ export type CompanyApiStatus = "approved" | "pending" | "rejected";
 
 export type CompanyDirectoryView = "company" | "manager";
 
-export type ManagerBooth = {
-  id: number;
-  number: string;
-  hall: string;
-  label: string;
-};
+export type ManagerSearchField = "name" | "email" | "phone";
 
-export type ManagerPortfolio = {
-  id: number;
-  name: string;
-  business_sector: string;
-  phone: string;
-  status: CompanyApiStatus;
-  logo: string | null;
-  booths: ManagerBooth[];
-};
-
-export type Manager = {
+export type ManagerListApiData = {
   id: number;
   name: string;
   email: string;
   avatar: string | null;
   companies_count: number;
   booths_count: number;
+};
+
+export type ManagerPaginationApiData = {
+  data: ManagerListApiData[];
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+};
+
+export type ManagersApiResponse = {
+  status: boolean;
+  message: string;
+  data: ManagerPaginationApiData;
+};
+
+export type ManagerDirectoryApiData = {
+  total_companies: number;
+  total_booths: number;
+  total_managers: number;
+};
+
+export type ManagerDirectoryApiResponse = {
+  status: boolean;
+  message: string;
+  data: ManagerDirectoryApiData;
+};
+
+export type ManagerBoothApiData = {
+  id: number;
+  number: string;
+  hall: string;
+  label: string;
+};
+
+export type ManagerPortfolioApiData = {
+  id: number;
+  name: string;
+  business_sector: string;
+  phone: string;
+  status: string;
+  logo: string | null;
+  booths: ManagerBoothApiData[];
+};
+
+export type ManagerDetailsApiData = {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string | null;
+  portfolios: ManagerPortfolioApiData[];
+};
+
+export type ManagerDetailsApiResponse = {
+  status: boolean;
+  message: string;
+  data: ManagerDetailsApiData;
+};
+
+export type ManagerListItem = {
+  internalId: number;
+  name: string;
+  email: string | null;
+  avatar: string | null;
+  companiesCount: number | null;
+  boothsCount: number | null;
+};
+
+export type ManagerBooth = {
+  number: string | null;
+  hall: string | null;
+  label: string | null;
+};
+
+export type ManagerPortfolio = {
+  name: string;
+  businessSector: string | null;
+  phone: string | null;
+  status: string | null;
+  logo: string | null;
+  booths: ManagerBooth[];
+};
+
+export type ManagerDetails = {
+  name: string;
+  email: string | null;
+  avatar: string | null;
   portfolios: ManagerPortfolio[];
 };
 
-export type ManagerSummary = {
+export type ManagerDirectory = {
   totalManagers: number;
   managedCompanies: number;
   managedBooths: number;
+};
+
+export type ManagerPagination = {
+  currentPage: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type GetManagersParams = {
+  page?: number;
+  search?: string;
+  searchField?: ManagerSearchField;
+};
+
+export type GetManagersResult = {
+  managers: ManagerListItem[];
+  pagination: ManagerPagination;
+};
+
+export type ManagerDetailsState = {
+  details: ManagerDetails | null;
+  error: string;
+  isLoading: boolean;
 };
 
 export type CompanyListApiData = {

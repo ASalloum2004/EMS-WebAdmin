@@ -146,10 +146,29 @@ export const ar: I18nDictionary = {
         totalManagers: "إجمالي المديرين",
         managedCompanies: "الشركات المُدارة",
         managedBooths: "الأجنحة المُدارة",
+        loading: "جار تحميل إحصاءات المديرين",
+        unavailable: "إحصاءات المديرين غير متاحة",
+        loadError: "تعذر تحميل إحصاءات المديرين.",
       },
       search: {
-        placeholder: "ابحث عن المديرين حسب الاسم...",
-        ariaLabel: "البحث عن المديرين حسب الاسم",
+        fieldLabel: "البحث حسب",
+        fields: {
+          name: {
+            label: "الاسم",
+            placeholder: "ابحث عن المديرين حسب الاسم...",
+            ariaLabel: "البحث عن المديرين حسب الاسم",
+          },
+          email: {
+            label: "البريد الإلكتروني",
+            placeholder: "ابحث عن المديرين حسب البريد الإلكتروني...",
+            ariaLabel: "البحث عن المديرين حسب البريد الإلكتروني",
+          },
+          phone: {
+            label: "الهاتف",
+            placeholder: "ابحث عن المديرين حسب الهاتف...",
+            ariaLabel: "البحث عن المديرين حسب الهاتف",
+          },
+        },
       },
       table: {
         ariaLabel: "المديرون",
@@ -160,6 +179,8 @@ export const ar: I18nDictionary = {
         openDetails: "فتح تفاصيل المدير",
         empty: "لا يوجد مديرون متاحون.",
         noResults: "لا يوجد مديرون يطابقون بحثك.",
+        loading: "جار تحميل المديرين...",
+        loadError: "تعذر تحميل المديرين.",
       },
       details: {
         title: "تفاصيل المدير",
@@ -174,6 +195,8 @@ export const ar: I18nDictionary = {
         noBoothsAssigned: "لا توجد أجنحة مخصصة",
         noPortfolios: "لا توجد محافظ متاحة.",
         closeAriaLabel: "إغلاق تفاصيل المدير",
+        loading: "جار تحميل تفاصيل المدير...",
+        loadError: "تعذر تحميل تفاصيل المدير.",
       },
     },
   },

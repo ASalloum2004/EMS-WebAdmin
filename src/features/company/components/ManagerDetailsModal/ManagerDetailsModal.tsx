@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Card, ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
-import type { Manager, ManagerPortfolio } from "../../types";
+import type {
+  ManagerDetails,
+  ManagerDetailsState,
+  ManagerListItem,
+  ManagerPortfolio,
+} from "../../types";
 import { CompanyLogo } from "../CompanyLogo";
 import { ManagerAvatar } from "../ManagerAvatar";
 import "./ManagerDetailsModal.scss";
 
+const EMPTY_VALUE = "—";
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -13,22 +19,42 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 type ManagerDetailsModalProps = {
-  manager: Manager;
+  detailsState: ManagerDetailsState | null;
+  manager: ManagerListItem;
   onClose: () => void;
+  onRetry: (managerId: number) => void;
 };
 
-function PortfolioStatus({
-  status,
-}: {
-  status: ManagerPortfolio["status"];
-}) {
+function getHumanReadableStatus(status: string) {
+  return status
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function PortfolioStatus({ status }: { status: string | null }) {
   const { t } = useI18n();
+  const normalizedStatus = status?.trim().toLowerCase() ?? "";
+  let label = normalizedStatus
+    ? getHumanReadableStatus(normalizedStatus)
+    : EMPTY_VALUE;
+  let modifier = "neutral";
+
+  if (normalizedStatus === "approved") {
+    label = t.company.statuses.approved;
+    modifier = "approved";
+  } else if (normalizedStatus === "pending") {
+    label = t.company.statuses.pending;
+    modifier = "pending";
+  } else if (normalizedStatus === "rejected") {
+    label = t.company.statuses.rejected;
+    modifier = "rejected";
+  }
 
   return (
     <span
-      className={`manager-details-modal__status manager-details-modal__status--${status}`}
+      className={`manager-details-modal__status manager-details-modal__status--${modifier}`}
     >
-      {t.company.statuses[status]}
+      {label}
     </span>
   );
 }
@@ -45,7 +71,7 @@ function PortfolioCard({ portfolio }: { portfolio: ManagerPortfolio }) {
       <div className="manager-details-modal__portfolio-header">
         <CompanyLogo logo={portfolio.logo} name={portfolio.name} />
         <div>
-          <h4>{portfolio.name}</h4>
+          <h4>{portfolio.name || EMPTY_VALUE}</h4>
         </div>
         <PortfolioStatus status={portfolio.status} />
       </div>
@@ -53,11 +79,11 @@ function PortfolioCard({ portfolio }: { portfolio: ManagerPortfolio }) {
       <dl className="manager-details-modal__portfolio-facts">
         <div>
           <dt>{t.company.manager.details.businessSector}</dt>
-          <dd>{portfolio.business_sector}</dd>
+          <dd>{portfolio.businessSector ?? EMPTY_VALUE}</dd>
         </div>
         <div>
           <dt>{t.company.manager.details.phone}</dt>
-          <dd dir="ltr">{portfolio.phone}</dd>
+          <dd dir="ltr">{portfolio.phone ?? EMPTY_VALUE}</dd>
         </div>
       </dl>
 
@@ -65,17 +91,19 @@ function PortfolioCard({ portfolio }: { portfolio: ManagerPortfolio }) {
         <h5>{t.company.manager.details.booths}</h5>
         {portfolio.booths.length ? (
           <ul>
-            {portfolio.booths.map((booth) => (
-              <li key={booth.id}>
-                <strong>{booth.label}</strong>
+            {portfolio.booths.map((booth, index) => (
+              <li
+                key={`${booth.label ?? booth.number ?? "booth"}-${index}`}
+              >
+                <strong>{booth.label ?? EMPTY_VALUE}</strong>
                 <dl>
                   <div>
                     <dt>{t.company.manager.details.boothNumber}</dt>
-                    <dd>{booth.number}</dd>
+                    <dd>{booth.number ?? EMPTY_VALUE}</dd>
                   </div>
                   <div>
                     <dt>{t.company.manager.details.hall}</dt>
-                    <dd>{booth.hall}</dd>
+                    <dd>{booth.hall ?? EMPTY_VALUE}</dd>
                   </div>
                 </dl>
               </li>
@@ -89,12 +117,14 @@ function PortfolioCard({ portfolio }: { portfolio: ManagerPortfolio }) {
   );
 }
 
-export function ManagerDetailsModal({
+function ManagerDetailsContent({
+  details,
   manager,
-  onClose,
-}: ManagerDetailsModalProps) {
+}: {
+  details: ManagerDetails;
+  manager: ManagerListItem;
+}) {
   const { language, t } = useI18n();
-  const dialogRef = useRef<HTMLElement>(null);
   const formatter = useMemo(
     () =>
       new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US", {
@@ -103,6 +133,72 @@ export function ManagerDetailsModal({
       }),
     [language],
   );
+  const profile = {
+    avatar: details.avatar ?? manager.avatar,
+    email: details.email ?? manager.email,
+    name: details.name || manager.name,
+  };
+
+  return (
+    <>
+      <section className="manager-details-modal__section">
+        <h3>{t.company.manager.details.profile}</h3>
+        <div className="manager-details-modal__identity">
+          <ManagerAvatar large manager={profile} />
+          <div>
+            <strong>{profile.name || EMPTY_VALUE}</strong>
+            <span dir="ltr">{profile.email ?? EMPTY_VALUE}</span>
+          </div>
+        </div>
+        <dl className="manager-details-modal__summary">
+          <div>
+            <dt>{t.company.manager.summary.managedCompanies}</dt>
+            <dd>
+              {manager.companiesCount === null
+                ? EMPTY_VALUE
+                : formatter.format(manager.companiesCount)}
+            </dd>
+          </div>
+          <div>
+            <dt>{t.company.manager.summary.managedBooths}</dt>
+            <dd>
+              {manager.boothsCount === null
+                ? EMPTY_VALUE
+                : formatter.format(manager.boothsCount)}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="manager-details-modal__section">
+        <h3>{t.company.manager.details.portfolios}</h3>
+        {details.portfolios.length ? (
+          <div className="manager-details-modal__portfolio-grid">
+            {details.portfolios.map((portfolio, index) => (
+              <PortfolioCard
+                key={`${portfolio.name || "portfolio"}-${index}`}
+                portfolio={portfolio}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="manager-details-modal__empty">
+            {t.company.manager.details.noPortfolios}
+          </p>
+        )}
+      </section>
+    </>
+  );
+}
+
+export function ManagerDetailsModal({
+  detailsState,
+  manager,
+  onClose,
+  onRetry,
+}: ManagerDetailsModalProps) {
+  const { t } = useI18n();
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const previouslyFocusedElement =
@@ -171,6 +267,7 @@ export function ManagerDetailsModal({
       role="presentation"
     >
       <section
+        aria-busy={detailsState?.isLoading ?? true}
         aria-labelledby="manager-details-modal-title"
         aria-modal="true"
         className="manager-details-modal__dialog"
@@ -192,41 +289,34 @@ export function ManagerDetailsModal({
         </header>
 
         <div className="manager-details-modal__scroll-area">
-          <section className="manager-details-modal__section">
-            <h3>{t.company.manager.details.profile}</h3>
-            <div className="manager-details-modal__identity">
-              <ManagerAvatar large manager={manager} />
-              <div>
-                <strong>{manager.name}</strong>
-                <span dir="ltr">{manager.email}</span>
-              </div>
+          {!detailsState || detailsState.isLoading ? (
+            <div
+              aria-live="polite"
+              className="manager-details-modal__state"
+              role="status"
+            >
+              <p>{t.company.manager.details.loading}</p>
             </div>
-            <dl className="manager-details-modal__summary">
-              <div>
-                <dt>{t.company.manager.summary.managedCompanies}</dt>
-                <dd>{formatter.format(manager.companies_count)}</dd>
-              </div>
-              <div>
-                <dt>{t.company.manager.summary.managedBooths}</dt>
-                <dd>{formatter.format(manager.booths_count)}</dd>
-              </div>
-            </dl>
-          </section>
+          ) : null}
 
-          <section className="manager-details-modal__section">
-            <h3>{t.company.manager.details.portfolios}</h3>
-            {manager.portfolios.length ? (
-              <div className="manager-details-modal__portfolio-grid">
-                {manager.portfolios.map((portfolio) => (
-                  <PortfolioCard key={portfolio.id} portfolio={portfolio} />
-                ))}
-              </div>
-            ) : (
-              <p className="manager-details-modal__empty">
-                {t.company.manager.details.noPortfolios}
-              </p>
-            )}
-          </section>
+          {detailsState?.error ? (
+            <div className="manager-details-modal__state" role="alert">
+              <p>{detailsState.error}</p>
+              <button
+                onClick={() => onRetry(manager.internalId)}
+                type="button"
+              >
+                {t.common.tryAgain}
+              </button>
+            </div>
+          ) : null}
+
+          {detailsState?.details && !detailsState.isLoading ? (
+            <ManagerDetailsContent
+              details={detailsState.details}
+              manager={manager}
+            />
+          ) : null}
         </div>
       </section>
     </div>

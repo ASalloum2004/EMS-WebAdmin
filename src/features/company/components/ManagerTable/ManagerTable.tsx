@@ -1,21 +1,25 @@
 import { useMemo } from "react";
 import { DataTable, type DataTableColumn } from "../../../../components";
 import { useI18n } from "../../../../i18n";
-import type { Manager } from "../../types";
+import type { ManagerListItem } from "../../types";
 import { ManagerAvatar } from "../ManagerAvatar";
 import "./ManagerTable.scss";
 
+const EMPTY_VALUE = "—";
+
 type ManagerTableProps = {
   emptyMessage: string;
-  managers: Manager[];
-  onOpenManager: (manager: Manager) => void;
+  managers: ManagerListItem[];
+  onOpenManager: (manager: ManagerListItem) => void;
 };
 
-function ManagerIdentity({ manager }: { manager: Manager }) {
+function ManagerIdentity({ manager }: { manager: ManagerListItem }) {
   return (
     <span className="manager-identity">
       <ManagerAvatar manager={manager} />
-      <span className="manager-identity__name">{manager.name}</span>
+      <span className="manager-identity__name">
+        {manager.name || EMPTY_VALUE}
+      </span>
     </span>
   );
 }
@@ -34,7 +38,7 @@ export function ManagerTable({
       }),
     [language],
   );
-  const columns = useMemo<Array<DataTableColumn<Manager>>>(
+  const columns = useMemo<Array<DataTableColumn<ManagerListItem>>>(
     () => [
       {
         className: "manager-table__cell--manager",
@@ -47,19 +51,25 @@ export function ManagerTable({
         className: "manager-table__cell--email",
         key: "email",
         label: t.company.manager.table.email,
-        render: (manager) => manager.email,
+        render: (manager) => manager.email ?? EMPTY_VALUE,
       },
       {
         className: "manager-table__cell--count",
-        key: "companies_count",
+        key: "companiesCount",
         label: t.company.manager.table.companies,
-        render: (manager) => formatter.format(manager.companies_count),
+        render: (manager) =>
+          manager.companiesCount === null
+            ? EMPTY_VALUE
+            : formatter.format(manager.companiesCount),
       },
       {
         className: "manager-table__cell--count",
-        key: "booths_count",
+        key: "boothsCount",
         label: t.company.manager.table.booths,
-        render: (manager) => formatter.format(manager.booths_count),
+        render: (manager) =>
+          manager.boothsCount === null
+            ? EMPTY_VALUE
+            : formatter.format(manager.boothsCount),
       },
     ],
     [formatter, t],
@@ -74,7 +84,7 @@ export function ManagerTable({
       getItemAriaLabel={(manager) =>
         `${t.company.manager.table.openDetails} ${manager.name}`
       }
-      getItemKey={(manager) => manager.id}
+      getItemKey={(manager) => manager.internalId}
       items={managers}
       onItemClick={onOpenManager}
     />

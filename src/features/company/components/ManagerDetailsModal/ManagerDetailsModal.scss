@@ -244,6 +244,11 @@
   color: var(--ems-color-status-negative-text);
 }
 
+.manager-details-modal__status--neutral {
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
 .manager-details-modal__portfolio-facts,
 .manager-details-modal__booths dl {
   display: grid;
@@ -334,6 +339,41 @@
   font-family: var(--ems-font-body);
   font-size: 12px;
   line-height: 18px;
+}
+
+.manager-details-modal__state {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.manager-details-modal__state p {
+  margin: 0 0 12px;
+}
+
+.manager-details-modal__state p:only-child {
+  margin-bottom: 0;
+}
+
+.manager-details-modal__state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
 }
 
 @media (max-width: 800px) {

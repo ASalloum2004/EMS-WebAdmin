@@ -1,10 +1,18 @@
 import { Building2, PanelsTopLeft, Users } from "lucide-react";
 import { Card } from "../../../../components";
 import { useI18n } from "../../../../i18n";
-import { MOCK_MANAGER_SUMMARY } from "../../data";
+import type { ManagerDirectory } from "../../types";
 import "./ManagerSummaryCards.scss";
 
-export function ManagerSummaryCards() {
+type ManagerSummaryCardsProps = {
+  directory: ManagerDirectory | null;
+  isLoading: boolean;
+};
+
+export function ManagerSummaryCards({
+  directory,
+  isLoading,
+}: ManagerSummaryCardsProps) {
   const { language, t } = useI18n();
   const formatter = new Intl.NumberFormat(
     language === "ar" ? "ar-SY" : "en-US",
@@ -14,19 +22,19 @@ export function ManagerSummaryCards() {
       icon: <Users aria-hidden="true" size={22} strokeWidth={1.8} />,
       key: "totalManagers",
       label: t.company.manager.summary.totalManagers,
-      value: MOCK_MANAGER_SUMMARY.totalManagers,
+      value: directory?.totalManagers ?? null,
     },
     {
       icon: <Building2 aria-hidden="true" size={22} strokeWidth={1.8} />,
       key: "managedCompanies",
       label: t.company.manager.summary.managedCompanies,
-      value: MOCK_MANAGER_SUMMARY.managedCompanies,
+      value: directory?.managedCompanies ?? null,
     },
     {
       icon: <PanelsTopLeft aria-hidden="true" size={22} strokeWidth={1.8} />,
       key: "managedBooths",
       label: t.company.manager.summary.managedBooths,
-      value: MOCK_MANAGER_SUMMARY.managedBooths,
+      value: directory?.managedBooths ?? null,
     },
   ] as const;
 
@@ -42,7 +50,19 @@ export function ManagerSummaryCards() {
           titleClassName="manager-summary__label"
         >
           <strong className="manager-summary__value">
-            {formatter.format(card.value)}
+            <span
+              aria-busy={isLoading}
+              aria-label={
+                card.value === null
+                  ? isLoading
+                    ? t.company.manager.summary.loading
+                    : t.company.manager.summary.unavailable
+                  : undefined
+              }
+              aria-live="polite"
+            >
+              {card.value === null ? "—" : formatter.format(card.value)}
+            </span>
           </strong>
         </Card>
       ))}

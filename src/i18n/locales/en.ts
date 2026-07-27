@@ -146,10 +146,29 @@ export const en = {
         totalManagers: "Total Managers",
         managedCompanies: "Managed Companies",
         managedBooths: "Managed Booths",
+        loading: "Loading manager statistics",
+        unavailable: "Manager statistics unavailable",
+        loadError: "Unable to load manager statistics.",
       },
       search: {
-        placeholder: "Search managers by name...",
-        ariaLabel: "Search managers by name",
+        fieldLabel: "Search by",
+        fields: {
+          name: {
+            label: "Name",
+            placeholder: "Search managers by name...",
+            ariaLabel: "Search managers by name",
+          },
+          email: {
+            label: "Email",
+            placeholder: "Search managers by email...",
+            ariaLabel: "Search managers by email",
+          },
+          phone: {
+            label: "Phone",
+            placeholder: "Search managers by phone...",
+            ariaLabel: "Search managers by phone",
+          },
+        },
       },
       table: {
         ariaLabel: "Managers",
@@ -160,6 +179,8 @@ export const en = {
         openDetails: "Open manager details for",
         empty: "No managers are available.",
         noResults: "No managers match your search.",
+        loading: "Loading managers...",
+        loadError: "Unable to load managers.",
       },
       details: {
         title: "Manager details",
@@ -174,6 +195,8 @@ export const en = {
         noBoothsAssigned: "No booths assigned",
         noPortfolios: "No portfolios are available.",
         closeAriaLabel: "Close manager details",
+        loading: "Loading manager details...",
+        loadError: "Unable to load manager details.",
       },
     },
   },

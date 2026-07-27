@@ -10,7 +10,11 @@ import {
   ManagerSummaryCards,
   ManagerView,
 } from "../components";
-import { useCompanies, useCompanyDetails } from "../hooks";
+import {
+  useCompanies,
+  useCompanyDetails,
+  useManagerDirectory,
+} from "../hooks";
 import type { CompanyDirectoryView } from "../types";
 import "./CompanyPage.scss";
 
@@ -20,6 +24,10 @@ export function CompanyPage() {
     useState<CompanyDirectoryView>("company");
   const companiesState = useCompanies(t.company.table.loadError);
   const companyDetails = useCompanyDetails(t.company.details.loadError);
+  const managerDirectory = useManagerDirectory(
+    t.company.manager.summary.loadError,
+    activeView === "manager",
+  );
   const selectedCompany = companiesState.companies.find(
     (company) => company.id === companyDetails.selectedCompanyId,
   );
@@ -64,7 +72,29 @@ export function CompanyPage() {
           <p>{t.company.description}</p>
         </header>
 
-        {activeView === "manager" ? <ManagerSummaryCards /> : null}
+        {activeView === "manager" ? (
+          <>
+            <ManagerSummaryCards
+              directory={managerDirectory.directory}
+              isLoading={managerDirectory.isLoading}
+            />
+
+            {managerDirectory.error ? (
+              <div className="company-page__state" role="alert">
+                <p>
+                  {managerDirectory.error ||
+                    t.company.manager.summary.loadError}
+                </p>
+                <button
+                  onClick={() => void managerDirectory.refetch()}
+                  type="button"
+                >
+                  {t.common.tryAgain}
+                </button>
+              </div>
+            ) : null}
+          </>
+        ) : null}
 
         <CompanyViewTabs
           activeView={activeView}

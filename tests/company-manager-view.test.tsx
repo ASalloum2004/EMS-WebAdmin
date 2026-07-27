@@ -9,11 +9,19 @@ import {
   within,
 } from "@testing-library/react";
 import {
-  MOCK_MANAGERS,
-  MOCK_MANAGER_SUMMARY,
-} from "../src/features/company/data/managerMockData.js";
+  buildManagerDetailsPath,
+  buildManagersPath,
+  normalizeManagerDetailsResponse,
+  normalizeManagerDirectoryResponse,
+  normalizeManagersResponse,
+} from "../src/features/company/api/index.js";
 import { CompanyPage } from "../src/features/company/pages/CompanyPage.js";
-import type { CompaniesApiResponse } from "../src/features/company/types.js";
+import type {
+  CompaniesApiResponse,
+  ManagerDetailsApiResponse,
+  ManagerDirectoryApiResponse,
+  ManagersApiResponse,
+} from "../src/features/company/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
 
 const originalFetch = globalThis.fetch;
@@ -45,10 +53,79 @@ const companyResponse: CompaniesApiResponse = {
   },
 };
 
-function jsonResponse(body: unknown) {
+const managersResponse: ManagersApiResponse = {
+  status: true,
+  message: "managers retrieved successfully",
+  data: {
+    data: [
+      {
+        id: 3,
+        name: "Elcoach",
+        email: "zuheiralhomsi73@gmail.com",
+        avatar: null,
+        companies_count: 6,
+        booths_count: 2,
+      },
+    ],
+    current_page: 1,
+    per_page: 15,
+    total: 16,
+    last_page: 2,
+  },
+};
+
+const managerDirectoryResponse: ManagerDirectoryApiResponse = {
+  status: true,
+  message: "statistics retrieved successfully",
+  data: {
+    total_companies: 6,
+    total_booths: 461,
+    total_managers: 1,
+  },
+};
+
+const managerDetailsResponse: ManagerDetailsApiResponse = {
+  status: true,
+  message: "manager retrieved successfully",
+  data: {
+    id: 3,
+    name: "Elcoach",
+    email: "zuheiralhomsi73@gmail.com",
+    avatar: null,
+    portfolios: [
+      {
+        id: 1,
+        name: "Dar Al feker",
+        business_sector: "Lectures & Exhibitions",
+        phone: "+963112223334",
+        status: "approved",
+        logo: null,
+        booths: [
+          {
+            id: 43,
+            number: "2C-01",
+            hall: "2",
+            label: "Booth 2-2C-01",
+          },
+        ],
+      },
+      {
+        id: 2,
+        name: "North Star Events",
+        business_sector: "Event Management",
+        phone: "+963115556667",
+        status: "awaiting_review",
+        logo: null,
+        booths: [],
+      },
+    ],
+  },
+};
+
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     headers: { "Content-Type": "application/json" },
-    status: 200,
+    status,
   });
 }
 
@@ -84,67 +161,82 @@ afterEach(() => {
   }
 });
 
-test("manager mock data matches the future response shape and summary", () => {
-  const sampleManager = MOCK_MANAGERS.find((manager) => manager.id === 3);
+test("builds exact manager search paths and normalizes API IDs out of visible details", () => {
+  const nameUrl = new URL(
+    buildManagersPath({ page: 2, search: " Elcoach ", searchField: "name" }),
+    "https://example.test/",
+  );
+  assert.equal(nameUrl.pathname, "/managers");
+  assert.equal(nameUrl.searchParams.get("filter[name]"), "Elcoach");
+  assert.equal(nameUrl.searchParams.get("filter[email]"), null);
+  assert.equal(nameUrl.searchParams.get("filter[phone]"), null);
+  assert.equal(nameUrl.searchParams.get("page"), "2");
 
-  assert.ok(sampleManager);
+  const emailUrl = new URL(
+    buildManagersPath({
+      search: "zuheiralhomsi73@gmail.com",
+      searchField: "email",
+    }),
+    "https://example.test/",
+  );
+  assert.equal(
+    emailUrl.searchParams.get("filter[email]"),
+    "zuheiralhomsi73@gmail.com",
+  );
+  assert.equal(emailUrl.searchParams.get("filter[name]"), null);
+
+  const phoneUrl = new URL(
+    buildManagersPath({ search: "+963", searchField: "phone" }),
+    "https://example.test/",
+  );
+  assert.equal(phoneUrl.searchParams.get("filter[phone]"), "+963");
+  assert.match(phoneUrl.search, /%2B963/);
+
+  const emptyUrl = new URL(
+    buildManagersPath({ search: "   ", searchField: "email" }),
+    "https://example.test/",
+  );
+  assert.deepEqual(Array.from(emptyUrl.searchParams.keys()), ["page"]);
+
+  const list = normalizeManagersResponse(managersResponse);
+  assert.deepEqual(list.managers[0], {
+    internalId: 3,
+    name: "Elcoach",
+    email: "zuheiralhomsi73@gmail.com",
+    avatar: null,
+    companiesCount: 6,
+    boothsCount: 2,
+  });
+  assert.equal(Object.hasOwn(list.managers[0], "id"), false);
+
   assert.deepEqual(
+    normalizeManagerDirectoryResponse(managerDirectoryResponse),
     {
-      id: sampleManager.id,
-      name: sampleManager.name,
-      email: sampleManager.email,
-      avatar: sampleManager.avatar,
-      companies_count: sampleManager.companies_count,
-      booths_count: sampleManager.booths_count,
-    },
-    {
-      id: 3,
-      name: "Elcoach",
-      email: "zuheiralhomsi73@gmail.com",
-      avatar: null,
-      companies_count: 6,
-      booths_count: 2,
+      totalManagers: 1,
+      managedCompanies: 6,
+      managedBooths: 461,
     },
   );
-  assert.deepEqual(
-    sampleManager.portfolios.map((portfolio) => portfolio.name),
-    [
-      "Dar Al feker",
-      "GreenFoods Co.",
-      "North Star Events",
-      "Artisan Market House",
-      "Metro Tech Labs",
-      "Summit Retail Group",
-    ],
-  );
-  assert.equal(
-    sampleManager.portfolios.reduce(
-      (total, portfolio) => total + portfolio.booths.length,
-      0,
-    ),
-    sampleManager.booths_count,
-  );
-  assert.equal(MOCK_MANAGER_SUMMARY.totalManagers, MOCK_MANAGERS.length);
-  assert.equal(
-    MOCK_MANAGER_SUMMARY.managedCompanies,
-    MOCK_MANAGERS.reduce(
-      (total, manager) => total + manager.companies_count,
-      0,
-    ),
-  );
-  assert.equal(
-    MOCK_MANAGER_SUMMARY.managedBooths,
-    MOCK_MANAGERS.reduce(
-      (total, manager) => total + manager.booths_count,
-      0,
-    ),
-  );
+
+  const details = normalizeManagerDetailsResponse(managerDetailsResponse);
+  assert.equal(Object.hasOwn(details, "id"), false);
+  assert.equal(Object.hasOwn(details.portfolios[0], "id"), false);
+  assert.equal(Object.hasOwn(details.portfolios[0].booths[0], "id"), false);
+  assert.deepEqual(details.portfolios[0].booths[0], {
+    number: "2C-01",
+    hall: "2",
+    label: "Booth 2-2C-01",
+  });
+  assert.equal(buildManagerDetailsPath(3), "managers/3");
+  assert.throws(() => buildManagerDetailsPath(0));
 });
 
-test("switches views and supports local manager search, pagination, and modal", async () => {
-  const companyRequestUrls: URL[] = [];
+test("loads manager list, directory, searches server-side, paginates, and caches details", async () => {
+  const managerListRequests: Array<{ headers: Headers; url: URL }> = [];
+  let directoryRequestCount = 0;
+  let detailsRequestCount = 0;
 
-  globalThis.fetch = async (input) => {
+  globalThis.fetch = async (input, init) => {
     const url = new URL(String(input));
 
     if (url.pathname.endsWith("/profile")) {
@@ -162,8 +254,46 @@ test("switches views and supports local manager search, pagination, and modal", 
       });
     }
 
-    companyRequestUrls.push(url);
-    return jsonResponse(companyResponse);
+    if (url.pathname.endsWith("/companies")) {
+      return jsonResponse(companyResponse);
+    }
+
+    if (url.pathname.endsWith("/managers/directory")) {
+      directoryRequestCount += 1;
+      return jsonResponse(managerDirectoryResponse);
+    }
+
+    if (url.pathname.endsWith("/managers/3")) {
+      detailsRequestCount += 1;
+      return jsonResponse(managerDetailsResponse);
+    }
+
+    if (url.pathname.endsWith("/managers")) {
+      managerListRequests.push({
+        headers: new Headers(init?.headers),
+        url,
+      });
+      const query =
+        url.searchParams.get("filter[name]") ??
+        url.searchParams.get("filter[email]") ??
+        url.searchParams.get("filter[phone]") ??
+        "";
+      const page = Number(url.searchParams.get("page") ?? "1");
+      const hasMatch = !query || /elcoach|zuheir|\+963/i.test(query);
+
+      return jsonResponse({
+        ...managersResponse,
+        data: {
+          ...managersResponse.data,
+          current_page: page,
+          data: hasMatch ? managersResponse.data.data : [],
+          total: hasMatch ? 16 : 0,
+          last_page: hasMatch ? 2 : 1,
+        },
+      } satisfies ManagersApiResponse);
+    }
+
+    throw new Error(`Unexpected request: ${url}`);
   };
 
   const view = render(
@@ -173,88 +303,135 @@ test("switches views and supports local manager search, pagination, and modal", 
   );
 
   await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
-  assert.equal(view.queryByText("Total Managers"), null);
+  fireEvent.click(view.getByRole("tab", { name: "View by Manager" }));
 
-  const companyTab = view.getByRole("tab", { name: "View by Company" });
-  const managerTab = view.getByRole("tab", { name: "View by Manager" });
-  assert.equal(companyTab.getAttribute("aria-selected"), "true");
-  fireEvent.click(managerTab);
-
-  assert.equal(managerTab.getAttribute("aria-selected"), "true");
-  assert.equal(companyTab.getAttribute("aria-selected"), "false");
-  assert.equal(view.queryByText("Dar Al feker"), null);
-  assert.ok(view.getByRole("heading", { name: "Total Managers" }));
-  assert.ok(view.getByRole("heading", { name: "Managed Companies" }));
-  assert.ok(view.getByRole("heading", { name: "Managed Booths" }));
+  await waitFor(() =>
+    assert.ok(
+      view.getByRole("button", {
+        name: "Open manager details for Elcoach",
+      }),
+    ),
+  );
+  assert.equal(directoryRequestCount, 1);
+  assert.equal(managerListRequests.length, 1);
+  assert.equal(
+    managerListRequests[0].headers.get("Authorization"),
+    "Bearer manager-view-test-token",
+  );
+  assert.equal(managerListRequests[0].url.searchParams.get("page"), "1");
+  assert.equal(
+    Array.from(managerListRequests[0].url.searchParams.keys()).some((key) =>
+      key.startsWith("filter["),
+    ),
+    false,
+  );
 
   const totalManagersCard = view
     .getByRole("heading", { name: "Total Managers" })
     .closest<HTMLElement>(".card");
+  const companiesCard = view
+    .getByRole("heading", { name: "Managed Companies" })
+    .closest<HTMLElement>(".card");
+  const boothsCard = view
+    .getByRole("heading", { name: "Managed Booths" })
+    .closest<HTMLElement>(".card");
   assert.ok(totalManagersCard);
-  assert.ok(within(totalManagersCard).getByText("12"));
+  assert.ok(companiesCard);
+  assert.ok(boothsCard);
+  assert.ok(within(totalManagersCard).getByText("1"));
+  assert.ok(within(companiesCard).getByText("6"));
+  assert.ok(within(boothsCard).getByText("461"));
   assert.equal(view.queryByText(/matching managers/i), null);
   assert.equal(view.queryByLabelText("Rows per page"), null);
-
-  const elcoachRow = view.getByRole("button", {
-    name: "Open manager details for Elcoach",
-  });
-  assert.ok(within(elcoachRow).getByText("Elcoach"));
-  assert.ok(within(elcoachRow).getByText("E"));
-  assert.ok(within(elcoachRow).getByText("zuheiralhomsi73@gmail.com"));
-  assert.ok(within(elcoachRow).getByText("6"));
-  assert.ok(within(elcoachRow).getByText("2"));
-  assert.equal(within(elcoachRow).queryByRole("button"), null);
   assert.equal(view.queryByText("Actions"), null);
-  assert.equal(
-    view.queryByRole("button", { name: /View manager details for/i }),
-    null,
-  );
   assert.equal(view.queryByText("#3"), null);
-  assert.equal(view.queryByText("Managed Portfolios"), null);
+
+  const searchField = view.getByRole("combobox", { name: "Search by" });
+  const searchInput = view.getByRole("searchbox", {
+    name: "Search managers by name",
+  });
+  fireEvent.change(searchInput, { target: { value: " Elcoach " } });
+  await waitFor(
+    () => {
+      const latestRequest = managerListRequests.at(-1)?.url;
+      assert.equal(latestRequest?.searchParams.get("filter[name]"), "Elcoach");
+      assert.equal(latestRequest?.searchParams.get("filter[email]"), null);
+      assert.equal(latestRequest?.searchParams.get("filter[phone]"), null);
+      assert.equal(latestRequest?.searchParams.get("page"), "1");
+    },
+    { timeout: 1500 },
+  );
+
+  fireEvent.change(searchField, { target: { value: "email" } });
+  await waitFor(() =>
+    assert.ok(
+      view.getByRole("searchbox", {
+        name: "Search managers by email",
+      }),
+    ),
+  );
+  await waitFor(() => {
+    const latestRequest = managerListRequests.at(-1)?.url;
+    assert.equal(latestRequest?.searchParams.get("filter[email]"), "Elcoach");
+    assert.equal(latestRequest?.searchParams.get("filter[name]"), null);
+  });
+
+  const emailInput = view.getByRole("searchbox", {
+    name: "Search managers by email",
+  });
+  fireEvent.change(emailInput, {
+    target: { value: "zuheiralhomsi73@gmail.com" },
+  });
+  await waitFor(
+    () => {
+      const latestRequest = managerListRequests.at(-1)?.url;
+      assert.equal(
+        latestRequest?.searchParams.get("filter[email]"),
+        "zuheiralhomsi73@gmail.com",
+      );
+      assert.equal(latestRequest?.searchParams.get("page"), "1");
+    },
+    { timeout: 1500 },
+  );
+
+  fireEvent.change(searchField, { target: { value: "phone" } });
+  const phoneInput = await view.findByRole("searchbox", {
+    name: "Search managers by phone",
+  });
+  fireEvent.change(phoneInput, { target: { value: "+963" } });
+  await waitFor(
+    () => {
+      const latestRequest = managerListRequests.at(-1)?.url;
+      assert.equal(latestRequest?.searchParams.get("filter[phone]"), "+963");
+      assert.match(latestRequest?.search ?? "", /%2B963/);
+      assert.equal(latestRequest?.searchParams.get("filter[name]"), null);
+      assert.equal(latestRequest?.searchParams.get("filter[email]"), null);
+    },
+    { timeout: 1500 },
+  );
 
   const managerPanel = view.getByRole("tabpanel", {
     name: "Manager directory and controls",
   });
   fireEvent.click(within(managerPanel).getByRole("button", { name: "2" }));
-  await waitFor(() => assert.ok(view.getByText("Rami Al-Ahmad")));
-  assert.ok(view.getByText("Samer Tabbal"));
-  fireEvent.keyDown(
-    view.getByRole("button", {
-      name: "Open manager details for Rami Al-Ahmad",
-    }),
-    { key: " " },
-  );
-  assert.ok(view.getByRole("dialog", { name: "Manager details" }));
-  assert.ok(view.getByText("No portfolios are available."));
-  fireEvent.click(
-    view.getByRole("button", { name: "Close manager details" }),
-  );
-  assert.equal(
-    view.getByRole("button", { name: "2" }).getAttribute("aria-current"),
-    "page",
-  );
-
-  const managerSearch = view.getByRole("searchbox", {
-    name: "Search managers by name",
+  await waitFor(() => {
+    const latestRequest = managerListRequests.at(-1)?.url;
+    assert.equal(latestRequest?.searchParams.get("filter[phone]"), "+963");
+    assert.equal(latestRequest?.searchParams.get("page"), "2");
   });
-  fireEvent.change(managerSearch, { target: { value: "elCOAch" } });
-  assert.ok(view.getByText("Elcoach"));
-  assert.equal(view.queryByText("Rami Al-Ahmad"), null);
-  assert.equal(
-    view.getByRole("button", { name: "1" }).getAttribute("aria-current"),
-    "page",
+  assert.equal(directoryRequestCount, 1);
+
+  fireEvent.change(phoneInput, { target: { value: "" } });
+  await waitFor(
+    () => {
+      const latestRequest = managerListRequests.at(-1)?.url;
+      assert.equal(latestRequest?.searchParams.get("page"), "1");
+      assert.equal(latestRequest?.searchParams.get("filter[name]"), null);
+      assert.equal(latestRequest?.searchParams.get("filter[email]"), null);
+      assert.equal(latestRequest?.searchParams.get("filter[phone]"), null);
+    },
+    { timeout: 1500 },
   );
-
-  fireEvent.change(managerSearch, {
-    target: { value: "zuheiralhomsi73" },
-  });
-  assert.ok(view.getByText("No managers match your search."));
-  assert.equal(view.queryByText("Elcoach"), null);
-  assert.equal(view.queryByText("Rows per page"), null);
-
-  fireEvent.change(managerSearch, { target: { value: "elCOAch" } });
-  assert.ok(view.getByText("Elcoach"));
-  assert.equal(view.queryByText(/matching managers/i), null);
 
   fireEvent.click(
     view.getByRole("button", {
@@ -263,44 +440,32 @@ test("switches views and supports local manager search, pagination, and modal", 
   );
   const modal = view.getByRole("dialog", { name: "Manager details" });
   assert.equal(document.body.style.overflow, "hidden");
-  assert.ok(within(modal).getByText("Manager Profile"));
-  assert.ok(within(modal).getByText("Portfolios"));
-  assert.ok(within(modal).getByText("zuheiralhomsi73@gmail.com"));
-  assert.ok(within(modal).getByText("6"));
-  assert.ok(within(modal).getAllByText("2").length >= 1);
-  assert.ok(within(modal).getByText("Dar Al feker"));
-  assert.ok(within(modal).getByText("GreenFoods Co."));
-  assert.ok(within(modal).getByText("North Star Events"));
-  assert.ok(within(modal).getByText("Artisan Market House"));
-  assert.ok(within(modal).getByText("Metro Tech Labs"));
-  assert.ok(within(modal).getByText("Summit Retail Group"));
-  assert.ok(
-    within(modal).getAllByText("Lectures & Exhibitions").length >= 1,
-  );
-  assert.ok(within(modal).getByText("+963112223334"));
+  await waitFor(() => assert.ok(within(modal).getByText("Dar Al feker")));
   assert.ok(within(modal).getByText("Booth 2-2C-01"));
-  assert.ok(within(modal).getByText("2C-01"));
-  assert.ok(within(modal).getAllByText("No booths assigned").length >= 1);
-  assert.ok(within(modal).getAllByText("Approved").length >= 1);
-  assert.ok(within(modal).getAllByText("Pending").length >= 1);
-  assert.ok(within(modal).getByText("Rejected"));
+  assert.ok(within(modal).getByText("Awaiting Review"));
+  assert.ok(within(modal).getByText("No booths assigned"));
   assert.equal(within(modal).queryByText("#3"), null);
   assert.equal(within(modal).queryByText("43"), null);
-  assert.equal(within(modal).queryByText("44"), null);
-  assert.equal(within(modal).queryByText("Managed Portfolios"), null);
+  assert.equal(detailsRequestCount, 1);
+
+  fireEvent.click(
+    view.getByRole("button", { name: "Close manager details" }),
+  );
+  fireEvent.click(
+    view.getByRole("button", {
+      name: "Open manager details for Elcoach",
+    }),
+  );
+  await waitFor(() =>
+    assert.ok(
+      within(view.getByRole("dialog", { name: "Manager details" })).getByText(
+        "Dar Al feker",
+      ),
+    ),
+  );
+  assert.equal(detailsRequestCount, 1);
 
   fireEvent.keyDown(document, { key: "Escape" });
   await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
   assert.equal(document.body.style.overflow, "");
-  assert.equal((managerSearch as HTMLInputElement).value, "elCOAch");
-  assert.ok(view.getByText("Elcoach"));
-
-  fireEvent.click(companyTab);
-  await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
-  assert.equal(view.queryByText("Total Managers"), null);
-  assert.equal(view.queryByRole("searchbox", { name: "Search managers by name" }), null);
-  assert.ok(
-    view.getByRole("searchbox", { name: "Search companies by name" }),
-  );
-  assert.equal(companyRequestUrls.length, 1);
 });

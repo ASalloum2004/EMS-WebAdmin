@@ -23,7 +23,10 @@ export function CompanyPage() {
   const { t } = useI18n();
   const [activeView, setActiveView] =
     useState<CompanyDirectoryView>("company");
-  const companiesState = useCompanies(t.company.table.loadError);
+  const companiesState = useCompanies(
+    t.company.table.loadError,
+    activeView === "company",
+  );
   const companyDetails = useCompanyDetails(t.company.details.loadError);
   const managerDirectory = useManagerDirectory(
     t.company.manager.summary.loadError,
@@ -157,7 +160,9 @@ export function CompanyPage() {
               />
             )}
 
-            {!companiesState.error && companiesState.companies.length ? (
+            {!companiesState.isLoading &&
+            !companiesState.error &&
+            companiesState.companies.length ? (
               <TableFooter
                 className="company-page__footer"
                 currentPage={companiesState.currentPage}

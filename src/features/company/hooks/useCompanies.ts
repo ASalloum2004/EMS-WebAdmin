@@ -43,7 +43,7 @@ export function isLatestCompaniesRequest(
   return requestId === latestRequestId;
 }
 
-export function useCompanies(errorFallback: string) {
+export function useCompanies(errorFallback: string, enabled = true) {
   const [companies, setCompanies] = useState<CompanyListItem[]>([]);
   const [pagination, setPagination] =
     useState<CompanyPagination>(initialPagination);
@@ -53,8 +53,10 @@ export function useCompanies(errorFallback: string) {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const requestIdRef = useRef(0);
   const automaticRequestKeyRef = useRef<string | null>(null);
+  const wasEnabledRef = useRef(false);
   const requestParamsRef = useRef<GetCompaniesParams>({});
   const currentPage = pagination.currentPage;
+  const perPage = pagination.perPage;
 
   const resetPagination = useCallback(() => {
     setPagination((currentPagination) => ({
@@ -89,9 +91,10 @@ export function useCompanies(errorFallback: string) {
       businessSector,
       name: debouncedSearch || undefined,
       page: currentPage,
+      perPage,
       status,
     }),
-    [businessSector, currentPage, debouncedSearch, status],
+    [businessSector, currentPage, debouncedSearch, perPage, status],
   );
   requestParamsRef.current = requestParams;
 
@@ -144,6 +147,15 @@ export function useCompanies(errorFallback: string) {
   );
 
   useEffect(() => {
+    if (!enabled) {
+      wasEnabledRef.current = false;
+      automaticRequestKeyRef.current = null;
+      requestIdRef.current += 1;
+      setIsLoading(false);
+      return;
+    }
+
+    wasEnabledRef.current = true;
     const requestKey = getRequestKey(requestParams);
 
     if (automaticRequestKeyRef.current === requestKey) {
@@ -152,7 +164,7 @@ export function useCompanies(errorFallback: string) {
 
     automaticRequestKeyRef.current = requestKey;
     void requestCompanies(requestParams);
-  }, [requestCompanies, requestParams]);
+  }, [enabled, requestCompanies, requestParams]);
 
   const setCurrentPage = useCallback(
     (page: number) => {
@@ -178,7 +190,7 @@ export function useCompanies(errorFallback: string) {
     filters,
     hasActiveFilters,
     hasActiveCriteria,
-    isLoading,
+    isLoading: isLoading || (enabled && !wasEnabledRef.current),
     perPage: pagination.perPage,
     refetch,
     searchValue,

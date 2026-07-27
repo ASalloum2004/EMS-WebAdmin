@@ -84,6 +84,69 @@ export const ar: I18nDictionary = {
       adminProfileAlt: "ملف المسؤول",
     },
   },
+  announcements: {
+    title: "الإعلانات",
+    description: "إنشاء الإعلانات ونشرها وإدارتها لمستخدمي المنصة.",
+    composer: {
+      title: "إنشاء إعلان",
+    },
+    fields: {
+      receiver: "الجمهور المستهدف",
+      title: "العنوان",
+      titlePlaceholder: "أدخل عنوان الإعلان",
+      description: "الوصف",
+      descriptionPlaceholder: "اكتب نص الإعلان",
+      media: "مرفق الوسائط",
+      active: "حالة النشاط",
+      activeHelper: "انشر هذا الإعلان للجمهور المحدد.",
+    },
+    audience: {
+      exhibitors: "العارضون",
+      visitors: "الزوار",
+      all: "جميع المستخدمين",
+    },
+    media: {
+      choose: "اختر وسائط",
+      helper: "أرفق صورة أو ملف PDF.",
+      attached: "مرفق وسائط",
+      previewAlt: "معاينة وسائط الإعلان",
+      remove: "إزالة الوسائط",
+      none: "لا توجد وسائط مرفقة",
+      add: "إضافة وسائط",
+      replace: "استبدال الوسائط",
+    },
+    actions: {
+      create: "إنشاء إعلان",
+      save: "حفظ التغييرات",
+      delete: "حذف",
+    },
+    search: {
+      placeholder: "ابحث في الإعلانات حسب العنوان...",
+      ariaLabel: "البحث في الإعلانات حسب العنوان",
+    },
+    list: {
+      title: "الإعلانات",
+      panelAriaLabel: "قائمة الإعلانات والبحث",
+      openEdit: "تعديل الإعلان",
+      empty: "لم يتم العثور على إعلانات",
+      emptyDescription: "جرّب عنوانًا مختلفًا في حقل البحث.",
+    },
+    status: {
+      active: "نشط",
+      inactive: "غير نشط",
+    },
+    edit: {
+      title: "تعديل الإعلان",
+      description: "حدّث تفاصيل الإعلان وحالة النشر.",
+      closeAriaLabel: "إغلاق نافذة تعديل الإعلان",
+    },
+    deleteDialog: {
+      title: "حذف الإعلان؟",
+      message:
+        'هل أنت متأكد من رغبتك في حذف "{{title}}"؟ لا يمكن التراجع عن هذا الإجراء.',
+      confirm: "حذف الإعلان",
+    },
+  },
   company: {
     title: "دليل الشركات والمديرين",
     description: "إدارة ملفات الشركات وتفاصيل الأعمال ومعلومات الدليل.",

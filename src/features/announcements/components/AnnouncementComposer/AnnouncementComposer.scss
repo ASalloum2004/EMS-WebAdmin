@@ -1,0 +1,284 @@
+.announcement-composer {
+  --ems-card-min-height: 0;
+  --ems-card-padding: 26px;
+  --ems-card-header-margin: 24px;
+}
+
+.announcement-composer__icon {
+  width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+  border-radius: 12px;
+}
+
+.announcement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.announcement-form__audience {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.announcement-form__audience legend,
+.announcement-form__label,
+.announcement-form__field > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.announcement-form__audience-options {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: 10px;
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.announcement-form__audience-options label {
+  position: relative;
+  min-width: 0;
+}
+
+.announcement-form__audience-options input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.announcement-form__audience-options span {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 9px;
+  border-radius: var(--ems-radius-sm);
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.announcement-form__audience-options input:checked + span {
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-card-background, var(--ems-color-white))
+  );
+  color: var(--ems-color-primary-dark);
+  box-shadow: var(--ems-shadow-button);
+}
+
+.announcement-form__audience-options input:focus-visible + span {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 1px;
+}
+
+.announcement-form__field {
+  min-width: 0;
+}
+
+.announcement-form__field input,
+.announcement-form__field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 13px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(
+    --ems-color-input-background,
+    var(--ems-color-surface-strong, var(--ems-color-surface))
+  );
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+  outline: none;
+}
+
+.announcement-form__field input {
+  height: 44px;
+}
+
+.announcement-form__field textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.announcement-form__field input::placeholder,
+.announcement-form__field textarea::placeholder {
+  color: var(--ems-color-muted-light);
+}
+
+.announcement-form__field input:focus,
+.announcement-form__field textarea:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+}
+
+.announcement-form__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.announcement-form__upload,
+.announcement-form__media-preview {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed var(--ems-color-border);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-primary);
+}
+
+.announcement-form__upload {
+  cursor: pointer;
+}
+
+.announcement-form__upload > span,
+.announcement-form__status > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.announcement-form__upload strong,
+.announcement-form__status strong {
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.announcement-form__upload small,
+.announcement-form__status small {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+}
+
+.announcement-form__media-preview {
+  border-style: solid;
+}
+
+.announcement-form__media-preview img {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: var(--ems-radius-sm);
+  object-fit: cover;
+}
+
+.announcement-form__media-preview > span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announcement-form__media-preview button {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-danger);
+  cursor: pointer;
+}
+
+.announcement-form__status {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+}
+
+.announcement-form__status input {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  accent-color: var(--ems-color-primary);
+}
+
+.announcement-form__submit {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border: 1px solid var(--ems-color-primary);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.announcement-form__submit:focus-visible,
+.announcement-form__media-preview button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.announcement-form__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (max-width: 520px) {
+  .announcement-composer {
+    --ems-card-padding: 20px;
+  }
+
+  .announcement-form__audience-options {
+    grid-template-columns: 1fr;
+  }
+}
+

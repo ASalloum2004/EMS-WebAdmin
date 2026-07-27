@@ -83,6 +83,70 @@ export const en = {
       adminProfileAlt: "Admin profile",
     },
   },
+  announcements: {
+    title: "Announcements",
+    description:
+      "Create, publish, and manage announcements for platform users.",
+    composer: {
+      title: "Compose Announcement",
+    },
+    fields: {
+      receiver: "Target Audience",
+      title: "Title",
+      titlePlaceholder: "Enter an announcement title",
+      description: "Description",
+      descriptionPlaceholder: "Write the announcement message",
+      media: "Media Attachment",
+      active: "Active status",
+      activeHelper: "Publish this announcement to the selected audience.",
+    },
+    audience: {
+      exhibitors: "Exhibitors",
+      visitors: "Visitors",
+      all: "All Users",
+    },
+    media: {
+      choose: "Choose media",
+      helper: "Attach an image or PDF file.",
+      attached: "Media attachment",
+      previewAlt: "Announcement media preview",
+      remove: "Remove media",
+      none: "No media attached",
+      add: "Add media",
+      replace: "Replace media",
+    },
+    actions: {
+      create: "Create Announcement",
+      save: "Save Changes",
+      delete: "Delete",
+    },
+    search: {
+      placeholder: "Search announcements by title...",
+      ariaLabel: "Search announcements by title",
+    },
+    list: {
+      title: "Announcements",
+      panelAriaLabel: "Announcement list and search",
+      openEdit: "Edit announcement",
+      empty: "No announcements found",
+      emptyDescription: "Try a different title in the search field.",
+    },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+    },
+    edit: {
+      title: "Edit Announcement",
+      description: "Update the announcement details and publishing status.",
+      closeAriaLabel: "Close Edit Announcement",
+    },
+    deleteDialog: {
+      title: "Delete Announcement?",
+      message:
+        'Are you sure you want to delete "{{title}}"? This action cannot be undone.',
+      confirm: "Delete Announcement",
+    },
+  },
   company: {
     title: "Companies & Managers Directory",
     description:

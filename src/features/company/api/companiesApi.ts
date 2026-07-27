@@ -68,6 +68,7 @@ function normalizeCompanyListItem(
 
 export function buildCompaniesPath(params: GetCompaniesParams = {}) {
   const page = getPositiveInteger(params.page) ?? 1;
+  const perPage = getPositiveInteger(params.perPage);
   const queryParams = new URLSearchParams();
   const name = params.name?.trim();
   const businessSector = params.businessSector?.trim();
@@ -88,6 +89,10 @@ export function buildCompaniesPath(params: GetCompaniesParams = {}) {
   }
 
   queryParams.set("page", String(page));
+
+  if (perPage) {
+    queryParams.set("per_page", String(perPage));
+  }
 
   return `${COMPANIES_PATH}?${queryParams.toString()}`;
 }
@@ -111,6 +116,7 @@ export function normalizeCompaniesResponse(
     1;
   const perPage =
     getPositiveInteger(response.data.per_page) ??
+    getPositiveInteger(requestedParams.perPage) ??
     DEFAULT_COMPANIES_PER_PAGE;
   const totalItems =
     getNonNegativeInteger(response.data.total) ?? companies.length;

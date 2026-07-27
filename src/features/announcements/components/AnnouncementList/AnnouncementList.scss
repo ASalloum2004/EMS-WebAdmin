@@ -1,0 +1,204 @@
+.announcement-list-card {
+  --ems-card-min-height: 0;
+  --ems-card-padding: 24px;
+  --ems-card-header-margin: 18px;
+}
+
+.announcement-list-card__footer {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--ems-color-border-soft);
+}
+
+.announcement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.announcement-list__row {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 11px 12px;
+  padding: 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-data-row-background);
+  color: var(--ems-color-text);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 120ms ease;
+}
+
+.announcement-list__row--without-media {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.announcement-list__row:hover {
+  border-color: var(--ems-color-border);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.announcement-list__row:active {
+  transform: scale(0.995);
+}
+
+.announcement-list__row:focus-visible {
+  border-color: var(--ems-color-primary);
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.announcement-list__media {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 11px;
+  background-color: var(--ems-color-success-surface);
+  color: var(--ems-color-primary-dark);
+}
+
+.announcement-list__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.announcement-list__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.announcement-list__copy strong {
+  overflow-wrap: anywhere;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.announcement-list__copy > span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  color: var(--ems-color-data-supporting-text);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.announcement-list__badges {
+  min-width: 0;
+  display: flex;
+  grid-column: 2;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.announcement-list__row--without-media .announcement-list__badges {
+  grid-column: 1;
+}
+
+.announcement-list__badge {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 9px;
+  border-radius: 9999px;
+  font-family: var(--ems-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.announcement-list__badge--receiver {
+  background-color: var(--ems-color-success-surface);
+  color: var(--ems-color-primary-dark);
+}
+
+.announcement-list__badge--active {
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.announcement-list__badge--inactive {
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.announcement-list__empty {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  padding: 28px;
+  color: var(--ems-color-muted);
+  text-align: center;
+}
+
+.announcement-list__empty-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background-color: var(--ems-color-success-surface);
+  color: var(--ems-color-primary);
+}
+
+.announcement-list__empty strong,
+.announcement-list__empty span {
+  font-family: var(--ems-font-body);
+}
+
+.announcement-list__empty strong {
+  color: var(--ems-color-heading);
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.announcement-list__empty > span:last-child {
+  max-width: 280px;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+@media (max-width: 520px) {
+  .announcement-list-card {
+    --ems-card-padding: 18px;
+  }
+
+  .announcement-list__row {
+    grid-template-columns: 38px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .announcement-list__row--without-media {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .announcement-list__media {
+    width: 38px;
+    height: 38px;
+  }
+}

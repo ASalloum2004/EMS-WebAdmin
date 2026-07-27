@@ -232,6 +232,7 @@ export type GetCompaniesParams = {
   businessSector?: string;
   name?: string;
   page?: number;
+  perPage?: number;
   status?: CompanyApiStatus;
 };
 

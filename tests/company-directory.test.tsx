@@ -161,9 +161,10 @@ test("builds exact combined company parameters and omits empty filters", () => {
       businessSector: " Technology ",
       name: " Tech ",
       page: 2,
+      perPage: 15,
       status: "approved",
     }),
-    "companies?filter%5Bname%5D=Tech&filter%5Bbusiness_sector%5D=Technology&filter%5Bstatus%5D=approved&page=2",
+    "companies?filter%5Bname%5D=Tech&filter%5Bbusiness_sector%5D=Technology&filter%5Bstatus%5D=approved&page=2&per_page=15",
   );
   assert.equal(
     buildCompaniesPath({ businessSector: " ", name: " " }),
@@ -348,7 +349,7 @@ test("View by Company uses server controls and opens lazy cached details in a mo
           url.searchParams.get("filter[business_sector]") === "Technology" &&
           url.searchParams.get("filter[status]") === "pending" &&
           url.searchParams.get("page") === "1" &&
-          url.searchParams.get("per_page") === null,
+          url.searchParams.get("per_page") === "15",
       ),
     ),
   );
@@ -374,7 +375,7 @@ test("View by Company uses server controls and opens lazy cached details in a mo
           url.searchParams.get("filter[business_sector]") === "Technology" &&
           url.searchParams.get("filter[status]") === "pending" &&
           url.searchParams.get("page") === "2" &&
-          url.searchParams.get("per_page") === null,
+          url.searchParams.get("per_page") === "15",
       ),
     ),
   );
@@ -390,7 +391,7 @@ test("View by Company uses server controls and opens lazy cached details in a mo
           url.searchParams.get("filter[business_sector]") === null &&
           url.searchParams.get("filter[status]") === null &&
           url.searchParams.get("page") === "1" &&
-          url.searchParams.get("per_page") === null,
+          url.searchParams.get("per_page") === "15",
       ),
     ),
   );
@@ -411,7 +412,7 @@ test("View by Company uses server controls and opens lazy cached details in a mo
             url.searchParams.get("filter[business_sector]") === null &&
             url.searchParams.get("filter[status]") === null &&
             url.searchParams.get("page") === "1" &&
-            url.searchParams.get("per_page") === null,
+            url.searchParams.get("per_page") === "15",
         ),
       ),
     { timeout: 1200 },
@@ -454,4 +455,177 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   fireEvent.keyDown(document, { key: "Escape" });
   await waitFor(() => assert.equal(view.queryByRole("dialog"), null));
 
+});
+
+test("View by Company refetches once per activation with its current query and ignores stale responses", async () => {
+  const companyRequests: URL[] = [];
+  const pendingCompanyRequests: Array<{
+    resolve: (response: Response) => void;
+    url: URL;
+  }> = [];
+  let deferCompanyRequests = true;
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+
+    if (url.pathname.endsWith("/profile")) {
+      return profileResponse();
+    }
+
+    if (url.pathname.endsWith("/managers/directory")) {
+      return jsonResponse({
+        status: true,
+        message: "statistics retrieved successfully",
+        data: {
+          total_companies: 0,
+          total_booths: 0,
+          total_managers: 0,
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/managers")) {
+      return jsonResponse({
+        status: true,
+        message: "managers retrieved successfully",
+        data: {
+          data: [],
+          current_page: 1,
+          per_page: 15,
+          total: 0,
+          last_page: 1,
+        },
+      });
+    }
+
+    if (url.pathname.endsWith("/companies")) {
+      companyRequests.push(url);
+
+      if (deferCompanyRequests) {
+        return new Promise<Response>((resolve) => {
+          pendingCompanyRequests.push({ resolve, url });
+        });
+      }
+
+      return jsonResponse(
+        createListResponse(
+          companyListItems,
+          Number(url.searchParams.get("page") ?? "1"),
+          15,
+        ),
+      );
+    }
+
+    throw new Error(`Unexpected request: ${url}`);
+  };
+
+  const view = render(
+    <I18nProvider>
+      <CompanyPage />
+    </I18nProvider>,
+  );
+
+  assert.ok(view.container.querySelector(".company-list-skeleton"));
+  await waitFor(() => assert.equal(companyRequests.length, 1));
+  assert.equal(pendingCompanyRequests.length, 1);
+  assert.equal(companyRequests[0].searchParams.get("page"), "1");
+  assert.equal(companyRequests[0].searchParams.get("per_page"), "15");
+
+  pendingCompanyRequests.shift()?.resolve(
+    jsonResponse(createListResponse()),
+  );
+  await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
+
+  deferCompanyRequests = false;
+  const search = view.getByRole("searchbox", {
+    name: "Search companies by name",
+  });
+  fireEvent.change(search, { target: { value: "Tech" } });
+  await waitFor(
+    () =>
+      assert.equal(
+        companyRequests.at(-1)?.searchParams.get("filter[name]"),
+        "Tech",
+      ),
+    { timeout: 1200 },
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Open company filters" }));
+  const filterPanel = view.getByRole("group", { name: "Company filters" });
+  fireEvent.change(within(filterPanel).getByLabelText("Business Sector"), {
+    target: { value: "Technology" },
+  });
+  fireEvent.change(within(filterPanel).getByLabelText("Status"), {
+    target: { value: "pending" },
+  });
+  fireEvent.click(within(filterPanel).getByRole("button", { name: "Apply" }));
+  await waitFor(() => {
+    const latestRequest = companyRequests.at(-1);
+    assert.equal(
+      latestRequest?.searchParams.get("filter[business_sector]"),
+      "Technology",
+    );
+    assert.equal(latestRequest?.searchParams.get("filter[status]"), "pending");
+  });
+
+  const footer = view.container.querySelector<HTMLElement>(
+    ".company-page__footer",
+  );
+  assert.ok(footer);
+  fireEvent.click(within(footer).getByRole("button", { name: "2" }));
+  await waitFor(() =>
+    assert.equal(companyRequests.at(-1)?.searchParams.get("page"), "2"),
+  );
+
+  fireEvent.click(view.getByRole("tab", { name: "View by Manager" }));
+  await waitFor(() =>
+    assert.ok(
+      view.getByRole("tabpanel", {
+        name: "Manager directory and controls",
+      }),
+    ),
+  );
+
+  deferCompanyRequests = true;
+  const requestsBeforeReactivation = companyRequests.length;
+  fireEvent.click(view.getByRole("tab", { name: "View by Company" }));
+  assert.ok(view.container.querySelector(".company-list-skeleton"));
+  assert.equal(view.container.querySelector(".company-page__footer"), null);
+  await waitFor(() =>
+    assert.equal(companyRequests.length, requestsBeforeReactivation + 1),
+  );
+  const firstReactivation = pendingCompanyRequests.at(-1);
+  assert.ok(firstReactivation);
+  assert.equal(firstReactivation.url.searchParams.get("filter[name]"), "Tech");
+  assert.equal(
+    firstReactivation.url.searchParams.get("filter[business_sector]"),
+    "Technology",
+  );
+  assert.equal(
+    firstReactivation.url.searchParams.get("filter[status]"),
+    "pending",
+  );
+  assert.equal(firstReactivation.url.searchParams.get("page"), "2");
+  assert.equal(firstReactivation.url.searchParams.get("per_page"), "15");
+
+  fireEvent.click(view.getByRole("tab", { name: "View by Manager" }));
+  fireEvent.click(view.getByRole("tab", { name: "View by Company" }));
+  assert.ok(view.container.querySelector(".company-list-skeleton"));
+  await waitFor(() =>
+    assert.equal(companyRequests.length, requestsBeforeReactivation + 2),
+  );
+  const secondReactivation = pendingCompanyRequests.at(-1);
+  assert.ok(secondReactivation);
+
+  secondReactivation.resolve(
+    jsonResponse(createListResponse([companyListItems[1]], 2, 15)),
+  );
+  await waitFor(() => assert.ok(view.getByText("Metro Tech Labs")));
+
+  firstReactivation.resolve(
+    jsonResponse(createListResponse([companyListItems[0]], 2, 15)),
+  );
+  await new Promise((resolve) => window.setTimeout(resolve, 0));
+  assert.ok(view.getByText("Metro Tech Labs"));
+  assert.equal(view.queryByText("Dar Al feker"), null);
 });

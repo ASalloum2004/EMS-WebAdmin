@@ -1,4 +1,5 @@
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
+import { AnnouncementsPage } from "../features/announcements";
 import { CompanyPage } from "../features/company";
 import { ManagementPage } from "../features/management";
 import { OrderPage } from "../features/order";
@@ -49,6 +50,14 @@ export function AppRouter() {
     return (
       <AuthGuard>
         <VisitorPage />
+      </AuthGuard>
+    );
+  }
+
+  if (path === "/announcements") {
+    return (
+      <AuthGuard>
+        <AnnouncementsPage />
       </AuthGuard>
     );
   }

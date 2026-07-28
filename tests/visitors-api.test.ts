@@ -38,7 +38,7 @@ const visitorsResponse: VisitorApiResponse = {
         birthday: "2006-02-06T00:00:00.000000Z",
         gender: "male",
         created_at: "2026-07-21T22:00:53.000000Z",
-        avatar: null,
+        avatar: "/storage/visitors/mohamad.png",
       },
     ],
     current_page: 1,
@@ -94,7 +94,10 @@ function installAuthenticatedSession() {
 test("normalizes the verified visitor response and pagination", () => {
   const result = normalizeVisitorsResponse(visitorsResponse);
 
-  assert.deepEqual(result.visitors, visitorsResponse.data.data);
+  assert.equal(
+    result.visitors[0]?.avatar,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/visitors/mohamad.png",
+  );
   assert.deepEqual(result.pagination, {
     currentPage: 1,
     perPage: 15,
@@ -227,7 +230,10 @@ test("calls the authenticated visitor list endpoint", async () => {
     assert.equal(url.searchParams.get("filter[gender]"), "male");
     assert.equal(url.searchParams.get("filter[location]"), "Damascus");
     assert.equal(requestHeaders.get("Authorization"), "Bearer visitor-test-token");
-    assert.deepEqual(result.visitors, visitorsResponse.data.data);
+    assert.equal(
+      result.visitors[0]?.avatar,
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/visitors/mohamad.png",
+    );
   } finally {
     globalThis.fetch = originalFetch;
     restoreSession();

@@ -2,11 +2,15 @@ import { API_BASE_URL } from "./apiClient";
 
 const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i;
 const URL_SCHEME_PATTERN = /^[a-z][a-z\d+\-.]*:/i;
-const SAFE_INLINE_MEDIA_PATTERN =
-  /^data:(?:image\/[a-z0-9.+-]+|application\/pdf);base64,/i;
+const SAFE_INLINE_IMAGE_PATTERN = /^data:image\/[a-z0-9.+-]+;base64,/i;
+const API_MEDIA_REVISION_PARAM = "_ems_media_revision";
 
 interface ResolveApiMediaUrlOptions {
   allowInlineMedia?: boolean;
+}
+
+function getApiOrigin() {
+  return new URL(API_BASE_URL).origin;
 }
 
 export function resolveApiMediaUrl(
@@ -21,7 +25,7 @@ export function resolveApiMediaUrl(
 
   if (
     options.allowInlineMedia &&
-    SAFE_INLINE_MEDIA_PATTERN.test(trimmedMedia)
+    SAFE_INLINE_IMAGE_PATTERN.test(trimmedMedia)
   ) {
     return trimmedMedia;
   }
@@ -41,9 +45,52 @@ export function resolveApiMediaUrl(
   try {
     return new URL(
       trimmedMedia,
-      `${new URL(API_BASE_URL).origin}/`,
+      `${getApiOrigin()}/`,
     ).toString();
   } catch {
     return null;
+  }
+}
+
+export function removeApiMediaRevision(
+  media: string | null | undefined,
+) {
+  const resolvedMedia = resolveApiMediaUrl(media);
+
+  if (!resolvedMedia) {
+    return null;
+  }
+
+  try {
+    const url = new URL(resolvedMedia);
+    url.searchParams.delete(API_MEDIA_REVISION_PARAM);
+    return url.toString();
+  } catch {
+    return resolvedMedia;
+  }
+}
+
+export function addApiMediaRevision(
+  media: string | null | undefined,
+  revision: string,
+) {
+  const resolvedMedia = resolveApiMediaUrl(media);
+  const trimmedRevision = revision.trim();
+
+  if (!resolvedMedia || !trimmedRevision) {
+    return resolvedMedia;
+  }
+
+  try {
+    const url = new URL(resolvedMedia);
+
+    if (url.origin !== getApiOrigin()) {
+      return resolvedMedia;
+    }
+
+    url.searchParams.set(API_MEDIA_REVISION_PARAM, trimmedRevision);
+    return url.toString();
+  } catch {
+    return resolvedMedia;
   }
 }

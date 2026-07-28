@@ -1,4 +1,8 @@
-import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   GetManagersParams,
   GetManagersResult,
@@ -56,7 +60,7 @@ function normalizeManager(manager: ManagerListApiData): ManagerListItem {
     internalId,
     name: getTrimmedString(manager.name) ?? "",
     email: getTrimmedString(manager.email),
-    avatar: getTrimmedString(manager.avatar),
+    avatar: resolveApiMediaUrl(manager.avatar),
     companiesCount: getNonNegativeInteger(manager.companies_count) ?? null,
     boothsCount: getNonNegativeInteger(manager.booths_count) ?? null,
   };

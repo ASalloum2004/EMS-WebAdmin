@@ -64,6 +64,8 @@ export function mapAnnouncementApiDto(
     description: apiAnnouncement.description,
     receiver: normalizeReceiver(apiAnnouncement.receiver),
     isDraft: apiAnnouncement.is_active,
-    media: resolveApiMediaUrl(apiAnnouncement.media),
+    media: resolveApiMediaUrl(apiAnnouncement.media, {
+      allowInlineMedia: true,
+    }),
   };
 }

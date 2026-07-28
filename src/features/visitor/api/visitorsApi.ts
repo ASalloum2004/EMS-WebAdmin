@@ -1,7 +1,12 @@
-import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   GetVisitorsParams,
   GetVisitorsResult,
+  VisitorApiData,
   VisitorApiResponse,
 } from "../types";
 
@@ -30,6 +35,13 @@ function getNonNegativeInteger(value: unknown) {
   }
 
   return Math.trunc(value);
+}
+
+function normalizeVisitor(visitor: VisitorApiData): VisitorApiData {
+  return {
+    ...visitor,
+    avatar: resolveApiMediaUrl(visitor.avatar),
+  };
 }
 
 export function buildVisitorsPath(params: GetVisitorsParams = {}) {
@@ -75,7 +87,7 @@ export function normalizeVisitorsResponse(
     throw new Error("Unexpected visitors response format.");
   }
 
-  const visitors = response.data.data;
+  const visitors = response.data.data.map(normalizeVisitor);
   const currentPage =
     getPositiveInteger(response.data.current_page) ??
     getPositiveInteger(requestedParams.page) ??

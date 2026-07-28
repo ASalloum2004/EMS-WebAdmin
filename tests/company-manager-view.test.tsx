@@ -62,7 +62,7 @@ const managersResponse: ManagersApiResponse = {
         id: 3,
         name: "Elcoach",
         email: "zuheiralhomsi73@gmail.com",
-        avatar: null,
+        avatar: "/storage/managers/elcoach-list.png",
         companies_count: 6,
         booths_count: 2,
       },
@@ -91,7 +91,7 @@ const managerDetailsResponse: ManagerDetailsApiResponse = {
     id: 3,
     name: "Elcoach",
     email: "zuheiralhomsi73@gmail.com",
-    avatar: null,
+    avatar: "storage/managers/elcoach-details.png",
     portfolios: [
       {
         id: 1,
@@ -99,7 +99,7 @@ const managerDetailsResponse: ManagerDetailsApiResponse = {
         business_sector: "Lectures & Exhibitions",
         phone: "+963112223334",
         status: "approved",
-        logo: null,
+        logo: "/storage/companies/dar-portfolio.png",
         booths: [
           {
             id: 43,
@@ -115,7 +115,7 @@ const managerDetailsResponse: ManagerDetailsApiResponse = {
         business_sector: "Event Management",
         phone: "+963115556667",
         status: "awaiting_review",
-        logo: null,
+        logo: "file:///unsafe-logo.png",
         booths: [],
       },
     ],
@@ -203,7 +203,8 @@ test("builds exact manager search paths and normalizes API IDs out of visible de
     internalId: 3,
     name: "Elcoach",
     email: "zuheiralhomsi73@gmail.com",
-    avatar: null,
+    avatar:
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/elcoach-list.png",
     companiesCount: 6,
     boothsCount: 2,
   });
@@ -219,6 +220,15 @@ test("builds exact manager search paths and normalizes API IDs out of visible de
   );
 
   const details = normalizeManagerDetailsResponse(managerDetailsResponse);
+  assert.equal(
+    details.avatar,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/elcoach-details.png",
+  );
+  assert.equal(
+    details.portfolios[0]?.logo,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-portfolio.png",
+  );
+  assert.equal(details.portfolios[1]?.logo, null);
   assert.equal(Object.hasOwn(details, "id"), false);
   assert.equal(Object.hasOwn(details.portfolios[0], "id"), false);
   assert.equal(Object.hasOwn(details.portfolios[0].booths[0], "id"), false);
@@ -311,6 +321,15 @@ test("loads manager list, directory, searches server-side, paginates, and caches
         name: "Open manager details for Elcoach",
       }),
     ),
+  );
+  const managerRow = view.getByRole("button", {
+    name: "Open manager details for Elcoach",
+  });
+  const managerAvatar = managerRow.querySelector("img");
+  assert.ok(managerAvatar);
+  assert.equal(
+    managerAvatar.src,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/elcoach-list.png",
   );
   assert.equal(directoryRequestCount, 1);
   assert.equal(managerListRequests.length, 1);
@@ -441,6 +460,15 @@ test("loads manager list, directory, searches server-side, paginates, and caches
   const modal = view.getByRole("dialog", { name: "Manager details" });
   assert.equal(document.body.style.overflow, "hidden");
   await waitFor(() => assert.ok(within(modal).getByText("Dar Al feker")));
+  const modalImages = modal.querySelectorAll("img");
+  assert.equal(modalImages.length, 2);
+  assert.deepEqual(
+    Array.from(modalImages, (image) => image.src).sort(),
+    [
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/elcoach-details.png",
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-portfolio.png",
+    ].sort(),
+  );
   assert.ok(within(modal).getByText("Booth 2-2C-01"));
   assert.ok(within(modal).getByText("Awaiting Review"));
   assert.ok(within(modal).getByText("No booths assigned"));

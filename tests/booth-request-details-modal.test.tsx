@@ -12,6 +12,7 @@ import {
 } from "@testing-library/react";
 import { DataTable, type DataTableColumn } from "../src/components/DataTable/DataTable.js";
 import { BoothRequestDetailsModal } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsModal.js";
+import { CompanyAvatar } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsSideColumn.js";
 import { BoothRequestDetailsActions } from "../src/features/order/components/BoothRequestDetailsModal/BoothRequestDetailsActions.js";
 import { ApproveBoothRequestConfirmModal } from "../src/features/order/components/ApproveBoothRequestConfirmModal/ApproveBoothRequestConfirmModal.js";
 import { RejectBoothRequestConfirmModal } from "../src/features/order/components/RejectBoothRequestConfirmModal/RejectBoothRequestConfirmModal.js";
@@ -719,6 +720,35 @@ test("normalizes nullable API display fields to stable strings", () => {
   assert.equal(details.company.social_links.linkedin, "");
   assert.equal(details.company.social_links.website, "");
   assert.equal(details.company.status, "");
+});
+
+test("normalizes relative booth company logos through the shared media resolver", () => {
+  const response: BoothRequestDetailsResponse = {
+    status: true,
+    message: "booth request retrieved successfully",
+    data: {
+      ...firstDetails,
+      company: {
+        ...firstDetails.company,
+        logo: "/storage/companies/booth-company.png",
+      },
+    },
+  };
+  const details = normalizeBoothRequestDetailsResponse(response);
+
+  assert.equal(
+    details.company.logo,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/booth-company.png",
+  );
+
+  const view = render(<CompanyAvatar company={details.company} />);
+  const image = view.container.querySelector("img");
+  assert.ok(image);
+  assert.equal(image.src, details.company.logo);
+
+  fireEvent.error(image);
+  assert.equal(view.container.querySelector("img"), null);
+  assert.ok(view.getByText("DA"));
 });
 
 test("missing additional notes use the standard empty value", async () => {

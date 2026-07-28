@@ -1,4 +1,8 @@
-import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   CompaniesApiResponse,
   CompanyListApiData,
@@ -62,7 +66,7 @@ function normalizeCompanyListItem(
     managersCount: getCompanyCount(company.managers_count),
     boothsCount: getCompanyCount(company.booths_count),
     status: getTrimmedString(company.status),
-    logo: getTrimmedString(company.logo),
+    logo: resolveApiMediaUrl(company.logo),
   };
 }
 

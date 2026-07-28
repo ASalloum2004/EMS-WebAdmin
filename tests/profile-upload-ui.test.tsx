@@ -214,6 +214,104 @@ test("successful avatar upload updates shared UI and survives a remount", async 
   });
 });
 
+test("same-URL avatar replacement keeps the preview until revised server media loads", async () => {
+  const persistedAvatar = "/storage/avatars/reused.png";
+  const revokedUrls: string[] = [];
+  const preloadedUrls: string[] = [];
+  let finishPreload: (() => void) | undefined;
+
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    value: () => "blob:same-url-preview",
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: (url: string) => revokedUrls.push(url),
+  });
+  class ControlledImage {
+    onerror: (() => void) | null = null;
+    onload: (() => void) | null = null;
+
+    set src(value: string) {
+      preloadedUrls.push(value);
+      finishPreload = () => this.onload?.();
+    }
+  }
+  Object.defineProperty(globalThis, "Image", {
+    configurable: true,
+    value: ControlledImage,
+  });
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(String(input));
+    const method = (init?.method ?? "GET").toUpperCase();
+
+    if (url.pathname.endsWith("/profile") && method === "GET") {
+      return jsonResponse(profileResponse(persistedAvatar));
+    }
+
+    if (url.pathname.endsWith("/profile") && method === "POST") {
+      return jsonResponse(profileResponse(persistedAvatar));
+    }
+
+    throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+  };
+
+  const view = renderProfilePage();
+  const fileInput = await waitFor(() => {
+    const input = view.container.querySelector<HTMLInputElement>(
+      ".profile-identity-card__avatar-input",
+    );
+    assert.ok(input);
+    return input;
+  });
+
+  fireEvent.change(fileInput, {
+    target: {
+      files: [new File(["replacement"], "replacement.png", {
+        type: "image/png",
+      })],
+    },
+  });
+
+  await waitFor(() => assert.equal(preloadedUrls.length, 1));
+  const revisedUrl = preloadedUrls[0];
+  assert.ok(revisedUrl);
+  const parsedRevisedUrl = new URL(revisedUrl);
+  assert.equal(parsedRevisedUrl.pathname, "/storage/avatars/reused.png");
+  assert.ok(parsedRevisedUrl.searchParams.get("_ems_media_revision"));
+  assert.ok(
+    view.container.querySelector(
+      '.profile-identity-card__avatar img[src="blob:same-url-preview"]',
+    ),
+  );
+  assert.equal(
+    view.container.querySelectorAll(`.admin-appbar img[src="${revisedUrl}"]`)
+      .length,
+    1,
+  );
+  assert.deepEqual(revokedUrls, []);
+
+  await act(async () => finishPreload?.());
+  await waitFor(() => {
+    assert.equal(
+      view.container.querySelectorAll(`img[src="${revisedUrl}"]`).length,
+      2,
+    );
+  });
+  assert.deepEqual(revokedUrls, ["blob:same-url-preview"]);
+
+  view.unmount();
+  const refreshedView = renderProfilePage();
+  await waitFor(() => {
+    assert.equal(
+      refreshedView.container.querySelectorAll(`img[src="${revisedUrl}"]`)
+        .length,
+      2,
+    );
+  });
+});
+
 test("invalid files and backend 422 errors keep the previous profile avatar", async () => {
   const oldAvatar =
     "https://violations-salt-hybrid-springer.trycloudflare.com/storage/avatars/old.png";

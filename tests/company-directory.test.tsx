@@ -37,7 +37,7 @@ const companyListItems: CompaniesApiResponse["data"]["data"] = [
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
     status: "approved",
-    logo: null,
+    logo: "/storage/companies/dar-list.png",
     managers_count: 2,
     booths_count: 2,
   },
@@ -47,7 +47,7 @@ const companyListItems: CompaniesApiResponse["data"]["data"] = [
     business_sector: "Technology",
     phone: "+963117778889",
     status: "pending",
-    logo: null,
+    logo: "javascript:alert(1)",
     managers_count: 2,
     booths_count: 0,
   },
@@ -62,13 +62,13 @@ const detailResponse: CompanyDetailsApiResponse = {
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
     status: "approved",
-    logo: null,
+    logo: "storage/companies/dar-details.png",
     managers: [
       {
         id: 12,
         name: "Directory Manager",
         email: "manager@example.com",
-        avatar: null,
+        avatar: "/storage/managers/directory-manager.png",
       },
     ],
     booths: [
@@ -187,7 +187,8 @@ test("normalizes verified list counts while keeping relationship IDs internal", 
     managersCount: 2,
     boothsCount: 2,
     status: "approved",
-    logo: null,
+    logo:
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-list.png",
   });
   assert.equal(Object.hasOwn(company, "managers_count"), false);
   assert.equal(Object.hasOwn(company, "booths_count"), false);
@@ -203,7 +204,8 @@ test("normalizes verified list counts while keeping relationship IDs internal", 
     {
       name: "Directory Manager",
       email: "manager@example.com",
-      avatar: null,
+      avatar:
+        "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/directory-manager.png",
     },
   ]);
   assert.deepEqual(details.booths, [
@@ -212,6 +214,10 @@ test("normalizes verified list counts while keeping relationship IDs internal", 
   assert.equal(Object.hasOwn(details.managers[0], "id"), false);
   assert.equal(Object.hasOwn(details.booths[0], "id"), false);
   assert.equal(details.status, "approved");
+  assert.equal(
+    details.logo,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-details.png",
+  );
   assert.equal(getCompanyStatusVariant("approved"), "approved");
   assert.equal(getCompanyStatusVariant("PENDING"), "not-approved");
   assert.equal(getCompanyStatusVariant("rejected"), "not-approved");
@@ -304,6 +310,14 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   const firstCompanyRow = view.getByRole("button", {
     name: "Open company details for Dar Al feker",
   });
+  const companyLogo = firstCompanyRow.querySelector("img");
+  assert.ok(companyLogo);
+  assert.equal(
+    companyLogo.src,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-list.png",
+  );
+  fireEvent.error(companyLogo);
+  assert.ok(within(firstCompanyRow).getByText("DA"));
   assert.equal(within(firstCompanyRow).getByText("Managers").textContent, "Managers");
   assert.equal(within(firstCompanyRow).getByText("Booths").textContent, "Booths");
   assert.equal(within(firstCompanyRow).getAllByText("2").length, 2);
@@ -428,6 +442,18 @@ test("View by Company uses server controls and opens lazy cached details in a mo
   assert.equal(view.container.querySelector(".data-table__expanded"), null);
   await waitFor(() => assert.equal(detailRequestCount, 1));
   await waitFor(() => assert.ok(view.getByText("Directory Manager")));
+  const companyDetailsDialog = view.getByRole("dialog", {
+    name: "Company details",
+  });
+  const detailImages = companyDetailsDialog.querySelectorAll("img");
+  assert.equal(detailImages.length, 2);
+  assert.deepEqual(
+    Array.from(detailImages, (image) => image.src).sort(),
+    [
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/companies/dar-details.png",
+      "https://violations-salt-hybrid-springer.trycloudflare.com/storage/managers/directory-manager.png",
+    ].sort(),
+  );
   assert.ok(view.getByText("Booth 2-2C-01"));
   assert.ok(view.getAllByText("Approved").length >= 2);
   assert.equal(view.queryByText("Year Founded"), null);

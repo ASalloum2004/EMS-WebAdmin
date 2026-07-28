@@ -1,4 +1,5 @@
-const IMAGE_MEDIA_PATTERN = /\.(avif|gif|jpe?g|png|webp)(?:[?#].*)?$/i;
+const PDF_MEDIA_PATTERN =
+  /(?:^data:application\/pdf|\.pdf(?:[?#].*)?$)/i;
 
 export const ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES = [
   "image/gif",
@@ -18,7 +19,7 @@ export type AnnouncementMediaValidationError =
   | "unsupported";
 
 export function isImageMedia(media: string) {
-  return IMAGE_MEDIA_PATTERN.test(media);
+  return !PDF_MEDIA_PATTERN.test(media.trim());
 }
 
 export function isImageMediaFile(file: File) {

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { GalleryIcon } from "../../../../assets/icons/orderIcons";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import type { EventRequestLogoShowcaseProps } from "./EventRequestDetailsModal.types";
-import { getSafeExternalUrl } from "./EventRequestDetailsModal.utils";
 
 export function EventRequestLogoShowcase({
   logo,
@@ -10,7 +9,7 @@ export function EventRequestLogoShowcase({
   t,
 }: EventRequestLogoShowcaseProps) {
   const labels = t.order.eventRequests.details;
-  const logoUrl = getSafeExternalUrl(logo);
+  const logoUrl = logo;
   const [hasImageError, setHasImageError] = useState(false);
   const imageUrl = logoUrl && !hasImageError ? logoUrl : null;
   const eventTitle = getTrimmedString(title) || labels.title;

@@ -65,7 +65,7 @@ export function CompanyAvatar({
   className?: string;
   company: BoothRequestCompanyDetails;
 }) {
-  const logoUrl = getSafeExternalUrl(company.logo);
+  const logoUrl = company.logo || null;
   const [hasLogoError, setHasLogoError] = useState(false);
 
   useEffect(() => {

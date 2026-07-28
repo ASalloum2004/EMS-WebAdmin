@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DataTableColumn } from "../../../../components";
 import type { I18nDictionary } from "../../../../i18n";
 import type { VisitorApiData } from "../../types";
@@ -64,6 +64,10 @@ function VisitorIdentity({ visitor }: { visitor: VisitorApiData }) {
   const [hasImageError, setHasImageError] = useState(false);
   const displayName = getVisitorDisplayName(visitor);
   const showImage = Boolean(visitor.avatar) && !hasImageError;
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [visitor.avatar]);
 
   return (
     <span className="visitor-identity">

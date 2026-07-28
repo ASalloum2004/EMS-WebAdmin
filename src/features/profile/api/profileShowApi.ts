@@ -22,6 +22,7 @@ export function mapProfileResponse(data: AdminProfileApiData): AdminProfile {
 
 export async function getProfile(signal?: AbortSignal): Promise<AdminProfile> {
   const response = await apiRequest<AdminProfileResponse>("profile", {
+    cache: "no-store",
     method: "GET",
     requiresAuth: true,
     signal,

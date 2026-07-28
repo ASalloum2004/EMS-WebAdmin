@@ -1,4 +1,8 @@
-import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   CompanyBooth,
   CompanyBoothApiData,
@@ -16,7 +20,7 @@ function normalizeManager(manager: CompanyManagerApiData): CompanyManager {
   return {
     name: getTrimmedString(manager.name) ?? "",
     email: getTrimmedString(manager.email),
-    avatar: getTrimmedString(manager.avatar),
+    avatar: resolveApiMediaUrl(manager.avatar),
   };
 }
 
@@ -60,7 +64,7 @@ export function normalizeCompanyDetailsResponse(
     businessSector: getTrimmedString(details.business_sector) ?? "",
     phone: getTrimmedString(details.phone),
     status: getTrimmedString(details.status),
-    logo: getTrimmedString(details.logo),
+    logo: resolveApiMediaUrl(details.logo),
     managers: details.managers.map(normalizeManager),
     booths: details.booths.map(normalizeBooth),
   };

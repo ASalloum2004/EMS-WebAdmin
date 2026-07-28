@@ -1,4 +1,8 @@
-import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import {
+  apiRequest,
+  CONTENT_REQUEST_TIMEOUT_MS,
+  resolveApiMediaUrl,
+} from "../../../api";
 import type {
   BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
@@ -41,7 +45,7 @@ export function normalizeBoothRequestDetailsResponse(
       ...details.company,
       business_sector: getTrimmedString(details.company.business_sector),
       description: getTrimmedString(details.company.description),
-      logo: getTrimmedString(details.company.logo),
+      logo: resolveApiMediaUrl(details.company.logo) ?? "",
       name: getTrimmedString(details.company.name),
       phone: getTrimmedString(details.company.phone),
       social_links: {

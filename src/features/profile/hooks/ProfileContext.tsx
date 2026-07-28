@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { ApiRequestError } from "../../../api";
 import { useI18n } from "../../../i18n";
 import { getProfile } from "../api";
+import { applyStoredProfileAvatarRevision } from "../data";
 import type { AdminProfile } from "../types";
 
 interface ProfileContextValue {
@@ -71,7 +72,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const nextProfile = await getProfile();
+      const nextProfile = applyStoredProfileAvatarRevision(
+        await getProfile(),
+      );
       setProfile(nextProfile);
       return nextProfile;
     } catch (profileError) {

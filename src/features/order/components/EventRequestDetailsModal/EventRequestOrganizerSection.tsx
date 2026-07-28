@@ -44,7 +44,7 @@ function OrganizerAvatar({
   avatar: string | null;
   name: string | null;
 }) {
-  const avatarUrl = getSafeExternalUrl(avatar);
+  const avatarUrl = avatar;
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
   useEffect(() => {

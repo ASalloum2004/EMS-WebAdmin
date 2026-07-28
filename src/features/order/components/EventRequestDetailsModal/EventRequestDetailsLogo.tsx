@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import type { EventRequestDetailsLogoProps } from "./EventRequestDetailsModal.types";
-import { getInitials, getSafeExternalUrl } from "./EventRequestDetailsModal.utils";
+import { getInitials } from "./EventRequestDetailsModal.utils";
 
 export function EventRequestDetailsLogo({
   logo,
   title,
   t,
 }: EventRequestDetailsLogoProps) {
-  const logoUrl = getSafeExternalUrl(logo);
+  const logoUrl = logo;
   const [hasImageError, setHasImageError] = useState(false);
   const eventTitle = getTrimmedString(title);
   const fallback = eventTitle

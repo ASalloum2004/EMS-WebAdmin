@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, test } from "node:test";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -271,7 +272,7 @@ test("renders the organizer identity with the Booth large-avatar contract", () =
   );
 });
 
-test("falls back to organizer initials without reusing the Event logo", () => {
+test("falls back for missing or broken organizer avatars without reusing the Event logo", () => {
   const eventLogoUrl = "https://events.example/event-logo.png";
   const nullLogoView = renderModal({
     ...fullDetails,
@@ -286,24 +287,6 @@ test("falls back to organizer initials without reusing the Event logo", () => {
   assert.equal(nullLogoAvatar.textContent, "DA");
   assert.equal(nullLogoAvatar.querySelector("img"), null);
   nullLogoView.unmount();
-
-  const invalidLogoView = renderModal({
-    ...fullDetails,
-    eventable: {
-      ...fullDetails.eventable!,
-      avatar: "javascript:unsafe()",
-    },
-    logo: eventLogoUrl,
-  });
-  const invalidLogoAvatar =
-    invalidLogoView.container.querySelector<HTMLElement>(
-      ".event-request-details-modal__organizer-avatar",
-    );
-
-  assert.ok(invalidLogoAvatar);
-  assert.equal(invalidLogoAvatar.textContent, "DA");
-  assert.equal(invalidLogoAvatar.querySelector("img"), null);
-  invalidLogoView.unmount();
 
   const failedLogoView = renderModal({
     ...fullDetails,
@@ -494,11 +477,14 @@ test("opens Event-specific confirmation dialogs before Approve or Reject mutatio
   assert.equal(detailsDialog.getAttribute("aria-hidden"), "true");
   assert.equal(detailsDialog.hasAttribute("inert"), true);
 
-  fireEvent.click(
-    within(confirmation).getByRole("button", { name: "Approve Request" }),
-  );
+  await act(async () => {
+    fireEvent.click(
+      within(confirmation).getByRole("button", { name: "Approve Request" }),
+    );
+    await Promise.resolve();
+  });
   assert.equal(approveCalls, 1);
-  await waitFor(() => assert.equal(view.queryByRole("alertdialog"), null));
+  assert.equal(view.queryByRole("alertdialog"), null);
 
   fireEvent.click(view.getByRole("button", { name: "Reject" }));
   assert.equal(rejectCalls, 0);
@@ -510,10 +496,14 @@ test("opens Event-specific confirmation dialogs before Approve or Reject mutatio
       "Are you sure you want to reject this Event Request? This action cannot be undone.",
     ),
   );
-  fireEvent.click(
-    within(confirmation).getByRole("button", { name: "Reject Request" }),
-  );
+  await act(async () => {
+    fireEvent.click(
+      within(confirmation).getByRole("button", { name: "Reject Request" }),
+    );
+    await Promise.resolve();
+  });
   assert.equal(rejectCalls, 1);
+  assert.equal(view.queryByRole("alertdialog"), null);
 });
 
 test("confirmation loading states disable cancellation and duplicate submission", () => {

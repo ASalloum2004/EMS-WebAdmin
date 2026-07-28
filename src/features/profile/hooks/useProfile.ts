@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../context";
 import { useI18n } from "../../../i18n";
 import { getProfile, updateProfile as updateProfileRequest } from "../api";
-import { getProfileAvatarValidationError } from "../data";
+import {
+  applyStoredProfileAvatarRevision,
+  applyUploadedProfileAvatarRevision,
+  createProfileAvatarRevision,
+  getProfileAvatarValidationError,
+} from "../data";
 import type { AdminProfile, AdminProfileUpdatePayload } from "../types";
 import {
   getProfileErrorMessage,
@@ -47,7 +52,9 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     setLocalIsLoading(true);
 
     try {
-      const nextProfile = await getProfile();
+      const nextProfile = applyStoredProfileAvatarRevision(
+        await getProfile(),
+      );
       setLocalProfile(nextProfile);
       return nextProfile;
     } catch (profileError) {
@@ -79,7 +86,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     void refreshProfile();
   }, [profileContext, refreshProfile]);
 
-  const updateProfile = useCallback(
+  const requestProfileUpdate = useCallback(
     async (payload: AdminProfileUpdatePayload) => {
       if (isUpdatingRef.current) {
         return null;
@@ -90,9 +97,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
       setIsUpdating(true);
 
       try {
-        const nextProfile = await updateProfileRequest(payload);
-        setProfile(nextProfile);
-        return nextProfile;
+        return await updateProfileRequest(payload);
       } catch (profileError) {
         setUpdateError(
           getProfileErrorMessage(profileError, t.profile.updateError),
@@ -103,7 +108,22 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
         setIsUpdating(false);
       }
     },
-    [setProfile, t.profile.updateError],
+    [t.profile.updateError],
+  );
+
+  const updateProfile = useCallback(
+    async (payload: AdminProfileUpdatePayload) => {
+      const nextProfile = await requestProfileUpdate(payload);
+
+      if (!nextProfile) {
+        return null;
+      }
+
+      const displayProfile = applyStoredProfileAvatarRevision(nextProfile);
+      setProfile(displayProfile);
+      return displayProfile;
+    },
+    [requestProfileUpdate, setProfile],
   );
 
   const displayName = profile?.name ?? user?.name ?? "Admin Profile";
@@ -140,6 +160,8 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
 
   useEffect(
     () => () => {
+      avatarUploadIdRef.current += 1;
+
       if (avatarPreviewUrlRef.current) {
         URL.revokeObjectURL(avatarPreviewUrlRef.current);
         avatarPreviewUrlRef.current = "";
@@ -199,7 +221,8 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     const nextAvatarPreviewUrl = URL.createObjectURL(file);
     setNextAvatarPreview(nextAvatarPreviewUrl);
 
-    const updatedProfile = await updateProfile({
+    const previousSavedProfile = profile;
+    const updatedProfile = await requestProfileUpdate({
       name: displayName,
       avatar: file,
     });
@@ -214,13 +237,23 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     }
 
     if (!updatedProfile.avatar) {
+      clearAvatarPreview();
       setProfileActionError(
         t.profile.avatarUrlMissing,
       );
       return;
     }
 
-    const canLoadBackendAvatar = await canLoadAvatarUrl(updatedProfile.avatar);
+    const displayProfile = applyUploadedProfileAvatarRevision(
+      previousSavedProfile,
+      updatedProfile,
+      createProfileAvatarRevision(),
+    );
+    setProfile(displayProfile);
+
+    const canLoadBackendAvatar = await canLoadAvatarUrl(
+      displayProfile.avatar,
+    );
 
     if (avatarUploadIdRef.current !== currentUploadId) {
       return;

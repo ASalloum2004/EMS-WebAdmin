@@ -16,7 +16,7 @@ export async function updateProfile(
   }
 
   if (payload.avatar instanceof File) {
-    formData.append("avatar", payload.avatar);
+    formData.append("avatar", payload.avatar, payload.avatar.name);
   }
 
   const response = await apiRequest<AdminProfileUpdateResponse>("profile", {

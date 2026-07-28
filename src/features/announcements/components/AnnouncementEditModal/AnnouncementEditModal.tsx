@@ -12,13 +12,14 @@ import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import {
   ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH,
-  ANNOUNCEMENT_MEDIA_MAX_LENGTH,
+  ANNOUNCEMENT_MEDIA_MAX_BYTES,
   ANNOUNCEMENT_TITLE_MAX_LENGTH,
 } from "../../api";
 import {
-  getMediaLength,
+  ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES,
+  getAnnouncementMediaValidationError,
   isImageMedia,
-  readMediaFile,
+  isImageMediaFile,
 } from "../../data/announcementMedia";
 import type {
   Announcement,
@@ -74,13 +75,15 @@ export function AnnouncementEditModal({
   const [receiver, setReceiver] =
     useState<AnnouncementFormReceiver>("all");
   const [isDraft, setIsDraft] = useState(true);
-  const [media, setMedia] = useState<string | null>(null);
-  const [mediaName, setMediaName] = useState("");
+  const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState("");
   const [mediaError, setMediaError] = useState("");
+  const [mediaDisplayError, setMediaDisplayError] = useState("");
   const [mediaUpdate, setMediaUpdate] =
     useState<AnnouncementMediaUpdate>("preserve");
   const [mediaInputKey, setMediaInputKey] = useState(0);
-  const mediaReadIdRef = useRef(0);
+  const mediaPreviewUrlRef = useRef("");
   const isSaveDisabled =
     isUpdatePending || !title.trim() || !description.trim();
 
@@ -95,9 +98,15 @@ export function AnnouncementEditModal({
       announcement.receiver === "unknown" ? "all" : announcement.receiver,
     );
     setIsDraft(announcement.isDraft);
-    setMedia(announcement.media);
-    setMediaName("");
+    if (mediaPreviewUrlRef.current) {
+      URL.revokeObjectURL(mediaPreviewUrlRef.current);
+      mediaPreviewUrlRef.current = "";
+    }
+    setExistingMediaUrl(announcement.media);
+    setMediaFile(null);
+    setMediaPreviewUrl("");
     setMediaError("");
+    setMediaDisplayError("");
     setMediaUpdate("preserve");
     setMediaInputKey((currentKey) => currentKey + 1);
   }, [announcement]);
@@ -122,54 +131,61 @@ export function AnnouncementEditModal({
     document.body.style.overflow = "hidden";
 
     return () => {
-      mediaReadIdRef.current += 1;
+      if (mediaPreviewUrlRef.current) {
+        URL.revokeObjectURL(mediaPreviewUrlRef.current);
+        mediaPreviewUrlRef.current = "";
+      }
       document.body.style.overflow = previousOverflow;
     };
   }, []);
 
+  function replaceMediaPreview(nextPreviewUrl: string) {
+    if (mediaPreviewUrlRef.current) {
+      URL.revokeObjectURL(mediaPreviewUrlRef.current);
+    }
+
+    mediaPreviewUrlRef.current = nextPreviewUrl;
+    setMediaPreviewUrl(nextPreviewUrl);
+  }
+
   function clearMedia() {
-    mediaReadIdRef.current += 1;
-    setMedia(null);
-    setMediaName("");
+    replaceMediaPreview("");
+    setMediaFile(null);
     setMediaError("");
-    setMediaUpdate("remove");
+    setMediaDisplayError("");
+    setMediaUpdate(existingMediaUrl ? "remove" : "preserve");
     setMediaInputKey((currentKey) => currentKey + 1);
     onClearErrors();
   }
 
-  async function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
 
     if (!file) {
       return;
     }
 
-    const mediaReadId = mediaReadIdRef.current + 1;
-    mediaReadIdRef.current = mediaReadId;
-    setMediaError("");
     onClearErrors();
+    const validationError = getAnnouncementMediaValidationError(
+      file,
+      ANNOUNCEMENT_MEDIA_MAX_BYTES,
+    );
 
-    try {
-      const nextMedia = await readMediaFile(file);
-
-      if (mediaReadId !== mediaReadIdRef.current) {
-        return;
-      }
-
-      if (getMediaLength(nextMedia) > ANNOUNCEMENT_MEDIA_MAX_LENGTH) {
-        setMediaError(t.announcements.media.tooLarge);
-        setMediaInputKey((currentKey) => currentKey + 1);
-        return;
-      }
-
-      setMedia(nextMedia);
-      setMediaName(file.name);
-      setMediaUpdate("replace");
-    } catch {
-      if (mediaReadId === mediaReadIdRef.current) {
-        setMediaError(t.announcements.media.readError);
-      }
+    if (validationError) {
+      setMediaError(t.announcements.media[validationError]);
+      setMediaInputKey((currentKey) => currentKey + 1);
+      return;
     }
+
+    const nextPreviewUrl = isImageMediaFile(file)
+      ? URL.createObjectURL(file)
+      : "";
+
+    replaceMediaPreview(nextPreviewUrl);
+    setMediaFile(file);
+    setMediaError("");
+    setMediaDisplayError("");
+    setMediaUpdate("replace");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -182,7 +198,7 @@ export function AnnouncementEditModal({
     await onSave({
       description: description.trim(),
       isDraft,
-      media,
+      mediaFile,
       mediaUpdate,
       receiver,
       title: title.trim(),
@@ -190,6 +206,28 @@ export function AnnouncementEditModal({
   }
 
   const canClose = !isUpdatePending && !isDeleteDialogOpen;
+  const displayedMediaUrl =
+    mediaUpdate === "replace"
+      ? mediaPreviewUrl
+      : mediaUpdate === "preserve"
+        ? existingMediaUrl
+        : null;
+  const hasMedia =
+    mediaUpdate === "replace"
+      ? Boolean(mediaFile)
+      : mediaUpdate === "preserve"
+        ? Boolean(existingMediaUrl)
+        : false;
+  const shouldDisplayImage =
+    mediaUpdate === "replace"
+      ? Boolean(
+          mediaFile &&
+            isImageMediaFile(mediaFile) &&
+            displayedMediaUrl,
+        )
+      : Boolean(displayedMediaUrl && isImageMedia(displayedMediaUrl));
+  const visibleMediaError =
+    mediaError || fieldErrors.media || mediaDisplayError;
 
   return (
     <div className="announcement-edit-modal" role="presentation">
@@ -321,13 +359,20 @@ export function AnnouncementEditModal({
                   {t.announcements.fields.media}
                 </span>
 
-                {media ? (
+                {hasMedia ? (
                   <div className="announcement-form__media-preview">
-                    {isImageMedia(media) ? (
+                    {displayedMediaUrl &&
+                    shouldDisplayImage &&
+                    !mediaDisplayError ? (
                       <img
                         alt={t.announcements.media.previewAlt}
                         loading="lazy"
-                        src={media}
+                        src={displayedMediaUrl}
+                        onError={() =>
+                          setMediaDisplayError(
+                            t.announcements.media.displayError,
+                          )
+                        }
                       />
                     ) : (
                       <Paperclip
@@ -337,7 +382,7 @@ export function AnnouncementEditModal({
                       />
                     )}
                     <span>{
-                      mediaName || t.announcements.media.attached
+                      mediaFile?.name || t.announcements.media.attached
                     }</span>
                     <button
                       aria-label={t.announcements.media.remove}
@@ -362,7 +407,7 @@ export function AnnouncementEditModal({
                   </div>
                 )}
 
-                {media ? (
+                {hasMedia ? (
                   <label
                     className="announcement-edit-modal__replace-media"
                     htmlFor={mediaInputId}
@@ -377,13 +422,13 @@ export function AnnouncementEditModal({
                 ) : null}
 
                 <input
-                  accept="image/*,application/pdf"
+                  accept={ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES.join(",")}
                   aria-describedby={
-                    mediaError || fieldErrors.media
+                    visibleMediaError
                       ? mediaErrorId
                       : undefined
                   }
-                  aria-invalid={Boolean(mediaError || fieldErrors.media)}
+                  aria-invalid={Boolean(visibleMediaError)}
                   className="announcement-form__file-input"
                   disabled={isUpdatePending}
                   id={mediaInputId}
@@ -391,13 +436,13 @@ export function AnnouncementEditModal({
                   type="file"
                   onChange={handleMediaChange}
                 />
-                {mediaError || fieldErrors.media ? (
+                {visibleMediaError ? (
                   <span
                     className="announcement-form__error"
                     id={mediaErrorId}
                     role="alert"
                   >
-                    {mediaError || fieldErrors.media}
+                    {visibleMediaError}
                   </span>
                 ) : null}
               </div>

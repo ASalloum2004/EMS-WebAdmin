@@ -11,13 +11,13 @@ import { Card } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import {
   ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH,
-  ANNOUNCEMENT_MEDIA_MAX_LENGTH,
+  ANNOUNCEMENT_MEDIA_MAX_BYTES,
   ANNOUNCEMENT_TITLE_MAX_LENGTH,
 } from "../../api";
 import {
-  getMediaLength,
-  isImageMedia,
-  readMediaFile,
+  ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES,
+  getAnnouncementMediaValidationError,
+  isImageMediaFile,
 } from "../../data/announcementMedia";
 import type {
   AnnouncementFieldErrors,
@@ -55,66 +55,67 @@ export function AnnouncementComposer({
   const [receiver, setReceiver] =
     useState<AnnouncementFormReceiver>("all");
   const [isDraft, setIsDraft] = useState(true);
-  const [media, setMedia] = useState<string | null>(null);
-  const [mediaName, setMediaName] = useState("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState("");
   const [mediaError, setMediaError] = useState("");
   const [mediaInputKey, setMediaInputKey] = useState(0);
-  const mediaReadIdRef = useRef(0);
+  const mediaPreviewUrlRef = useRef("");
   const isCreateDisabled =
     isPending || !title.trim() || !description.trim();
 
   useEffect(
     () => () => {
-      mediaReadIdRef.current += 1;
+      if (mediaPreviewUrlRef.current) {
+        URL.revokeObjectURL(mediaPreviewUrlRef.current);
+        mediaPreviewUrlRef.current = "";
+      }
     },
     [],
   );
 
+  function replaceMediaPreview(nextPreviewUrl: string) {
+    if (mediaPreviewUrlRef.current) {
+      URL.revokeObjectURL(mediaPreviewUrlRef.current);
+    }
+
+    mediaPreviewUrlRef.current = nextPreviewUrl;
+    setMediaPreviewUrl(nextPreviewUrl);
+  }
+
   function clearMedia() {
-    mediaReadIdRef.current += 1;
-    setMedia(null);
-    setMediaName("");
+    replaceMediaPreview("");
+    setMediaFile(null);
     setMediaError("");
     setMediaInputKey((currentKey) => currentKey + 1);
     onClearErrors();
   }
 
-  async function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
+  function handleMediaChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
 
     if (!file) {
       return;
     }
 
-    const mediaReadId = mediaReadIdRef.current + 1;
-    mediaReadIdRef.current = mediaReadId;
-    setMediaError("");
     onClearErrors();
+    const validationError = getAnnouncementMediaValidationError(
+      file,
+      ANNOUNCEMENT_MEDIA_MAX_BYTES,
+    );
 
-    try {
-      const nextMedia = await readMediaFile(file);
-
-      if (mediaReadId !== mediaReadIdRef.current) {
-        return;
-      }
-
-      if (getMediaLength(nextMedia) > ANNOUNCEMENT_MEDIA_MAX_LENGTH) {
-        setMedia(null);
-        setMediaName("");
-        setMediaError(t.announcements.media.tooLarge);
-        setMediaInputKey((currentKey) => currentKey + 1);
-        return;
-      }
-
-      setMedia(nextMedia);
-      setMediaName(file.name);
-    } catch {
-      if (mediaReadId === mediaReadIdRef.current) {
-        setMedia(null);
-        setMediaName("");
-        setMediaError(t.announcements.media.readError);
-      }
+    if (validationError) {
+      setMediaError(t.announcements.media[validationError]);
+      setMediaInputKey((currentKey) => currentKey + 1);
+      return;
     }
+
+    const nextPreviewUrl = isImageMediaFile(file)
+      ? URL.createObjectURL(file)
+      : "";
+
+    replaceMediaPreview(nextPreviewUrl);
+    setMediaFile(file);
+    setMediaError("");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -127,7 +128,7 @@ export function AnnouncementComposer({
     const succeeded = await onCreate({
       description: description.trim(),
       isDraft,
-      media,
+      mediaFile,
       receiver,
       title: title.trim(),
     });
@@ -227,18 +228,18 @@ export function AnnouncementComposer({
             {t.announcements.fields.media}
           </span>
 
-          {media ? (
+          {mediaFile ? (
             <div className="announcement-form__media-preview">
-              {isImageMedia(media) ? (
+              {mediaPreviewUrl ? (
                 <img
                   alt={t.announcements.media.previewAlt}
                   loading="lazy"
-                  src={media}
+                  src={mediaPreviewUrl}
                 />
               ) : (
                 <Paperclip aria-hidden="true" size={20} strokeWidth={1.8} />
               )}
-              <span>{mediaName || t.announcements.media.attached}</span>
+              <span>{mediaFile.name}</span>
               <button
                 aria-label={t.announcements.media.remove}
                 disabled={isPending}
@@ -259,7 +260,7 @@ export function AnnouncementComposer({
           )}
 
           <input
-            accept="image/*,application/pdf"
+            accept={ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES.join(",")}
             aria-describedby={
               mediaError || fieldErrors.media ? mediaErrorId : undefined
             }

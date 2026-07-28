@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../context";
+import { useI18n } from "../../../i18n";
 import { getProfile, updateProfile as updateProfileRequest } from "../api";
+import { getProfileAvatarValidationError } from "../data";
 import type { AdminProfile, AdminProfileUpdatePayload } from "../types";
 import {
   getProfileErrorMessage,
   useOptionalProfileContext,
 } from "./ProfileContext";
-
-const ACCEPTED_AVATAR_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/jpg",
-  "image/webp",
-]);
 
 interface UseProfileOptions {
   initialProfile?: AdminProfile | null;
@@ -30,6 +25,7 @@ function canLoadAvatarUrl(avatarUrl: string) {
 
 export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const { user } = useAuth();
+  const { t } = useI18n();
   const profileContext = useOptionalProfileContext();
   const [localProfile, setLocalProfile] =
     useState<AdminProfile | null>(initialProfile);
@@ -44,6 +40,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const hasRequestedProfile = useRef(false);
   const avatarPreviewUrlRef = useRef("");
   const avatarUploadIdRef = useRef(0);
+  const isUpdatingRef = useRef(false);
 
   const refreshLocalProfile = useCallback(async () => {
     setLocalError("");
@@ -55,13 +52,13 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
       return nextProfile;
     } catch (profileError) {
       setLocalError(
-        getProfileErrorMessage(profileError, "Unable to load profile."),
+          getProfileErrorMessage(profileError, t.profile.loadError),
       );
       return null;
     } finally {
       setLocalIsLoading(false);
     }
-  }, []);
+  }, [t.profile.loadError]);
 
   const error = profileContext?.error ?? localError;
   const isLoading = profileContext?.isLoading ?? localIsLoading;
@@ -84,6 +81,11 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
 
   const updateProfile = useCallback(
     async (payload: AdminProfileUpdatePayload) => {
+      if (isUpdatingRef.current) {
+        return null;
+      }
+
+      isUpdatingRef.current = true;
       setUpdateError("");
       setIsUpdating(true);
 
@@ -93,14 +95,15 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
         return nextProfile;
       } catch (profileError) {
         setUpdateError(
-          getProfileErrorMessage(profileError, "Unable to update profile."),
+          getProfileErrorMessage(profileError, t.profile.updateError),
         );
         return null;
       } finally {
+        isUpdatingRef.current = false;
         setIsUpdating(false);
       }
     },
-    [setProfile],
+    [setProfile, t.profile.updateError],
   );
 
   const displayName = profile?.name ?? user?.name ?? "Admin Profile";
@@ -161,7 +164,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     const nextName = nameInputValue.trim();
 
     if (!nextName) {
-      setProfileActionError("Name is required.");
+      setProfileActionError(t.profile.nameRequired);
       return;
     }
 
@@ -182,8 +185,10 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
       return;
     }
 
-    if (!ACCEPTED_AVATAR_TYPES.has(file.type)) {
-      setProfileActionError("Please select a JPEG, PNG, JPG, or WebP image.");
+    const validationError = getProfileAvatarValidationError(file);
+
+    if (validationError) {
+      setProfileActionError(t.profile[validationError]);
       return;
     }
 
@@ -210,7 +215,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
 
     if (!updatedProfile.avatar) {
       setProfileActionError(
-        "Profile photo was uploaded, but the server did not return a displayable image URL. Showing your selected photo for this session.",
+        t.profile.avatarUrlMissing,
       );
       return;
     }
@@ -227,7 +232,7 @@ export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
     }
 
     setProfileActionError(
-      "Profile photo was uploaded, but the saved image URL could not be loaded. Showing your selected photo for this session.",
+      t.profile.avatarUrlLoadError,
     );
   }
 

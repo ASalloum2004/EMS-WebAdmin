@@ -34,14 +34,18 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 function parseBody(body: BodyInit | null | undefined) {
-  if (typeof body !== "string") {
-    return null;
+  if (body instanceof FormData) {
+    return Object.fromEntries(body.entries());
   }
 
-  const value: unknown = JSON.parse(body);
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
+  if (typeof body === "string") {
+    const value: unknown = JSON.parse(body);
+    return typeof value === "object" && value !== null && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : null;
+  }
+
+  return null;
 }
 
 function createAnnouncementBackend() {
@@ -161,8 +165,11 @@ function createAnnouncementBackend() {
         title: String(body?.title ?? ""),
         description: String(body?.description ?? ""),
         receiver: String(body?.receiver ?? "all"),
-        is_active: body?.is_active === true,
-        media: typeof body?.media === "string" ? body.media : null,
+        is_active: body?.is_active === "1",
+        media:
+          body?.media instanceof File
+            ? `/storage/${body.media.name}`
+            : null,
       };
       announcements = [created, ...announcements];
 
@@ -193,7 +200,7 @@ function createAnnouncementBackend() {
         });
       }
 
-      if (method === "PATCH") {
+      if (method === "POST") {
         const updatedAnnouncement: AnnouncementApiDto = {
           ...existingAnnouncement,
           title: String(body?.title ?? existingAnnouncement.title),
@@ -202,14 +209,18 @@ function createAnnouncementBackend() {
           ),
           receiver: String(body?.receiver ?? existingAnnouncement.receiver),
           is_active:
-            typeof body?.is_active === "boolean"
-              ? body.is_active
-              : existingAnnouncement.is_active,
+            body?.is_active === "1"
+              ? true
+              : body?.is_active === "0"
+                ? false
+                : existingAnnouncement.is_active,
           media:
             body && Object.hasOwn(body, "media")
-              ? typeof body.media === "string"
-                ? body.media
-                : null
+              ? body.media instanceof File
+                ? `/storage/${body.media.name}`
+                : body.media === ""
+                  ? null
+                  : existingAnnouncement.media
               : existingAnnouncement.media,
         };
         announcements = announcements.map((announcement) =>
@@ -654,7 +665,7 @@ test("creates, fetches details, updates, and confirms deletion through the backe
     target: { value: "Updated Backend Announcement" },
   });
   fireEvent.change(descriptionInput, {
-    target: { value: "Updated through PATCH." },
+    target: { value: "Updated through multipart POST." },
   });
   const saveButton = within(editDialog).getByRole("button", {
     name: "Save Changes",
@@ -663,7 +674,12 @@ test("creates, fetches details, updates, and confirms deletion through the backe
   fireEvent.click(saveButton);
 
   await waitFor(() => {
-    assert.ok(backend.requests.some(({ method }) => method === "PATCH"));
+    assert.ok(
+      backend.requests.some(
+        ({ method, url }) =>
+          method === "POST" && /\/announcements\/\d+$/.test(url.pathname),
+      ),
+    );
   });
 
   await waitFor(() => {
@@ -673,12 +689,13 @@ test("creates, fetches details, updates, and confirms deletion through the backe
     );
   });
   await view.findByText("Updated Backend Announcement");
-  const patchRequest = backend.requests.find(
-    ({ method }) => method === "PATCH",
+  const updateRequest = backend.requests.find(
+    ({ method, url }) =>
+      method === "POST" && /\/announcements\/\d+$/.test(url.pathname),
   );
-  assert.ok(patchRequest);
-  assert.equal(patchRequest.body?.is_active, true);
-  assert.equal(Object.hasOwn(patchRequest.body ?? {}, "media"), false);
+  assert.ok(updateRequest);
+  assert.equal(updateRequest.body?.is_active, "1");
+  assert.equal(Object.hasOwn(updateRequest.body ?? {}, "media"), false);
 
   const composeTitle = view.getByLabelText("Title") as HTMLInputElement;
   const composeDescription = view.getByLabelText(
@@ -698,9 +715,12 @@ test("creates, fetches details, updates, and confirms deletion through the backe
   );
 
   await waitFor(() => assert.equal(composeTitle.value, ""));
-  const postRequest = backend.requests.find(({ method }) => method === "POST");
+  const postRequest = backend.requests.find(
+    ({ method, url }) =>
+      method === "POST" && url.pathname.endsWith("/announcements"),
+  );
   assert.ok(postRequest);
-  assert.equal(postRequest.body?.is_active, false);
+  assert.equal(postRequest.body?.is_active, "0");
   await view.findByText("Published from Composer");
 
   fireEvent.click(
@@ -746,4 +766,97 @@ test("creates, fetches details, updates, and confirms deletion through the backe
   await waitFor(() => {
     assert.equal(view.queryByText("Updated Backend Announcement"), null);
   });
+});
+
+test("created and replacement media are refetched from persisted backend URLs", async () => {
+  const backend = createAnnouncementBackend();
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+
+  await view.findByText("Draft Exhibitor Notice");
+  fireEvent.change(view.getByLabelText("Title"), {
+    target: { value: "Uploaded media announcement" },
+  });
+  fireEvent.change(view.getByLabelText("Description"), {
+    target: { value: "Uses a real multipart file." },
+  });
+  const composerFileInput = view.container.querySelector<HTMLInputElement>(
+    ".announcement-composer .announcement-form__file-input",
+  );
+  assert.ok(composerFileInput);
+  const createdFile = new File(["created-image"], "created.png", {
+    type: "image/png",
+  });
+  fireEvent.change(composerFileInput, {
+    target: { files: [createdFile] },
+  });
+  fireEvent.click(
+    view.getByRole("button", { name: "Create Announcement" }),
+  );
+
+  const createdRow = await view.findByRole("button", {
+    name: "Edit announcement Uploaded media announcement",
+  });
+  const createdImage = createdRow.querySelector("img");
+  assert.ok(createdImage);
+  assert.equal(
+    createdImage.src,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/created.png",
+  );
+  const createRequest = backend.requests.find(
+    ({ body, method, url }) =>
+      method === "POST" &&
+      url.pathname.endsWith("/announcements") &&
+      body?.title === "Uploaded media announcement",
+  );
+  assert.ok(createRequest?.body?.media instanceof File);
+  assert.equal(createRequest.body.media.name, "created.png");
+
+  fireEvent.click(createdRow);
+  const editDialog = await view.findByRole("dialog", {
+    name: "Edit Announcement",
+  });
+  await within(editDialog).findByLabelText("Title");
+  const editFileInput = editDialog.querySelector<HTMLInputElement>(
+    ".announcement-form__file-input",
+  );
+  assert.ok(editFileInput);
+  const replacementFile = new File(
+    ["replacement-image"],
+    "replacement.webp",
+    { type: "image/webp" },
+  );
+  fireEvent.change(editFileInput, {
+    target: { files: [replacementFile] },
+  });
+  fireEvent.click(
+    within(editDialog).getByRole("button", { name: "Save Changes" }),
+  );
+
+  await waitFor(() => {
+    assert.equal(
+      view.queryByRole("dialog", { name: "Edit Announcement" }),
+      null,
+    );
+  });
+  const refreshedRow = await view.findByRole("button", {
+    name: "Edit announcement Uploaded media announcement",
+  });
+  const replacementImage = refreshedRow.querySelector("img");
+  assert.ok(replacementImage);
+  assert.equal(
+    replacementImage.src,
+    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/replacement.webp",
+  );
+  const replacementRequest = backend.requests.find(
+    ({ body, method, url }) =>
+      method === "POST" &&
+      /\/announcements\/\d+$/.test(url.pathname) &&
+      body?.media instanceof File,
+  );
+  assert.ok(replacementRequest?.body?.media instanceof File);
+  assert.equal(replacementRequest.body.media.name, "replacement.webp");
 });

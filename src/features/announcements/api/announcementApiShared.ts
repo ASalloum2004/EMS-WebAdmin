@@ -3,7 +3,9 @@ import type { AnnouncementActionResult } from "../types";
 export const ANNOUNCEMENTS_PATH = "announcements";
 export const ANNOUNCEMENT_TITLE_MAX_LENGTH = 255;
 export const ANNOUNCEMENT_DESCRIPTION_MAX_LENGTH = 2048;
-export const ANNOUNCEMENT_MEDIA_MAX_LENGTH = 8192;
+export const ANNOUNCEMENT_MEDIA_MAX_KILOBYTES = 8192;
+export const ANNOUNCEMENT_MEDIA_MAX_BYTES =
+  ANNOUNCEMENT_MEDIA_MAX_KILOBYTES * 1024;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

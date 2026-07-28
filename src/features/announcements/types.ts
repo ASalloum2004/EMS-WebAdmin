@@ -70,29 +70,13 @@ export interface AnnouncementFormValues {
   description: string;
   receiver: AnnouncementFormReceiver;
   isDraft: boolean;
-  media: string | null;
+  mediaFile: File | null;
 }
 
 export type AnnouncementMediaUpdate = "preserve" | "replace" | "remove";
 
 export interface AnnouncementUpdateValues extends AnnouncementFormValues {
   mediaUpdate: AnnouncementMediaUpdate;
-}
-
-export interface AnnouncementCreateRequest {
-  title: string;
-  description: string;
-  receiver: "Exhibitors" | "visitors" | "all";
-  is_active: boolean;
-  media: string | null;
-}
-
-export interface AnnouncementUpdateRequest {
-  title: string;
-  description: string;
-  receiver: "Exhibitors" | "visitors" | "all";
-  is_active: boolean;
-  media?: string | null;
 }
 
 export interface AnnouncementActionResult {

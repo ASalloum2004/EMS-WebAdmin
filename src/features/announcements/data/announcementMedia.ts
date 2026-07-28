@@ -1,26 +1,45 @@
 const IMAGE_MEDIA_PATTERN = /\.(avif|gif|jpe?g|png|webp)(?:[?#].*)?$/i;
 
+export const ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES = [
+  "image/gif",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+] as const;
+
+const ACCEPTED_MEDIA_TYPES = new Set<string>(
+  ANNOUNCEMENT_MEDIA_ACCEPTED_TYPES,
+);
+
+export type AnnouncementMediaValidationError =
+  | "empty"
+  | "tooLarge"
+  | "unsupported";
+
 export function isImageMedia(media: string) {
-  return media.startsWith("data:image/") || IMAGE_MEDIA_PATTERN.test(media);
+  return IMAGE_MEDIA_PATTERN.test(media);
 }
 
-export function readMediaFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.addEventListener("load", () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-
-      reject(new Error("Unable to read the selected media file."));
-    });
-    reader.addEventListener("error", () => reject(reader.error));
-    reader.readAsDataURL(file);
-  });
+export function isImageMediaFile(file: File) {
+  return file.type.startsWith("image/");
 }
 
-export function getMediaLength(media: string) {
-  return media.length;
+export function getAnnouncementMediaValidationError(
+  file: File,
+  maxBytes: number,
+): AnnouncementMediaValidationError | null {
+  if (file.size === 0) {
+    return "empty";
+  }
+
+  if (!ACCEPTED_MEDIA_TYPES.has(file.type)) {
+    return "unsupported";
+  }
+
+  if (file.size > maxBytes) {
+    return "tooLarge";
+  }
+
+  return null;
 }

@@ -1,10 +1,10 @@
 import { apiRequest } from "../../../api";
-import { mapAnnouncementUpdateValuesToRequest } from "../mappers";
 import type { AnnouncementUpdateValues } from "../types";
 import {
   buildAnnouncementPath,
   normalizeAnnouncementActionResponse,
 } from "./announcementApiShared";
+import { buildUpdateAnnouncementFormData } from "./announcementFormData";
 
 export async function updateAnnouncement(
   announcementId: number,
@@ -14,10 +14,8 @@ export async function updateAnnouncement(
   const response = await apiRequest<unknown>(
     buildAnnouncementPath(announcementId),
     {
-      body: JSON.stringify(
-        mapAnnouncementUpdateValuesToRequest(formValues),
-      ),
-      method: "PATCH",
+      body: buildUpdateAnnouncementFormData(formValues),
+      method: "POST",
       requiresAuth: true,
       signal,
     },

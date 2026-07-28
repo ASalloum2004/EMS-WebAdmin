@@ -2,11 +2,7 @@ import { resolveApiMediaUrl } from "../../../api";
 import type {
   Announcement,
   AnnouncementApiDto,
-  AnnouncementCreateRequest,
   AnnouncementFormReceiver,
-  AnnouncementFormValues,
-  AnnouncementUpdateRequest,
-  AnnouncementUpdateValues,
 } from "../types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,7 +37,7 @@ function normalizeReceiver(receiver: string): Announcement["receiver"] {
 
 export function getAnnouncementApiReceiver(
   receiver: AnnouncementFormReceiver,
-): AnnouncementCreateRequest["receiver"] {
+): "Exhibitors" | "visitors" | "all" {
   return receiver === "exhibitors" ? "Exhibitors" : receiver;
 }
 
@@ -68,39 +64,6 @@ export function mapAnnouncementApiDto(
     description: apiAnnouncement.description,
     receiver: normalizeReceiver(apiAnnouncement.receiver),
     isDraft: apiAnnouncement.is_active,
-    media: resolveApiMediaUrl(apiAnnouncement.media, {
-      allowInlineMedia: true,
-    }),
+    media: resolveApiMediaUrl(apiAnnouncement.media),
   };
-}
-
-export function mapAnnouncementFormValuesToRequest(
-  formValues: AnnouncementFormValues,
-): AnnouncementCreateRequest {
-  return {
-    title: formValues.title.trim(),
-    description: formValues.description.trim(),
-    receiver: getAnnouncementApiReceiver(formValues.receiver),
-    is_active: formValues.isDraft,
-    media: formValues.media,
-  };
-}
-
-export function mapAnnouncementUpdateValuesToRequest(
-  formValues: AnnouncementUpdateValues,
-): AnnouncementUpdateRequest {
-  const request: AnnouncementUpdateRequest = {
-    title: formValues.title.trim(),
-    description: formValues.description.trim(),
-    receiver: getAnnouncementApiReceiver(formValues.receiver),
-    is_active: formValues.isDraft,
-  };
-
-  if (formValues.mediaUpdate === "replace") {
-    request.media = formValues.media;
-  } else if (formValues.mediaUpdate === "remove") {
-    request.media = null;
-  }
-
-  return request;
 }

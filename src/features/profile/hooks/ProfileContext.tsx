@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import { ApiRequestError } from "../../../api";
+import { useI18n } from "../../../i18n";
 import { getProfile } from "../api";
 import type { AdminProfile } from "../types";
 
@@ -59,6 +60,7 @@ export function getProfileErrorMessage(
 }
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -73,12 +75,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setProfile(nextProfile);
       return nextProfile;
     } catch (profileError) {
-      setError(getProfileErrorMessage(profileError, "Unable to load profile."));
+      setError(getProfileErrorMessage(profileError, t.profile.loadError));
       return null;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t.profile.loadError]);
 
   useEffect(() => {
     if (hasRequestedProfile.current) {

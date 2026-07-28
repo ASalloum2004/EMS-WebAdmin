@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { cameraIcon, pencilIcon } from "../../../../assets/Profile";
 import { Card } from "../../../../components";
 import { useI18n } from "../../../../i18n";
+import { PROFILE_AVATAR_ACCEPTED_TYPES } from "../../data";
 import "./ProfileIdentityCard.scss";
 
-const AVATAR_ACCEPTED_TYPES = "image/jpeg,image/png,image/jpg,image/webp";
+const AVATAR_ACCEPTED_TYPES = PROFILE_AVATAR_ACCEPTED_TYPES.join(",");
 
 interface ProfileIdentityCardProps {
   name: string;
@@ -50,6 +51,9 @@ export function ProfileIdentityCard({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [hasAvatarLoadError, setHasAvatarLoadError] = useState(false);
   const shouldShowAvatarImage = Boolean(avatarUrl && !hasAvatarLoadError);
+  const visibleFeedbackMessage =
+    feedbackMessage ||
+    (avatarUrl && hasAvatarLoadError ? t.profile.avatarDisplayError : "");
   const nameFieldClassName = `profile-identity-card__field profile-identity-card__field--editable${
     isEditingName ? " profile-identity-card__field--editing" : ""
   }`;
@@ -173,13 +177,13 @@ export function ProfileIdentityCard({
         </div>
       </div>
 
-      {feedbackMessage ? (
+      {visibleFeedbackMessage ? (
         <p
           className="profile-identity-card__feedback"
           aria-live="polite"
           role="alert"
         >
-          {feedbackMessage}
+          {visibleFeedbackMessage}
         </p>
       ) : null}
     </Card>

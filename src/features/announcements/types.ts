@@ -75,6 +75,11 @@ export interface AnnouncementFormValues {
 
 export type AnnouncementMediaUpdate = "preserve" | "replace" | "remove";
 
+export interface AnnouncementMediaRevision {
+  mediaUrl: string;
+  revision: string;
+}
+
 export interface AnnouncementUpdateValues extends AnnouncementFormValues {
   mediaUpdate: AnnouncementMediaUpdate;
 }

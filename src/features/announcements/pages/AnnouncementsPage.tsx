@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SearchFilterBar } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
@@ -17,6 +17,7 @@ import {
 import type {
   Announcement,
   AnnouncementFormValues,
+  AnnouncementMediaRevision,
   AnnouncementUpdateValues,
 } from "../types";
 import "./AnnouncementsPage.scss";
@@ -31,6 +32,10 @@ export function AnnouncementsPage() {
   >(null);
   const [pendingDeletion, setPendingDeletion] =
     useState<Announcement | null>(null);
+  const [mediaRevisions, setMediaRevisions] = useState<
+    Partial<Record<number, AnnouncementMediaRevision>>
+  >({});
+  const mediaRevisionSequenceRef = useRef(0);
   const detailsState = useAnnouncementDetails(
     selectedAnnouncementId,
     t.announcements.edit.loadError,
@@ -59,14 +64,49 @@ export function AnnouncementsPage() {
       return false;
     }
 
+    const announcementId = selectedAnnouncementId;
+    const previousMediaUrl = detailsState.announcement?.media ?? null;
     const succeeded = await actions.runUpdate(
-      selectedAnnouncementId,
+      announcementId,
       formValues,
     );
 
     if (succeeded) {
+      if (formValues.mediaUpdate === "replace" && previousMediaUrl) {
+        mediaRevisionSequenceRef.current += 1;
+        const revision = `${announcementId}-${mediaRevisionSequenceRef.current}`;
+
+        setMediaRevisions((currentRevisions) => ({
+          ...currentRevisions,
+          [announcementId]: {
+            mediaUrl: previousMediaUrl,
+            revision,
+          },
+        }));
+      }
+
       setSelectedAnnouncementId(null);
-      await announcementsState.refetch(false);
+      const refreshedResult = await announcementsState.refetch(false);
+      const refreshedAnnouncement = refreshedResult?.announcements.find(
+        ({ id }) => id === announcementId,
+      );
+      const shouldClearRevision =
+        formValues.mediaUpdate === "remove" ||
+        (formValues.mediaUpdate === "replace" &&
+          Boolean(refreshedAnnouncement) &&
+          refreshedAnnouncement?.media !== previousMediaUrl);
+
+      if (shouldClearRevision) {
+        setMediaRevisions((currentRevisions) => {
+          if (!(announcementId in currentRevisions)) {
+            return currentRevisions;
+          }
+
+          const nextRevisions = { ...currentRevisions };
+          delete nextRevisions[announcementId];
+          return nextRevisions;
+        });
+      }
     }
 
     return succeeded;
@@ -194,6 +234,7 @@ export function AnnouncementsPage() {
               error={announcementsState.error}
               isLoading={announcementsState.listLoading}
               isRefreshing={announcementsState.listRefetching}
+              mediaRevisions={mediaRevisions}
               pagination={{
                 currentPage: announcementsState.currentPage,
                 perPage: announcementsState.perPage,
@@ -217,6 +258,7 @@ export function AnnouncementsPage() {
           isDeleteDialogOpen={Boolean(pendingDeletion)}
           isUpdatePending={actions.updatePending}
           key={selectedAnnouncementId}
+          mediaRevision={mediaRevisions[selectedAnnouncementId]}
           updateError={actions.updateError}
           onClearErrors={actions.clearUpdateErrors}
           onClose={closeEditor}

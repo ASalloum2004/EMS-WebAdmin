@@ -8,6 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { ImagePlus, Paperclip, Trash2, X } from "lucide-react";
+import { addApiMediaRevision } from "../../../../api";
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import {
@@ -25,6 +26,7 @@ import type {
   Announcement,
   AnnouncementFieldErrors,
   AnnouncementFormReceiver,
+  AnnouncementMediaRevision,
   AnnouncementMediaUpdate,
   AnnouncementUpdateValues,
 } from "../../types";
@@ -44,6 +46,7 @@ interface AnnouncementEditModalProps {
   fieldErrors: AnnouncementFieldErrors;
   isDeleteDialogOpen: boolean;
   isUpdatePending: boolean;
+  mediaRevision?: AnnouncementMediaRevision;
   onClearErrors: () => void;
   onClose: () => void;
   onDelete: () => void;
@@ -59,6 +62,7 @@ export function AnnouncementEditModal({
   fieldErrors,
   isDeleteDialogOpen,
   isUpdatePending,
+  mediaRevision,
   onClearErrors,
   onClose,
   onDelete,
@@ -76,14 +80,14 @@ export function AnnouncementEditModal({
     useState<AnnouncementFormReceiver>("all");
   const [isDraft, setIsDraft] = useState(true);
   const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null);
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreviewUrl, setMediaPreviewUrl] = useState("");
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState("");
   const [mediaDisplayError, setMediaDisplayError] = useState("");
   const [mediaUpdate, setMediaUpdate] =
     useState<AnnouncementMediaUpdate>("preserve");
   const [mediaInputKey, setMediaInputKey] = useState(0);
-  const mediaPreviewUrlRef = useRef("");
+  const previewUrlRef = useRef<string | null>(null);
   const isSaveDisabled =
     isUpdatePending || !title.trim() || !description.trim();
 
@@ -98,13 +102,13 @@ export function AnnouncementEditModal({
       announcement.receiver === "unknown" ? "all" : announcement.receiver,
     );
     setIsDraft(announcement.isDraft);
-    if (mediaPreviewUrlRef.current) {
-      URL.revokeObjectURL(mediaPreviewUrlRef.current);
-      mediaPreviewUrlRef.current = "";
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
     }
     setExistingMediaUrl(announcement.media);
-    setMediaFile(null);
-    setMediaPreviewUrl("");
+    setSelectedMediaFile(null);
+    setPreviewUrl(null);
     setMediaError("");
     setMediaDisplayError("");
     setMediaUpdate("preserve");
@@ -131,26 +135,26 @@ export function AnnouncementEditModal({
     document.body.style.overflow = "hidden";
 
     return () => {
-      if (mediaPreviewUrlRef.current) {
-        URL.revokeObjectURL(mediaPreviewUrlRef.current);
-        mediaPreviewUrlRef.current = "";
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
       }
       document.body.style.overflow = previousOverflow;
     };
   }, []);
 
-  function replaceMediaPreview(nextPreviewUrl: string) {
-    if (mediaPreviewUrlRef.current) {
-      URL.revokeObjectURL(mediaPreviewUrlRef.current);
+  function replaceMediaPreview(nextPreviewUrl: string | null) {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
     }
 
-    mediaPreviewUrlRef.current = nextPreviewUrl;
-    setMediaPreviewUrl(nextPreviewUrl);
+    previewUrlRef.current = nextPreviewUrl;
+    setPreviewUrl(nextPreviewUrl);
   }
 
   function clearMedia() {
-    replaceMediaPreview("");
-    setMediaFile(null);
+    replaceMediaPreview(null);
+    setSelectedMediaFile(null);
     setMediaError("");
     setMediaDisplayError("");
     setMediaUpdate(existingMediaUrl ? "remove" : "preserve");
@@ -172,17 +176,21 @@ export function AnnouncementEditModal({
     );
 
     if (validationError) {
+      replaceMediaPreview(null);
+      setSelectedMediaFile(null);
       setMediaError(t.announcements.media[validationError]);
+      setMediaDisplayError("");
+      setMediaUpdate("preserve");
       setMediaInputKey((currentKey) => currentKey + 1);
       return;
     }
 
     const nextPreviewUrl = isImageMediaFile(file)
       ? URL.createObjectURL(file)
-      : "";
+      : null;
 
     replaceMediaPreview(nextPreviewUrl);
-    setMediaFile(file);
+    setSelectedMediaFile(file);
     setMediaError("");
     setMediaDisplayError("");
     setMediaUpdate("replace");
@@ -198,7 +206,7 @@ export function AnnouncementEditModal({
     await onSave({
       description: description.trim(),
       isDraft,
-      mediaFile,
+      mediaFile: selectedMediaFile,
       mediaUpdate,
       receiver,
       title: title.trim(),
@@ -208,21 +216,23 @@ export function AnnouncementEditModal({
   const canClose = !isUpdatePending && !isDeleteDialogOpen;
   const displayedMediaUrl =
     mediaUpdate === "replace"
-      ? mediaPreviewUrl
+      ? previewUrl
       : mediaUpdate === "preserve"
-        ? existingMediaUrl
+        ? mediaRevision?.mediaUrl === existingMediaUrl
+          ? addApiMediaRevision(existingMediaUrl, mediaRevision.revision)
+          : existingMediaUrl
         : null;
   const hasMedia =
     mediaUpdate === "replace"
-      ? Boolean(mediaFile)
+      ? Boolean(selectedMediaFile)
       : mediaUpdate === "preserve"
         ? Boolean(existingMediaUrl)
         : false;
   const shouldDisplayImage =
     mediaUpdate === "replace"
       ? Boolean(
-          mediaFile &&
-            isImageMediaFile(mediaFile) &&
+          selectedMediaFile &&
+            isImageMediaFile(selectedMediaFile) &&
             displayedMediaUrl,
         )
       : Boolean(displayedMediaUrl && isImageMedia(displayedMediaUrl));
@@ -382,7 +392,7 @@ export function AnnouncementEditModal({
                       />
                     )}
                     <span>{
-                      mediaFile?.name || t.announcements.media.attached
+                      selectedMediaFile?.name || t.announcements.media.attached
                     }</span>
                     <button
                       aria-label={t.announcements.media.remove}

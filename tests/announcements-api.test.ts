@@ -141,6 +141,19 @@ test("normalizes details and safely falls back for unsupported receivers", () =>
   assert.equal(announcement.media, null);
 });
 
+test("announcement mapping rejects inline media instead of treating Base64 as a saved URL", () => {
+  const response: AnnouncementDetailsResponse = {
+    status: true,
+    message: "Announcement retrieved successfully.",
+    data: {
+      ...apiAnnouncement,
+      media: "data:image/png;base64,aGVsbG8=",
+    },
+  };
+
+  assert.equal(normalizeAnnouncementDetailsResponse(response).media, null);
+});
+
 function getRequestFormData(request: { init?: RequestInit }) {
   assert.ok(request.init?.body instanceof FormData);
   return request.init.body;

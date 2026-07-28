@@ -48,7 +48,14 @@ function parseBody(body: BodyInit | null | undefined) {
   return null;
 }
 
-function createAnnouncementBackend() {
+interface AnnouncementBackendOptions {
+  firstAnnouncementMedia?: string | null;
+  reuseReplacementMediaUrl?: boolean;
+}
+
+function createAnnouncementBackend(
+  options: AnnouncementBackendOptions = {},
+) {
   let announcements: AnnouncementApiDto[] = [
     {
       id: 1,
@@ -56,7 +63,7 @@ function createAnnouncementBackend() {
       description: "A draft announcement for exhibitors.",
       receiver: "Exhibitors",
       is_active: true,
-      media: null,
+      media: options.firstAnnouncementMedia ?? null,
     },
     {
       id: 2,
@@ -217,7 +224,10 @@ function createAnnouncementBackend() {
           media:
             body && Object.hasOwn(body, "media")
               ? body.media instanceof File
-                ? `/storage/${body.media.name}`
+                ? options.reuseReplacementMediaUrl &&
+                  existingAnnouncement.media
+                  ? existingAnnouncement.media
+                  : `/storage/${body.media.name}`
                 : body.media === ""
                   ? null
                   : existingAnnouncement.media
@@ -859,4 +869,75 @@ test("created and replacement media are refetched from persisted backend URLs", 
   );
   assert.ok(replacementRequest?.body?.media instanceof File);
   assert.equal(replacementRequest.body.media.name, "replacement.webp");
+});
+
+test("a reused replacement URL gets one stable cache revision in the list and reopened editor", async () => {
+  const backend = createAnnouncementBackend({
+    firstAnnouncementMedia: "/storage/reused.png",
+    reuseReplacementMediaUrl: true,
+  });
+  const view = render(
+    <I18nProvider>
+      <AnnouncementsPage />
+    </I18nProvider>,
+  );
+
+  await view.findByText("Draft Exhibitor Notice");
+  fireEvent.click(
+    view.getByRole("button", {
+      name: "Edit announcement Draft Exhibitor Notice",
+    }),
+  );
+  const editDialog = await view.findByRole("dialog", {
+    name: "Edit Announcement",
+  });
+  await within(editDialog).findByLabelText("Title");
+  const editFileInput = editDialog.querySelector<HTMLInputElement>(
+    ".announcement-form__file-input",
+  );
+  assert.ok(editFileInput);
+  fireEvent.change(editFileInput, {
+    target: {
+      files: [
+        new File(["replacement"], "replacement.png", {
+          type: "image/png",
+        }),
+      ],
+    },
+  });
+  fireEvent.click(
+    within(editDialog).getByRole("button", { name: "Save Changes" }),
+  );
+
+  await waitFor(() => {
+    assert.equal(
+      view.queryByRole("dialog", { name: "Edit Announcement" }),
+      null,
+    );
+  });
+  const refreshedRow = await view.findByRole("button", {
+    name: "Edit announcement Draft Exhibitor Notice",
+  });
+  const refreshedImage = refreshedRow.querySelector("img");
+  assert.ok(refreshedImage);
+  const refreshedImageUrl = new URL(refreshedImage.src);
+  assert.equal(refreshedImageUrl.pathname, "/storage/reused.png");
+  assert.equal(
+    refreshedImageUrl.searchParams.get("_ems_media_revision"),
+    "1-1",
+  );
+  const listRequestsAfterUpdate = backend.requests.filter(
+    ({ method, url }) =>
+      method === "GET" && url.pathname.endsWith("/announcements"),
+  );
+  assert.equal(listRequestsAfterUpdate.length, 2);
+
+  fireEvent.click(refreshedRow);
+  const reopenedDialog = await view.findByRole("dialog", {
+    name: "Edit Announcement",
+  });
+  const reopenedImage = (await within(reopenedDialog).findByAltText(
+    "Announcement media preview",
+  )) as HTMLImageElement;
+  assert.equal(reopenedImage.src, refreshedImage.src);
 });

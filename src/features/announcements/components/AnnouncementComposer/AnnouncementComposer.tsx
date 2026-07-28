@@ -56,10 +56,10 @@ export function AnnouncementComposer({
     useState<AnnouncementFormReceiver>("all");
   const [isDraft, setIsDraft] = useState(true);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [mediaPreviewUrl, setMediaPreviewUrl] = useState("");
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState("");
   const [mediaInputKey, setMediaInputKey] = useState(0);
-  const mediaPreviewUrlRef = useRef("");
+  const mediaPreviewUrlRef = useRef<string | null>(null);
   const isCreateDisabled =
     isPending || !title.trim() || !description.trim();
 
@@ -67,13 +67,13 @@ export function AnnouncementComposer({
     () => () => {
       if (mediaPreviewUrlRef.current) {
         URL.revokeObjectURL(mediaPreviewUrlRef.current);
-        mediaPreviewUrlRef.current = "";
+        mediaPreviewUrlRef.current = null;
       }
     },
     [],
   );
 
-  function replaceMediaPreview(nextPreviewUrl: string) {
+  function replaceMediaPreview(nextPreviewUrl: string | null) {
     if (mediaPreviewUrlRef.current) {
       URL.revokeObjectURL(mediaPreviewUrlRef.current);
     }
@@ -83,7 +83,7 @@ export function AnnouncementComposer({
   }
 
   function clearMedia() {
-    replaceMediaPreview("");
+    replaceMediaPreview(null);
     setMediaFile(null);
     setMediaError("");
     setMediaInputKey((currentKey) => currentKey + 1);
@@ -104,6 +104,8 @@ export function AnnouncementComposer({
     );
 
     if (validationError) {
+      replaceMediaPreview(null);
+      setMediaFile(null);
       setMediaError(t.announcements.media[validationError]);
       setMediaInputKey((currentKey) => currentKey + 1);
       return;
@@ -111,7 +113,7 @@ export function AnnouncementComposer({
 
     const nextPreviewUrl = isImageMediaFile(file)
       ? URL.createObjectURL(file)
-      : "";
+      : null;
 
     replaceMediaPreview(nextPreviewUrl);
     setMediaFile(file);

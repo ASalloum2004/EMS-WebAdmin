@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Image, Paperclip } from "lucide-react";
+import { addApiMediaRevision } from "../../../../api";
 import { Card, TableFooter } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import { isImageMedia } from "../../data/announcementMedia";
 import type {
   Announcement,
+  AnnouncementMediaRevision,
   AnnouncementPagination,
 } from "../../types";
 import { AnnouncementListSkeleton } from "../skeletons";
@@ -17,6 +19,9 @@ interface AnnouncementListProps {
   error: string;
   isLoading: boolean;
   isRefreshing: boolean;
+  mediaRevisions?: Readonly<
+    Partial<Record<number, AnnouncementMediaRevision>>
+  >;
   onPageChange: (page: number) => void;
   onRetry: () => void;
   onSelect: (announcementId: number) => void;
@@ -30,6 +35,7 @@ export function AnnouncementList({
   error,
   isLoading,
   isRefreshing,
+  mediaRevisions = {},
   onPageChange,
   onRetry,
   onSelect,
@@ -70,46 +76,57 @@ export function AnnouncementList({
 
       {!isLoading && !error && announcements.length ? (
         <div className="announcement-list" role="list">
-          {announcements.map((announcement) => (
-            <div key={announcement.id} role="listitem">
-              <button
-                aria-label={`${t.announcements.list.openEdit} ${announcement.title}`}
-                className={
-                  announcement.media
-                    ? "announcement-list__row"
-                    : "announcement-list__row announcement-list__row--without-media"
-                }
-                type="button"
-                onClick={() => onSelect(announcement.id)}
-              >
-                {announcement.media ? (
-                  <AnnouncementMedia media={announcement.media} />
-                ) : null}
+          {announcements.map((announcement) => {
+            const mediaRevision = mediaRevisions[announcement.id];
+            const displayMediaUrl =
+              mediaRevision?.mediaUrl === announcement.media
+                ? addApiMediaRevision(
+                    announcement.media,
+                    mediaRevision.revision,
+                  )
+                : announcement.media;
 
-                <span className="announcement-list__copy">
-                  <strong>{announcement.title}</strong>
-                  <span>{announcement.description}</span>
-                </span>
+            return (
+              <div key={announcement.id} role="listitem">
+                <button
+                  aria-label={`${t.announcements.list.openEdit} ${announcement.title}`}
+                  className={
+                    announcement.media
+                      ? "announcement-list__row"
+                      : "announcement-list__row announcement-list__row--without-media"
+                  }
+                  type="button"
+                  onClick={() => onSelect(announcement.id)}
+                >
+                  {displayMediaUrl ? (
+                    <AnnouncementMedia media={displayMediaUrl} />
+                  ) : null}
 
-                <span className="announcement-list__badges">
-                  <span className="announcement-list__badge announcement-list__badge--receiver">
-                    {t.announcements.audience[announcement.receiver]}
+                  <span className="announcement-list__copy">
+                    <strong>{announcement.title}</strong>
+                    <span>{announcement.description}</span>
                   </span>
-                  <span
-                    className={
-                      announcement.isDraft
-                        ? "announcement-list__badge announcement-list__badge--draft"
-                        : "announcement-list__badge announcement-list__badge--published"
-                    }
-                  >
-                    {announcement.isDraft
-                      ? t.announcements.status.draft
-                      : t.announcements.status.published}
+
+                  <span className="announcement-list__badges">
+                    <span className="announcement-list__badge announcement-list__badge--receiver">
+                      {t.announcements.audience[announcement.receiver]}
+                    </span>
+                    <span
+                      className={
+                        announcement.isDraft
+                          ? "announcement-list__badge announcement-list__badge--draft"
+                          : "announcement-list__badge announcement-list__badge--published"
+                      }
+                    >
+                      {announcement.isDraft
+                        ? t.announcements.status.draft
+                        : t.announcements.status.published}
+                    </span>
                   </span>
-                </span>
-              </button>
-            </div>
-          ))}
+                </button>
+              </div>
+            );
+          })}
         </div>
       ) : null}
 

@@ -1,6 +1,7 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
+import { API_BASE_URL } from "../src/api/apiClient.js";
 import {
   AnnouncementListTimeoutError,
   buildAnnouncementsPath,
@@ -112,7 +113,7 @@ test("normalizes the nested list response and maps is_active to isDraft", () => 
   assert.equal(result.announcements[0]?.receiver, "exhibitors");
   assert.equal(
     result.announcements[0]?.media,
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/announcement.png",
+    new URL("/storage/announcement.png", API_BASE_URL).toString(),
   );
   assert.deepEqual(result.pagination, {
     currentPage: 2,
@@ -222,6 +223,7 @@ test("create sends authenticated multipart data with the original media bytes", 
   assert.equal(formData.get("description"), "Saved for later.");
   assert.equal(formData.get("receiver"), "Exhibitors");
   assert.equal(formData.get("is_active"), "1");
+  assert.equal(formData.has("_method"), false);
   await assertUploadedFile(formData.get("media"), mediaFile);
   assert.equal(result.message, "Announcement created.");
 });
@@ -285,6 +287,7 @@ test("update uses POST multipart, replaces media with file bytes, and keeps head
   assert.equal(request.init?.method, "POST");
   assertMultipartHeaders(request.init);
   const formData = getRequestFormData(request);
+  assert.equal(formData.get("_method"), "PATCH");
   assert.equal(formData.get("title"), "Announcement");
   assert.equal(formData.get("description"), "Description");
   assert.equal(formData.get("receiver"), "visitors");
@@ -323,6 +326,8 @@ test("update preserve omits media and remove sends Laravel-nullable empty field"
   assert.equal(requestBodies[0]?.has("media"), false);
   assert.equal(requestBodies[1]?.has("media"), true);
   assert.equal(requestBodies[1]?.get("media"), "");
+  assert.equal(requestBodies[0]?.get("_method"), "PATCH");
+  assert.equal(requestBodies[1]?.get("_method"), "PATCH");
 });
 
 test("list requests time out instead of remaining pending indefinitely", async () => {

@@ -10,6 +10,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { API_BASE_URL } from "../src/api/apiClient.js";
 import { AnnouncementsPage } from "../src/features/announcements/pages/AnnouncementsPage.js";
 import type { AnnouncementApiDto } from "../src/features/announcements/types.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
@@ -207,7 +208,7 @@ function createAnnouncementBackend(
         });
       }
 
-      if (method === "POST") {
+      if (method === "POST" && body?._method === "PATCH") {
         const updatedAnnouncement: AnnouncementApiDto = {
           ...existingAnnouncement,
           title: String(body?.title ?? existingAnnouncement.title),
@@ -704,6 +705,7 @@ test("creates, fetches details, updates, and confirms deletion through the backe
       method === "POST" && /\/announcements\/\d+$/.test(url.pathname),
   );
   assert.ok(updateRequest);
+  assert.equal(updateRequest.body?._method, "PATCH");
   assert.equal(updateRequest.body?.is_active, "1");
   assert.equal(Object.hasOwn(updateRequest.body ?? {}, "media"), false);
 
@@ -730,6 +732,7 @@ test("creates, fetches details, updates, and confirms deletion through the backe
       method === "POST" && url.pathname.endsWith("/announcements"),
   );
   assert.ok(postRequest);
+  assert.equal(Object.hasOwn(postRequest.body ?? {}, "_method"), false);
   assert.equal(postRequest.body?.is_active, "0");
   await view.findByText("Published from Composer");
 
@@ -814,7 +817,7 @@ test("created and replacement media are refetched from persisted backend URLs", 
   assert.ok(createdImage);
   assert.equal(
     createdImage.src,
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/created.png",
+    new URL("/storage/created.png", API_BASE_URL).toString(),
   );
   const createRequest = backend.requests.find(
     ({ body, method, url }) =>
@@ -859,7 +862,7 @@ test("created and replacement media are refetched from persisted backend URLs", 
   assert.ok(replacementImage);
   assert.equal(
     replacementImage.src,
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/replacement.webp",
+    new URL("/storage/replacement.webp", API_BASE_URL).toString(),
   );
   const replacementRequest = backend.requests.find(
     ({ body, method, url }) =>
@@ -868,6 +871,7 @@ test("created and replacement media are refetched from persisted backend URLs", 
       body?.media instanceof File,
   );
   assert.ok(replacementRequest?.body?.media instanceof File);
+  assert.equal(replacementRequest.body._method, "PATCH");
   assert.equal(replacementRequest.body.media.name, "replacement.webp");
 });
 

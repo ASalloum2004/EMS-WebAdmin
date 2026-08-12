@@ -9,6 +9,7 @@ import {
   renderHook,
   waitFor,
 } from "@testing-library/react";
+import { API_BASE_URL } from "../src/api/apiClient.js";
 import { AnnouncementComposer } from "../src/features/announcements/components/AnnouncementComposer/AnnouncementComposer.js";
 import { AnnouncementEditModal } from "../src/features/announcements/components/AnnouncementEditModal/AnnouncementEditModal.js";
 import { useAnnouncementActions } from "../src/features/announcements/hooks/useAnnouncementActions.js";
@@ -31,6 +32,7 @@ const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(
   globalThis,
   "sessionStorage",
 );
+const savedMediaUrl = new URL("/storage/saved.png", API_BASE_URL).toString();
 
 beforeEach(() => {
   Object.defineProperty(globalThis, "sessionStorage", {
@@ -226,7 +228,7 @@ test("edit replacement keeps binary state, revokes superseded previews, and disp
           description: "Saved description",
           receiver: "all",
           isDraft: false,
-          media: "https://violations-salt-hybrid-springer.trycloudflare.com/storage/saved.png",
+          media: savedMediaUrl,
         }}
         detailsError=""
         detailsLoading={false}
@@ -234,8 +236,7 @@ test("edit replacement keeps binary state, revokes superseded previews, and disp
         isDeleteDialogOpen={false}
         isUpdatePending={false}
         mediaRevision={{
-          mediaUrl:
-            "https://violations-salt-hybrid-springer.trycloudflare.com/storage/saved.png",
+          mediaUrl: savedMediaUrl,
           revision: "17-1",
         }}
         updateError="The given data was invalid."

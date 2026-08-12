@@ -36,6 +36,7 @@ export function buildUpdateAnnouncementFormData(
 ) {
   const formData = new FormData();
 
+  formData.append("_method", "PATCH");
   appendAnnouncementFields(formData, values);
 
   if (values.mediaUpdate === "replace") {

@@ -14,6 +14,7 @@ import {
   getAuthSession,
   setAuthSession,
 } from "../features/auth/utils/authStorage";
+import { clearProfileSessionCache } from "../features/profile/data/profileCache";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -30,11 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (credentials: LoginCredentials, rememberMe: boolean = false) => {
     const nextSession = await login(credentials);
+    clearProfileSessionCache();
     setAuthSession(nextSession, rememberMe);
     setSession(nextSession);
   }, []);
 
   const signOut = useCallback(() => {
+    clearProfileSessionCache();
     clearAuthSession();
     setSession(null);
     if (window.location.pathname !== "/") {

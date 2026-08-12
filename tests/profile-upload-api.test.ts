@@ -1,6 +1,7 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
+import { API_BASE_URL } from "../src/api/apiClient.js";
 import { mapProfileResponse } from "../src/features/profile/api/profileShowApi.js";
 import { updateProfile } from "../src/features/profile/api/profileUpdateApi.js";
 import {
@@ -104,7 +105,7 @@ test("profile update posts authenticated multipart data with the avatar bytes", 
   );
   assert.equal(
     profile.avatar,
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/avatars/avatar.png",
+    new URL("/storage/avatars/avatar.png", API_BASE_URL).toString(),
   );
 });
 
@@ -120,7 +121,7 @@ test("profile media normalization handles slash-relative and rejects unsafe URLs
   assert.equal(
     mapProfileResponse({ ...baseProfile, avatar: "/storage/avatar.png" })
       .avatar,
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/avatar.png",
+    new URL("/storage/avatar.png", API_BASE_URL).toString(),
   );
   assert.equal(
     mapProfileResponse({ ...baseProfile, avatar: "javascript:alert(1)" })

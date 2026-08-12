@@ -1,8 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  ProfileProvider,
-  useProfileContext,
-} from "../../../features/profile/hooks";
+import { useOptionalProfileContext } from "../../../features/profile/hooks";
 import type { AdminProfile } from "../../../features/profile/types";
 import { AdminAppbar } from "../AdminAppbar";
 import { AdminSidebar } from "../AdminSidebar";
@@ -24,15 +21,7 @@ function getAdminDisplayName(profile: AdminProfile | null) {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  return (
-    <ProfileProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </ProfileProvider>
-  );
-}
-
-function AdminLayoutContent({ children }: AdminLayoutProps) {
-  const { profile } = useProfileContext();
+  const profile = useOptionalProfileContext()?.profile ?? null;
   const adminName = getAdminDisplayName(profile);
   const adminAvatarUrl = profile?.avatar || undefined;
 

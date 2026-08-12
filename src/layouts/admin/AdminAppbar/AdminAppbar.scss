@@ -37,6 +37,11 @@
   overflow: hidden;
 }
 
+.admin-appbar__avatar-button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
 .admin-appbar__avatar {
   width: 36px;
   height: 36px;

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useAuth } from "../context";
+import { ProfileProvider } from "../features/profile/hooks";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -13,5 +14,5 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return null;
   }
 
-  return <>{children}</>;
+  return <ProfileProvider>{children}</ProfileProvider>;
 }

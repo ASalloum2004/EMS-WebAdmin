@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../../context";
 import { useI18n } from "../../../i18n";
-import { getProfile, updateProfile as updateProfileRequest } from "../api";
+import { updateProfile as updateProfileRequest } from "../api";
 import {
   applyStoredProfileAvatarRevision,
   applyUploadedProfileAvatarRevision,
@@ -9,10 +9,7 @@ import {
   getProfileAvatarValidationError,
 } from "../data";
 import type { AdminProfile, AdminProfileUpdatePayload } from "../types";
-import {
-  getProfileErrorMessage,
-  useOptionalProfileContext,
-} from "./ProfileContext";
+import { getProfileErrorMessage, useProfileContext } from "./ProfileContext";
 
 interface UseProfileOptions {
   initialProfile?: AdminProfile | null;
@@ -31,60 +28,24 @@ function canLoadAvatarUrl(avatarUrl: string) {
 export function useProfile({ initialProfile = null }: UseProfileOptions = {}) {
   const { user } = useAuth();
   const { t } = useI18n();
-  const profileContext = useOptionalProfileContext();
-  const [localProfile, setLocalProfile] =
-    useState<AdminProfile | null>(initialProfile);
-  const [localError, setLocalError] = useState("");
-  const [localIsLoading, setLocalIsLoading] = useState(true);
+  const {
+    error,
+    isLoading,
+    profile: cachedProfile,
+    refreshProfile,
+    setProfile,
+  } = useProfileContext();
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInputValue, setNameInputValue] = useState("");
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState("");
   const [profileActionError, setProfileActionError] = useState("");
-  const hasRequestedProfile = useRef(false);
   const avatarPreviewUrlRef = useRef("");
   const avatarUploadIdRef = useRef(0);
   const isUpdatingRef = useRef(false);
 
-  const refreshLocalProfile = useCallback(async () => {
-    setLocalError("");
-    setLocalIsLoading(true);
-
-    try {
-      const nextProfile = applyStoredProfileAvatarRevision(
-        await getProfile(),
-      );
-      setLocalProfile(nextProfile);
-      return nextProfile;
-    } catch (profileError) {
-      setLocalError(
-          getProfileErrorMessage(profileError, t.profile.loadError),
-      );
-      return null;
-    } finally {
-      setLocalIsLoading(false);
-    }
-  }, [t.profile.loadError]);
-
-  const error = profileContext?.error ?? localError;
-  const isLoading = profileContext?.isLoading ?? localIsLoading;
-  const profile = profileContext?.profile ?? localProfile;
-  const refreshProfile = profileContext?.refreshProfile ?? refreshLocalProfile;
-  const setProfile = profileContext?.setProfile ?? setLocalProfile;
-
-  useEffect(() => {
-    if (profileContext) {
-      return;
-    }
-
-    if (hasRequestedProfile.current) {
-      return;
-    }
-
-    hasRequestedProfile.current = true;
-    void refreshProfile();
-  }, [profileContext, refreshProfile]);
+  const profile = cachedProfile ?? initialProfile;
 
   const requestProfileUpdate = useCallback(
     async (payload: AdminProfileUpdatePayload) => {

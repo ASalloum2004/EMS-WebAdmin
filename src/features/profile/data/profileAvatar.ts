@@ -109,6 +109,14 @@ function clearStoredProfileAvatarRevision(profileId: number) {
   }
 }
 
+export function clearProfileAvatarRevision() {
+  try {
+    sessionStorage.removeItem(PROFILE_AVATAR_REVISION_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures while clearing the authenticated profile cache.
+  }
+}
+
 export function createProfileAvatarRevision() {
   revisionSequence += 1;
   return `${Date.now().toString(36)}-${revisionSequence.toString(36)}`;

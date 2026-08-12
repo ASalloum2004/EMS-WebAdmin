@@ -30,6 +30,11 @@ export function setAuthSession(session: AuthSession, rememberMe: boolean = false
 export function clearAuthSession(): void {
   try {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch {
+    // Ignore local storage errors and still clear the session copy.
+  }
+
+  try {
     sessionStorage.removeItem(AUTH_STORAGE_KEY);
   } catch {
     // Ignore errors

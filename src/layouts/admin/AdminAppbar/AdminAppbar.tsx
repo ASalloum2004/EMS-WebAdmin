@@ -33,8 +33,8 @@ export function AdminAppbar({ adminAvatarUrl, adminName }: AdminAppbarProps) {
     <header className="admin-appbar">
       <h1 className="admin-appbar__title">{t.layout.appbar.title}</h1>
 
-      <button
-        type="button"
+      <a
+        href="/profile"
         className="admin-appbar__avatar-button"
         aria-label={t.layout.appbar.openProfileMenu}
       >
@@ -50,7 +50,7 @@ export function AdminAppbar({ adminAvatarUrl, adminName }: AdminAppbarProps) {
             {getInitials(adminName)}
           </span>
         )}
-      </button>
+      </a>
     </header>
   );
 }

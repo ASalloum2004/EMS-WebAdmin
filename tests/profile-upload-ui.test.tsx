@@ -8,8 +8,10 @@ import {
   render,
   waitFor,
 } from "@testing-library/react";
+import { API_BASE_URL } from "../src/api/apiClient.js";
 import { AuthProvider } from "../src/context/AuthContext.js";
 import { ThemeProvider } from "../src/context/ThemeContext.js";
+import { ProfileProvider } from "../src/features/profile/hooks/ProfileContext.js";
 import { ProfilePage } from "../src/features/profile/pages/ProfilePage.js";
 import { I18nProvider } from "../src/i18n/I18nContext.js";
 
@@ -55,7 +57,9 @@ function renderProfilePage() {
     <I18nProvider>
       <ThemeProvider>
         <AuthProvider>
-          <ProfilePage />
+          <ProfileProvider>
+            <ProfilePage />
+          </ProfileProvider>
         </AuthProvider>
       </ThemeProvider>
     </I18nProvider>,
@@ -189,7 +193,7 @@ test("successful avatar upload updates shared UI and survives a remount", async 
     finishUpload?.(jsonResponse(profileResponse(persistedAvatar)));
   });
   const persistedUrl =
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/avatars/new-avatar.png";
+    new URL("/storage/avatars/new-avatar.png", API_BASE_URL).toString();
   await waitFor(() => {
     const persistedImages = view.container.querySelectorAll(
       `img[src="${persistedUrl}"]`,
@@ -314,7 +318,7 @@ test("same-URL avatar replacement keeps the preview until revised server media l
 
 test("invalid files and backend 422 errors keep the previous profile avatar", async () => {
   const oldAvatar =
-    "https://violations-salt-hybrid-springer.trycloudflare.com/storage/avatars/old.png";
+    new URL("/storage/avatars/old.png", API_BASE_URL).toString();
   let postCount = 0;
   Object.defineProperty(URL, "createObjectURL", {
     configurable: true,

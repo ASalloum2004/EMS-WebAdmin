@@ -22,6 +22,20 @@ export type ReportDetailsResponse = {
   status: boolean;
 };
 
+export type ReportActionPayload = {
+  notes?: string | null;
+};
+
+export type ResolveReportPayload = ReportActionPayload;
+
+export type RejectReportPayload = ReportActionPayload;
+
+export type ReportActionResponse = Record<string, unknown>;
+
+export type ReportActionFieldErrors = {
+  notes?: string;
+};
+
 export type ReportFilters = {
   createdDate: string;
   status: "" | ReportStatus;

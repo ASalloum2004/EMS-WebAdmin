@@ -1,7 +1,12 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react";
 import {
   formatReportDetailsDate,
   ReportDetailsModal,
@@ -22,10 +27,20 @@ const pendingDetails: ReportDetails = {
 const defaultProps = {
   details: pendingDetails,
   error: "",
+  isRejecting: false,
+  isResolving: false,
   isLoading: false,
+  onClearRejectError: () => undefined,
+  onClearResolveError: () => undefined,
   onClose: () => undefined,
+  onReject: async () => ({}),
+  onResolve: async () => ({}),
   onRetry: () => undefined,
+  rejectError: "",
+  rejectFieldErrors: {},
   reportId: 7,
+  resolveError: "",
+  resolveFieldErrors: {},
 };
 
 function renderDetailsModal(
@@ -48,7 +63,7 @@ afterEach(() => {
   document.body.style.overflow = "";
 });
 
-test("renders every confirmed Report field and disabled pending actions", () => {
+test("renders every confirmed Report field and pending actions", () => {
   const view = renderDetailsModal();
   const renderedText = view.container.textContent ?? "";
 
@@ -65,13 +80,29 @@ test("renders every confirmed Report field and disabled pending actions", () => 
 
   const rejectButton = view.getByRole("button", { name: "Reject" });
   const approveButton = view.getByRole("button", { name: "Approve" });
-  assert.equal(rejectButton.hasAttribute("disabled"), true);
-  assert.equal(approveButton.hasAttribute("disabled"), true);
-  assert.ok(
-    view.getByText(
-      "Report actions are unavailable until the backend contract is confirmed.",
-    ),
-  );
+  assert.equal(rejectButton.hasAttribute("disabled"), false);
+  assert.equal(approveButton.hasAttribute("disabled"), false);
+});
+
+test("Approve confirmation collects optional notes for the Resolve callback", async () => {
+  const submissions: Array<{ notes?: string | null }> = [];
+  const view = renderDetailsModal({
+    onResolve: async (_reportId, payload) => {
+      submissions.push(payload);
+      return {};
+    },
+  });
+
+  fireEvent.click(view.getByRole("button", { name: "Approve" }));
+  assert.ok(view.getByRole("alertdialog", { name: "Approve Report?" }));
+
+  fireEvent.change(view.getByLabelText("Admin Notes (optional)"), {
+    target: { value: "  Resolved after review.  " },
+  });
+  fireEvent.click(view.getByRole("button", { name: "Approve Report" }));
+
+  await waitFor(() => assert.equal(submissions.length, 1));
+  assert.deepEqual(submissions, [{ notes: "Resolved after review." }]);
 });
 
 test("renders intentional empty notes and invalid date fallbacks", () => {

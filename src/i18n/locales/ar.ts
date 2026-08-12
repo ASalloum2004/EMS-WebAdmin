@@ -186,10 +186,31 @@ export const ar: I18nDictionary = {
       noAdminNotes: "لا توجد ملاحظات من المسؤول",
       reject: "رفض",
       approve: "موافقة",
-      actionsUnavailable:
-        "إجراءات التقرير غير متاحة حتى يتم تأكيد عقد الواجهة الخلفية.",
+      actionsUnavailable: "إجراءات التقرير غير متاحة بعد.",
       finalStatus: "الحالة النهائية",
       openAriaLabel: "فتح تفاصيل التقرير",
+      actionConfirmation: {
+        reportLabel: "التقرير",
+        notesLabel: "ملاحظات المسؤول (اختياري)",
+        notesPlaceholder: "أضف ملاحظات حول هذا الإجراء",
+        notesHelp: "يمكنك ترك هذا الحقل فارغًا.",
+        resolve: {
+          title: "الموافقة على التقرير؟",
+          message:
+            "سيتم وضع علامة على التقرير بأنه محلول. لا يمكن التراجع عن هذا الإجراء.",
+          confirm: "الموافقة على التقرير",
+          submitting: "جارٍ الموافقة...",
+          error: "تعذرت الموافقة على التقرير.",
+        },
+        reject: {
+          title: "رفض التقرير؟",
+          message:
+            "سيتم وضع علامة على التقرير بأنه مرفوض. لا يمكن التراجع عن هذا الإجراء.",
+          confirm: "رفض التقرير",
+          submitting: "جارٍ الرفض...",
+          error: "تعذر رفض التقرير.",
+        },
+      },
     },
     reportStatuses: {
       pending: "قيد الانتظار",

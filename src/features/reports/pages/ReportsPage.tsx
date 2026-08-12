@@ -15,6 +15,7 @@ import {
   ReportTable,
 } from "../components";
 import {
+  useReportActions,
   useReportDetails,
   useReports,
   useReportStatistics,
@@ -43,12 +44,35 @@ export function ReportsPage() {
     selectedReportId,
     t.reports.details.loadError,
   );
+  const refreshAfterReportAction = useCallback(async () => {
+    await Promise.all([
+      reportDetails.refetch(),
+      reports.refetch(),
+      reportStatistics.refetch(),
+    ]);
+  }, [
+    reportDetails.refetch,
+    reports.refetch,
+    reportStatistics.refetch,
+  ]);
+  const reportActions = useReportActions({
+    onActionSuccess: refreshAfterReportAction,
+    rejectFallbackMessage:
+      t.reports.details.actionConfirmation.reject.error,
+    resolveFallbackMessage:
+      t.reports.details.actionConfirmation.resolve.error,
+  });
   const openReportDetails = useCallback((report: ReportItem) => {
     setSelectedReportId(report.id);
   }, []);
   const closeReportDetails = useCallback(() => {
+    reportActions.clearRejectError();
+    reportActions.clearResolveError();
     setSelectedReportId(null);
-  }, []);
+  }, [
+    reportActions.clearRejectError,
+    reportActions.clearResolveError,
+  ]);
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
@@ -216,10 +240,20 @@ export function ReportsPage() {
         <ReportDetailsModal
           details={reportDetails.details}
           error={reportDetails.error}
+          isRejecting={reportActions.isRejecting}
+          isResolving={reportActions.isResolving}
           isLoading={reportDetails.isLoading}
+          onClearRejectError={reportActions.clearRejectError}
+          onClearResolveError={reportActions.clearResolveError}
           onClose={closeReportDetails}
+          onReject={reportActions.rejectReportById}
+          onResolve={reportActions.resolveReportById}
           onRetry={() => void reportDetails.refetch()}
+          rejectError={reportActions.rejectError}
+          rejectFieldErrors={reportActions.rejectFieldErrors}
           reportId={selectedReportId}
+          resolveError={reportActions.resolveError}
+          resolveFieldErrors={reportActions.resolveFieldErrors}
         />
       ) : null}
     </ManagementLayout>

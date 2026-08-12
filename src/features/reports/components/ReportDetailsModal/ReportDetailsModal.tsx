@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CircleCheck, CircleX } from "lucide-react";
 import { ModalCloseButton, Skeleton } from "../../../../components";
 import {
@@ -6,7 +6,17 @@ import {
   type I18nDictionary,
   type SupportedLanguage,
 } from "../../../../i18n";
-import type { ReportDetails, ReportStatus } from "../../types";
+import type {
+  ReportActionFieldErrors,
+  ReportActionPayload,
+  ReportActionResponse,
+  ReportDetails,
+  ReportStatus,
+} from "../../types";
+import {
+  ReportActionConfirmModal,
+  type ReportActionKind,
+} from "../ReportActionConfirmModal";
 import "./ReportDetailsModal.scss";
 
 const FOCUSABLE_SELECTOR = [
@@ -17,12 +27,26 @@ const FOCUSABLE_SELECTOR = [
 type ReportDetailsModalProps = {
   details: ReportDetails | null;
   error: string;
+  isRejecting: boolean;
+  isResolving: boolean;
   isLoading: boolean;
-  onApprove?: (reportId: number) => void;
+  onClearRejectError: () => void;
+  onClearResolveError: () => void;
   onClose: () => void;
-  onReject?: (reportId: number) => void;
+  onReject: (
+    reportId: number,
+    payload: ReportActionPayload,
+  ) => Promise<ReportActionResponse | null>;
+  onResolve: (
+    reportId: number,
+    payload: ReportActionPayload,
+  ) => Promise<ReportActionResponse | null>;
   onRetry: () => void;
+  rejectError: string;
+  rejectFieldErrors: ReportActionFieldErrors;
   reportId: number;
+  resolveError: string;
+  resolveFieldErrors: ReportActionFieldErrors;
 };
 
 export function formatReportDetailsDate(
@@ -94,9 +118,17 @@ function ReportStatusBadge({
 
 function ReportDetailsFooter({
   details,
-  onApprove,
-  onReject,
-}: Pick<ReportDetailsModalProps, "details" | "onApprove" | "onReject">) {
+  isRejecting,
+  isResolving,
+  onRejectClick,
+  onResolveClick,
+}: {
+  details: ReportDetails | null;
+  isRejecting: boolean;
+  isResolving: boolean;
+  onRejectClick: () => void;
+  onResolveClick: () => void;
+}) {
   const { t } = useI18n();
 
   if (!details) {
@@ -104,33 +136,30 @@ function ReportDetailsFooter({
   }
 
   if (details.status === "pending") {
-    const actionsAvailable = Boolean(onApprove && onReject);
-
     return (
       <footer className="report-details-modal__footer report-details-modal__footer--pending">
         <button
           className="report-details-modal__action report-details-modal__action--reject"
-          disabled={!onReject}
-          onClick={() => onReject?.(details.id)}
+          disabled={isRejecting || isResolving}
+          onClick={onRejectClick}
           type="button"
         >
           <CircleX aria-hidden="true" size={18} strokeWidth={2} />
-          {t.reports.details.reject}
+          {isRejecting
+            ? t.reports.details.actionConfirmation.reject.submitting
+            : t.reports.details.reject}
         </button>
         <button
           className="report-details-modal__action report-details-modal__action--approve"
-          disabled={!onApprove}
-          onClick={() => onApprove?.(details.id)}
+          disabled={isRejecting || isResolving}
+          onClick={onResolveClick}
           type="button"
         >
           <CircleCheck aria-hidden="true" size={18} strokeWidth={2} />
-          {t.reports.details.approve}
+          {isResolving
+            ? t.reports.details.actionConfirmation.resolve.submitting
+            : t.reports.details.approve}
         </button>
-        {!actionsAvailable ? (
-          <p className="report-details-modal__actions-note">
-            {t.reports.details.actionsUnavailable}
-          </p>
-        ) : null}
       </footer>
     );
   }
@@ -161,15 +190,115 @@ function ReportDetailsFooter({
 export function ReportDetailsModal({
   details,
   error,
+  isRejecting,
+  isResolving,
   isLoading,
-  onApprove,
+  onClearRejectError,
+  onClearResolveError,
   onClose,
   onReject,
+  onResolve,
   onRetry,
+  rejectError,
+  rejectFieldErrors,
   reportId,
+  resolveError,
+  resolveFieldErrors,
 }: ReportDetailsModalProps) {
   const { language, t } = useI18n();
   const dialogRef = useRef<HTMLElement>(null);
+  const [confirmationAction, setConfirmationAction] =
+    useState<ReportActionKind | null>(null);
+  const [confirmationReportId, setConfirmationReportId] = useState<
+    number | null
+  >(null);
+  const isSubmitting = isRejecting || isResolving;
+  const isConfirmationVisible = Boolean(
+    confirmationAction &&
+      details?.status === "pending" &&
+      details.id === confirmationReportId,
+  );
+
+  const clearActionError = useCallback(
+    (action: ReportActionKind) => {
+      if (action === "resolve") {
+        onClearResolveError();
+      } else {
+        onClearRejectError();
+      }
+    },
+    [onClearRejectError, onClearResolveError],
+  );
+
+  const closeConfirmation = useCallback(() => {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (confirmationAction) {
+      clearActionError(confirmationAction);
+    }
+
+    setConfirmationAction(null);
+    setConfirmationReportId(null);
+  }, [clearActionError, confirmationAction, isSubmitting]);
+
+  const openConfirmation = useCallback(
+    (action: ReportActionKind) => {
+      if (!details || details.status !== "pending" || isSubmitting) {
+        return;
+      }
+
+      clearActionError(action);
+      setConfirmationAction(action);
+      setConfirmationReportId(details.id);
+    },
+    [clearActionError, details, isSubmitting],
+  );
+
+  const confirmAction = useCallback(
+    async (payload: ReportActionPayload) => {
+      if (
+        !confirmationAction ||
+        !details ||
+        details.status !== "pending" ||
+        details.id !== confirmationReportId ||
+        isSubmitting
+      ) {
+        return;
+      }
+
+      const response =
+        confirmationAction === "resolve"
+          ? await onResolve(details.id, payload)
+          : await onReject(details.id, payload);
+
+      if (response) {
+        setConfirmationAction(null);
+        setConfirmationReportId(null);
+      }
+    },
+    [
+      confirmationAction,
+      confirmationReportId,
+      details,
+      isSubmitting,
+      onReject,
+      onResolve,
+    ],
+  );
+
+  useEffect(() => {
+    setConfirmationAction(null);
+    setConfirmationReportId(null);
+  }, [details?.id]);
+
+  useEffect(() => {
+    if (details?.status !== "pending") {
+      setConfirmationAction(null);
+      setConfirmationReportId(null);
+    }
+  }, [details?.status]);
 
   useEffect(() => {
     const previouslyFocusedElement =
@@ -182,7 +311,20 @@ export function ReportDetailsModal({
     document.body.style.overflow = "hidden";
     dialog?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
 
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      previouslyFocusedElement?.focus();
+    };
+  }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+
     function handleKeyDown(event: KeyboardEvent) {
+      if (isConfirmationVisible) {
+        return;
+      }
+
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
@@ -220,32 +362,34 @@ export function ReportDetailsModal({
 
     document.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocusedElement?.focus();
-    };
-  }, [onClose]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isConfirmationVisible, onClose]);
 
   return (
-    <div
-      className="report-details-modal"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
-      role="presentation"
-    >
-      <section
-        aria-busy={isLoading}
-        aria-labelledby="report-details-title"
-        aria-modal="true"
-        className="report-details-modal__dialog"
-        ref={dialogRef}
-        role="dialog"
-        tabIndex={-1}
+    <>
+      <div
+        className="report-details-modal"
+        onMouseDown={(event) => {
+          if (
+            event.target === event.currentTarget &&
+            !isConfirmationVisible
+          ) {
+            onClose();
+          }
+        }}
+        role="presentation"
       >
+        <section
+          aria-busy={isLoading}
+          aria-hidden={isConfirmationVisible ? true : undefined}
+          aria-labelledby="report-details-title"
+          aria-modal="true"
+          className="report-details-modal__dialog"
+          inert={isConfirmationVisible ? true : undefined}
+          ref={dialogRef}
+          role="dialog"
+          tabIndex={-1}
+        >
         <header className="report-details-modal__header">
           <div className="report-details-modal__heading">
             <h2 id="report-details-title">{t.reports.details.title}</h2>
@@ -341,10 +485,34 @@ export function ReportDetailsModal({
 
         <ReportDetailsFooter
           details={details}
-          onApprove={onApprove}
-          onReject={onReject}
+          isRejecting={isRejecting}
+          isResolving={isResolving}
+          onRejectClick={() => openConfirmation("reject")}
+          onResolveClick={() => openConfirmation("resolve")}
         />
-      </section>
-    </div>
+        </section>
+      </div>
+
+      {isConfirmationVisible && confirmationAction && details ? (
+        <ReportActionConfirmModal
+          action={confirmationAction}
+          error={
+            confirmationAction === "resolve"
+              ? resolveError
+              : rejectError
+          }
+          fieldErrors={
+            confirmationAction === "resolve"
+              ? resolveFieldErrors
+              : rejectFieldErrors
+          }
+          isSubmitting={isSubmitting}
+          onCancel={closeConfirmation}
+          onClearErrors={() => clearActionError(confirmationAction)}
+          onConfirm={confirmAction}
+          reportId={details.id}
+        />
+      ) : null}
+    </>
   );
 }

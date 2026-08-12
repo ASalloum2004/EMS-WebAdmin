@@ -290,13 +290,27 @@ test("combines server filters, resets pagination, preserves them, and clears all
     "2026-08-12",
   );
 
+  fireEvent.click(view.getByRole("button", { name: "Retry reports" }));
+  await waitFor(() => assert.equal(requestedUrls.length, 6));
+  latestUrl = new URL(requestedUrls[5]);
+  assert.equal(latestUrl.searchParams.get("page"), "2");
+  assert.equal(
+    latestUrl.searchParams.get("filter[search]"),
+    "clarification",
+  );
+  assert.equal(latestUrl.searchParams.get("filter[status]"), "rejected");
+  assert.equal(
+    latestUrl.searchParams.get("filter[created_date]"),
+    "2026-08-12",
+  );
+
   fireEvent.click(
     view.getByRole("button", { name: "Toggle report filters" }),
   );
   fireEvent.click(view.getByRole("button", { name: "Clear" }));
 
-  await waitFor(() => assert.equal(requestedUrls.length, 6));
-  latestUrl = new URL(requestedUrls[5]);
+  await waitFor(() => assert.equal(requestedUrls.length, 7));
+  latestUrl = new URL(requestedUrls[6]);
   assert.equal(latestUrl.searchParams.get("page"), "1");
   assert.equal(latestUrl.searchParams.has("filter[search]"), false);
   assert.equal(latestUrl.searchParams.has("filter[status]"), false);

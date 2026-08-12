@@ -185,10 +185,31 @@ export const en = {
       noAdminNotes: "No admin notes",
       reject: "Reject",
       approve: "Approve",
-      actionsUnavailable:
-        "Report actions are unavailable until the backend contract is confirmed.",
+      actionsUnavailable: "Report actions are not available yet.",
       finalStatus: "Final Status",
       openAriaLabel: "Open details for report",
+      actionConfirmation: {
+        reportLabel: "Report",
+        notesLabel: "Admin Notes (optional)",
+        notesPlaceholder: "Add notes about this action",
+        notesHelp: "You can leave this field blank.",
+        resolve: {
+          title: "Approve Report?",
+          message:
+            "This will mark the Report as resolved. This action cannot be undone.",
+          confirm: "Approve Report",
+          submitting: "Approving...",
+          error: "Unable to approve the Report.",
+        },
+        reject: {
+          title: "Reject Report?",
+          message:
+            "This will mark the Report as rejected. This action cannot be undone.",
+          confirm: "Reject Report",
+          submitting: "Rejecting...",
+          error: "Unable to reject the Report.",
+        },
+      },
     },
     reportStatuses: {
       pending: "Pending",

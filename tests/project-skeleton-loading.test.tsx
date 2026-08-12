@@ -20,6 +20,7 @@ import {
   ServicesTableSkeleton,
 } from "../src/features/management/components";
 import { ProfileIdentitySkeleton } from "../src/features/profile/components";
+import { AnnouncementList } from "../src/features/announcements/components";
 import "./setup-dom";
 
 afterEach(() => cleanup());
@@ -106,4 +107,29 @@ test("Profile loading replaces only the asynchronous identity card", () => {
     2,
   );
   assert.ok(view.getByRole("status"));
+});
+
+test("Announcement refreshes replace results and suppress the empty state", () => {
+  const view = renderSkeleton(
+    <AnnouncementList
+      announcements={[]}
+      emptyDescription="Nothing matched the current criteria."
+      emptyTitle="No matching announcements"
+      error=""
+      isLoading={false}
+      isRefreshing
+      onPageChange={() => undefined}
+      onRetry={() => undefined}
+      onSelect={() => undefined}
+      pagination={{
+        currentPage: 1,
+        perPage: 4,
+        totalItems: 0,
+        totalPages: 1,
+      }}
+    />,
+  );
+
+  assert.ok(view.container.querySelector(".announcement-list-skeleton"));
+  assert.equal(view.queryByText("No matching announcements"), null);
 });

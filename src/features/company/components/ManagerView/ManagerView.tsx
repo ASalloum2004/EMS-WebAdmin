@@ -26,6 +26,8 @@ export function ManagerView() {
   const searchCopy = t.company.manager.search.fields[
     managersState.searchField
   ];
+  const isManagerListLoading =
+    managersState.isLoading || managersState.isRefreshing;
 
   function closeManager() {
     setSelectedManager(null);
@@ -61,7 +63,7 @@ export function ManagerView() {
   return (
     <>
       <section
-        aria-busy={managersState.isLoading || managersState.isRefreshing}
+        aria-busy={isManagerListLoading}
         aria-label={t.company.manager.panelAriaLabel}
         className="company-page__panel manager-view"
         id="company-directory-manager-panel"
@@ -98,7 +100,7 @@ export function ManagerView() {
 
         <div className="company-page__divider" />
 
-        {!managersState.isLoading &&
+        {!isManagerListLoading &&
         managersState.error &&
         managersState.managers.length ? (
           <div className="company-page__state" role="alert">
@@ -112,7 +114,7 @@ export function ManagerView() {
           </div>
         ) : null}
 
-        {managersState.isLoading ? (
+        {isManagerListLoading ? (
           <ManagerListSkeleton />
         ) : managersState.error && !managersState.managers.length ? (
           <div className="company-page__state" role="alert">
@@ -132,7 +134,7 @@ export function ManagerView() {
           />
         )}
 
-        {!managersState.isLoading && managersState.managers.length ? (
+        {!isManagerListLoading && managersState.managers.length ? (
           <TableFooter
             className="manager-view__footer"
             currentPage={managersState.currentPage}

@@ -199,6 +199,10 @@ export function OrderPage() {
       value: eventSummaryStatistics.approved,
     },
   ];
+  const isBoothRequestListLoading =
+    boothRequests.isLoading || boothRequests.isRefreshing;
+  const isEventRequestListLoading =
+    eventRequests.isLoading || eventRequests.isRefreshing;
   const closeRequestDetails = useCallback(() => {
     boothRequestActions.closeApproveConflict();
     boothRequestActions.clearApproveError();
@@ -229,7 +233,7 @@ export function OrderPage() {
             <p>{t.order.description}</p>
           </header>
 
-          {isBoothTab && boothRequestStatistics.isInitialLoading ? (
+          {isBoothTab && boothRequestStatistics.isLoading ? (
             <OrderStatsSkeleton />
           ) : isBoothTab ? (
             <div
@@ -288,7 +292,7 @@ export function OrderPage() {
                 {t.common.tryAgain}
               </button>
             </div>
-          ) : isEventTab && eventRequestStatistics.isInitialLoading ? (
+          ) : isEventTab && eventRequestStatistics.isLoading ? (
             <OrderStatsSkeleton
               loadingMessage={t.order.eventRequests.summary.loading}
             />
@@ -335,7 +339,7 @@ export function OrderPage() {
             {isBoothTab ? (
               <div
                 aria-busy={
-                  boothRequests.isLoading || boothRequests.isRefreshing
+                  isBoothRequestListLoading
                 }
                 aria-labelledby="orders-booth-tab"
                 className="order-page__tabpanel"
@@ -362,11 +366,11 @@ export function OrderPage() {
                   />
                 ) : null}
 
-                {boothRequests.isLoading ? (
+                {isBoothRequestListLoading ? (
                   <BoothRequestListSkeleton />
                 ) : null}
 
-                {!boothRequests.isLoading && boothRequests.error ? (
+                {!isBoothRequestListLoading && boothRequests.error ? (
                   <div className="order-page__state" role="alert">
                     <p>{boothRequests.error || t.order.table.loadError}</p>
                     <button
@@ -378,7 +382,7 @@ export function OrderPage() {
                   </div>
                 ) : null}
 
-                {!boothRequests.isLoading &&
+                {!isBoothRequestListLoading &&
                 (!boothRequests.error || boothRequests.requests.length) ? (
                   <DataTable
                     ariaLabel={t.order.table.ariaLabel}
@@ -394,7 +398,7 @@ export function OrderPage() {
                   />
                 ) : null}
 
-                {!boothRequests.isLoading &&
+                {!isBoothRequestListLoading &&
                 boothRequests.requests.length ? (
                   <TableFooter
                     className="order-page__footer"
@@ -411,7 +415,7 @@ export function OrderPage() {
             {isEventTab ? (
               <div
                 aria-busy={
-                  eventRequests.isLoading || eventRequests.isRefreshing
+                  isEventRequestListLoading
                 }
                 aria-labelledby="orders-event-tab"
                 className="order-page__tabpanel"
@@ -447,11 +451,11 @@ export function OrderPage() {
                   />
                 ) : null}
 
-                {eventRequests.isLoading ? (
+                {isEventRequestListLoading ? (
                   <EventRequestListSkeleton />
                 ) : null}
 
-                {!eventRequests.isLoading && eventRequests.error ? (
+                {!isEventRequestListLoading && eventRequests.error ? (
                   <div className="order-page__state" role="alert">
                     <p>
                       {eventRequests.error ||
@@ -466,7 +470,7 @@ export function OrderPage() {
                   </div>
                 ) : null}
 
-                {!eventRequests.isLoading &&
+                {!isEventRequestListLoading &&
                 (!eventRequests.error || eventRequests.requests.length) ? (
                   <DataTable
                     ariaLabel={t.order.eventRequests.table.ariaLabel}
@@ -484,7 +488,7 @@ export function OrderPage() {
                   />
                 ) : null}
 
-                {!eventRequests.isLoading &&
+                {!isEventRequestListLoading &&
                 eventRequests.requests.length ? (
                   <TableFooter
                     className="order-page__footer"

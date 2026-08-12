@@ -145,6 +145,10 @@ export function ManagementPage() {
   }, [eventHallEditing.openEditModal, t.common.edit]);
   const hasHalls = hallFiltering.visibleHalls.length > 0;
   const hasBooths = booths.length > 0;
+  const isHallListLoading = isHallsLoading || isHallsRefreshing;
+  const isBoothListLoading = isBoothsLoading || isBoothsRefreshing;
+  const isEventHallListLoading =
+    eventHallFiltering.isLoading || eventHallFiltering.isRefreshing;
 
   const visibleEventHalls = useMemo(() => {
     return filterBySearchQuery(
@@ -202,11 +206,9 @@ export function ManagementPage() {
 
         <section
           aria-busy={
-            (isHallTab && (isHallsLoading || isHallsRefreshing)) ||
-            (isBoothTab && (isBoothsLoading || isBoothsRefreshing)) ||
-            (isEventHallTab &&
-              (eventHallFiltering.isLoading ||
-                eventHallFiltering.isRefreshing))
+            (isHallTab && isHallListLoading) ||
+            (isBoothTab && isBoothListLoading) ||
+            (isEventHallTab && isEventHallListLoading)
           }
           className="management-page__panel"
           aria-label={t.management.search.managementAriaLabel}
@@ -273,11 +275,11 @@ export function ManagementPage() {
 
           <div className="management-page__divider" />
 
-          {isHallTab && isHallsLoading ? (
+          {isHallTab && isHallListLoading ? (
             <ManagementTableSkeleton variant="hall" />
           ) : null}
 
-          {isHallTab && !isHallsLoading && hallsError ? (
+          {isHallTab && !isHallListLoading && hallsError ? (
             <div className="management-page__state" role="alert">
               <p>{hallsError || t.management.halls.errorFallback}</p>
               <button type="button" onClick={() => void refetchHalls()}>
@@ -286,12 +288,12 @@ export function ManagementPage() {
             </div>
           ) : null}
 
-          {isHallTab && !isHallsLoading && !hallsError && !hasHalls ? (
+          {isHallTab && !isHallListLoading && !hallsError && !hasHalls ? (
             <p className="management-page__state">{t.management.halls.empty}</p>
           ) : null}
 
           {isHallTab &&
-          !isHallsLoading &&
+          !isHallListLoading &&
           (!hallsError || hasHalls) &&
           hasHalls ? (
             <DataTable
@@ -302,11 +304,11 @@ export function ManagementPage() {
             />
           ) : null}
 
-          {isBoothTab && isBoothsLoading ? (
+          {isBoothTab && isBoothListLoading ? (
             <ManagementTableSkeleton variant="booth" />
           ) : null}
 
-          {isBoothTab && !isBoothsLoading && boothsError ? (
+          {isBoothTab && !isBoothListLoading && boothsError ? (
             <div className="management-page__state" role="alert">
               <p>{boothsError || t.management.booths.errorFallback}</p>
               <button
@@ -318,14 +320,14 @@ export function ManagementPage() {
             </div>
           ) : null}
 
-          {isBoothTab && !isBoothsLoading && !boothsError && !hasBooths ? (
+          {isBoothTab && !isBoothListLoading && !boothsError && !hasBooths ? (
             <p className="management-page__state">
               {t.management.booths.empty}
             </p>
           ) : null}
 
           {isBoothTab &&
-          !isBoothsLoading &&
+          !isBoothListLoading &&
           (!boothsError || hasBooths) &&
           hasBooths ? (
             <DataTable
@@ -339,7 +341,7 @@ export function ManagementPage() {
           ) : null}
 
           {isBoothTab &&
-          !isBoothsLoading &&
+          !isBoothListLoading &&
           hasBooths ? (
             <TableFooter
               className="management-page__footer"
@@ -351,12 +353,12 @@ export function ManagementPage() {
             />
           ) : null}
 
-          {isEventHallTab && eventHallFiltering.isLoading ? (
+          {isEventHallTab && isEventHallListLoading ? (
             <ManagementTableSkeleton variant="eventHall" />
           ) : null}
 
           {isEventHallTab &&
-          !eventHallFiltering.isLoading &&
+          !isEventHallListLoading &&
           eventHallFiltering.error ? (
             <div className="management-page__state" role="alert">
               <p>
@@ -373,7 +375,7 @@ export function ManagementPage() {
           ) : null}
 
           {isEventHallTab &&
-          !eventHallFiltering.isLoading &&
+          !isEventHallListLoading &&
           (!eventHallFiltering.error || visibleEventHalls.length) ? (
             <DataTable
               actions={eventHallActions}

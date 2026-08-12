@@ -562,7 +562,6 @@ test("View by Company refetches once per activation with its current query and i
   );
   await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
 
-  deferCompanyRequests = false;
   const search = view.getByRole("searchbox", {
     name: "Search companies by name",
   });
@@ -572,9 +571,18 @@ test("View by Company refetches once per activation with its current query and i
       assert.equal(
         companyRequests.at(-1)?.searchParams.get("filter[name]"),
         "Tech",
-      ),
+    ),
     { timeout: 1200 },
   );
+  assert.ok(view.container.querySelector(".company-list-skeleton"));
+  assert.equal(view.queryByText("Dar Al feker"), null);
+  assert.equal(view.container.querySelector(".company-page__footer"), null);
+
+  pendingCompanyRequests.shift()?.resolve(
+    jsonResponse(createListResponse()),
+  );
+  await waitFor(() => assert.ok(view.getByText("Dar Al feker")));
+  deferCompanyRequests = false;
 
   fireEvent.click(view.getByRole("button", { name: "Open company filters" }));
   const filterPanel = view.getByRole("group", { name: "Company filters" });

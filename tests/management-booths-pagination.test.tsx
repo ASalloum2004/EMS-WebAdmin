@@ -493,6 +493,51 @@ test("Management Booth loading, error, retry, and empty states hide the footer",
   assert.equal(view.container.querySelector(".management-page__footer"), null);
 });
 
+test("Management Booth pagination replaces stale rows with skeleton rows", async () => {
+  const pageTwoRequest = createDeferred<Response>();
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(getRequestUrl(input));
+
+    if (url.pathname.endsWith("/profile")) {
+      return getProfileResponse();
+    }
+
+    if (url.pathname.endsWith("/halls")) {
+      return getHallsResponse();
+    }
+
+    if (url.pathname.endsWith("/booths")) {
+      return url.searchParams.get("page") === "2"
+        ? pageTwoRequest.promise
+        : boothsResponse(1);
+    }
+
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  };
+  const view = renderPage();
+
+  fireEvent.click(view.getByRole("tab", { name: "Booth" }));
+  await view.findByText("SE_01");
+  const footer = view.container.querySelector<HTMLElement>(
+    ".management-page__footer",
+  );
+  assert.ok(footer);
+
+  fireEvent.click(within(footer).getByRole("button", { name: "2" }));
+  await view.findByText("Loading booths...");
+  assert.equal(view.queryByText("SE_01"), null);
+  assert.equal(view.queryByText("No booths found."), null);
+  assert.equal(view.container.querySelector(".management-page__footer"), null);
+
+  await act(async () => {
+    pageTwoRequest.resolve(boothsResponse(2));
+    await pageTwoRequest.promise;
+  });
+  await view.findByText("SE_11");
+  assert.equal(view.queryByText("Loading booths..."), null);
+});
+
 test("Management Booth pagination remains available in Arabic RTL", async () => {
   window.localStorage.setItem("ems-language", "ar");
   globalThis.fetch = async (input) => {

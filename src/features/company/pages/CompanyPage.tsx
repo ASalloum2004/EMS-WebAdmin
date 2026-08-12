@@ -38,6 +38,8 @@ export function CompanyPage() {
   const emptyMessage = companiesState.hasActiveCriteria
     ? t.company.table.noResults
     : t.company.table.empty;
+  const isCompanyListLoading =
+    companiesState.isLoading || companiesState.isRefreshing;
 
   function handleSearchChange(value: string) {
     companiesState.setSearchValue(value);
@@ -110,7 +112,7 @@ export function CompanyPage() {
         ) : (
           <section
             aria-busy={
-              companiesState.isLoading || companiesState.isRefreshing
+              isCompanyListLoading
             }
             aria-label={t.company.panelAriaLabel}
             className="company-page__panel"
@@ -142,7 +144,7 @@ export function CompanyPage() {
 
             <div className="company-page__divider" />
 
-            {!companiesState.isLoading &&
+            {!isCompanyListLoading &&
             companiesState.error &&
             companiesState.companies.length ? (
               <div className="company-page__state" role="alert">
@@ -156,7 +158,7 @@ export function CompanyPage() {
               </div>
             ) : null}
 
-            {companiesState.isLoading ? (
+            {isCompanyListLoading ? (
               <CompanyListSkeleton />
             ) : companiesState.error && !companiesState.companies.length ? (
               <div className="company-page__state" role="alert">
@@ -176,7 +178,7 @@ export function CompanyPage() {
               />
             )}
 
-            {!companiesState.isLoading &&
+            {!isCompanyListLoading &&
             companiesState.companies.length ? (
               <TableFooter
                 className="company-page__footer"

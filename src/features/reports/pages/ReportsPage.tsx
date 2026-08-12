@@ -83,6 +83,7 @@ export function ReportsPage() {
   );
   const hasActiveCriteria =
     Boolean(reports.searchValue.trim()) || hasActiveFilters;
+  const isReportListLoading = reports.isLoading || reports.isRefreshing;
   const summaryCards: ReportSummaryCard[] = [
     {
       icon: <Flag aria-hidden="true" size={22} strokeWidth={1.8} />,
@@ -114,7 +115,7 @@ export function ReportsPage() {
           <p>{t.reports.description}</p>
         </header>
 
-        {reportStatistics.isInitialLoading ? (
+        {reportStatistics.isLoading ? (
           <ReportStatsSkeleton />
         ) : (
           <div
@@ -170,7 +171,7 @@ export function ReportsPage() {
           bodyClassName="reports-page__panel-body"
           className="reports-page__panel"
         >
-          <div aria-busy={reports.isLoading || reports.isRefreshing}>
+          <div aria-busy={isReportListLoading}>
             <SearchFilterBar
               className="reports-page__search"
               filterAriaLabel={t.reports.filters.filterAriaLabel}
@@ -195,9 +196,9 @@ export function ReportsPage() {
 
             <div className="reports-page__divider" />
 
-            {reports.isLoading ? <ReportListSkeleton /> : null}
+            {isReportListLoading ? <ReportListSkeleton /> : null}
 
-            {!reports.isLoading && reports.error ? (
+            {!isReportListLoading && reports.error ? (
               <div className="reports-page__state" role="alert">
                 <p>{reports.error || t.reports.table.loadError}</p>
                 <button onClick={() => void reports.refetch()} type="button">
@@ -206,7 +207,7 @@ export function ReportsPage() {
               </div>
             ) : null}
 
-            {!reports.isLoading &&
+            {!isReportListLoading &&
             (!reports.error || reports.reports.length) ? (
               <ReportTable
                 emptyMessage={
@@ -219,7 +220,7 @@ export function ReportsPage() {
               />
             ) : null}
 
-            {!reports.isLoading && reports.reports.length ? (
+            {!isReportListLoading && reports.reports.length ? (
               <TableFooter
                 className="reports-page__footer"
                 currentPage={reports.currentPage}

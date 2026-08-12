@@ -79,6 +79,7 @@ export function ManagementServicesModal({
     serviceForm.mode === "edit"
       ? t.management.servicesModal.editTitle
       : t.management.servicesModal.addTitle;
+  const isServiceListLoading = isLoading || isRefreshing;
 
   function handleSearchChange(value: string) {
     setSearchName(value);
@@ -115,7 +116,7 @@ export function ManagementServicesModal({
       />
 
       <section
-        aria-busy={isLoading || isRefreshing}
+        aria-busy={isServiceListLoading}
         className="management-services-modal__panel"
         role="dialog"
         aria-modal="true"
@@ -373,7 +374,7 @@ export function ManagementServicesModal({
           </form>
         ) : null}
 
-        {isLoading ? (
+        {isServiceListLoading ? (
           <ServicesTableSkeleton />
         ) : !error || services.length ? (
         <>
@@ -477,7 +478,7 @@ export function ManagementServicesModal({
           </div>
         ) : null}
 
-        {!isLoading && !error && !services.length ? (
+        {!isServiceListLoading && !error && !services.length ? (
           <p className="management-services-modal__empty">
             {t.management.servicesModal.empty}
           </p>

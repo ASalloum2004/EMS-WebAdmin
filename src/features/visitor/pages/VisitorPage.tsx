@@ -55,6 +55,8 @@ export function VisitorPage() {
   const emptyMessage = visitorsState.hasActiveCriteria
     ? t.visitor.table.noResults
     : t.visitor.table.empty;
+  const isVisitorListLoading =
+    visitorsState.isLoading || visitorsState.isRefreshing;
 
   return (
     <ManagementLayout>
@@ -64,7 +66,7 @@ export function VisitorPage() {
           <p>{t.visitor.description}</p>
         </header>
 
-        {visitorStatistics.isInitialLoading ? (
+        {visitorStatistics.isLoading ? (
           <VisitorStatsSkeleton />
         ) : (
         <div
@@ -116,7 +118,7 @@ export function VisitorPage() {
         ) : null}
 
         <Card
-          aria-busy={visitorsState.isLoading || visitorsState.isRefreshing}
+          aria-busy={isVisitorListLoading}
           aria-label={t.visitor.panelAriaLabel}
           bodyClassName="visitor-page__panel-body"
           className="visitor-page__panel"
@@ -142,9 +144,9 @@ export function VisitorPage() {
             />
           ) : null}
 
-          {visitorsState.isLoading ? <VisitorTableSkeleton /> : null}
+          {isVisitorListLoading ? <VisitorTableSkeleton /> : null}
 
-          {!visitorsState.isLoading && visitorsState.error ? (
+          {!isVisitorListLoading && visitorsState.error ? (
             <div className="visitor-page__state" role="alert">
               <p>{visitorsState.error || t.visitor.table.loadError}</p>
               <button
@@ -156,7 +158,7 @@ export function VisitorPage() {
             </div>
           ) : null}
 
-          {!visitorsState.isLoading && !visitorsState.error ? (
+          {!isVisitorListLoading && !visitorsState.error ? (
             <DataTable
               ariaLabel={t.visitor.table.ariaLabel}
               className="visitor-page__table"
@@ -167,7 +169,7 @@ export function VisitorPage() {
             />
           ) : null}
 
-          {!visitorsState.isLoading &&
+          {!isVisitorListLoading &&
           !visitorsState.error &&
           visitorsState.visitors.length ? (
             <TableFooter

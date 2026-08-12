@@ -42,14 +42,15 @@ export function AnnouncementList({
   pagination,
 }: AnnouncementListProps) {
   const { t } = useI18n();
+  const isListLoading = isLoading || isRefreshing;
 
   return (
     <Card
-      aria-busy={isLoading || isRefreshing}
+      aria-busy={isListLoading}
       className="announcement-list-card"
       title={t.announcements.list.title}
       footer={
-        !isLoading && !error && pagination.totalItems > 0 ? (
+        !isListLoading && !error && pagination.totalItems > 0 ? (
           <TableFooter
             currentPage={pagination.currentPage}
             onPageChange={onPageChange}
@@ -63,9 +64,9 @@ export function AnnouncementList({
       }
       footerClassName="announcement-list-card__footer"
     >
-      {isLoading ? <AnnouncementListSkeleton /> : null}
+      {isListLoading ? <AnnouncementListSkeleton /> : null}
 
-      {!isLoading && error ? (
+      {!isListLoading && error ? (
         <div className="announcement-list__state" role="alert">
           <p>{error}</p>
           <button onClick={onRetry} type="button">
@@ -74,7 +75,7 @@ export function AnnouncementList({
         </div>
       ) : null}
 
-      {!isLoading && !error && announcements.length ? (
+      {!isListLoading && !error && announcements.length ? (
         <div className="announcement-list" role="list">
           {announcements.map((announcement) => {
             const mediaRevision = mediaRevisions[announcement.id];
@@ -130,7 +131,7 @@ export function AnnouncementList({
         </div>
       ) : null}
 
-      {!isLoading && !error && !announcements.length ? (
+      {!isListLoading && !error && !announcements.length ? (
         <div className="announcement-list__empty">
           <MegaphoneEmptyState />
           <strong>{emptyTitle}</strong>

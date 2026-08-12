@@ -15,6 +15,7 @@ export type ReportItem = Pick<
 >;
 
 export type ReportFilters = {
+  createdDate: string;
   status: "" | ReportStatus;
 };
 
@@ -43,6 +44,7 @@ export type GetReportsResult = {
 };
 
 export type GetReportsParams = {
+  createdDate?: string;
   page?: number;
   perPage?: number;
   search?: string;

@@ -148,12 +148,13 @@ export const en = {
       unavailable: "Report statistic unavailable",
     },
     search: {
-      placeholder: "Search reports by title...",
-      ariaLabel: "Search reports by title",
+      placeholder: "Search by event title or booth number...",
+      ariaLabel: "Search reports by event title or booth number",
     },
     filters: {
       filterAriaLabel: "Open report filters",
       panelAriaLabel: "Report filters",
+      createdDate: "Created Date",
       status: "Status",
       all: "All",
     },

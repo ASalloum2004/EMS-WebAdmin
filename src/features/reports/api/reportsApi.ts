@@ -83,6 +83,12 @@ export function buildReportsPath(params: GetReportsParams = {}) {
     queryParams.set("filter[status]", params.status);
   }
 
+  const createdDate = params.createdDate?.trim();
+
+  if (createdDate) {
+    queryParams.set("filter[created_date]", createdDate);
+  }
+
   return `reports?${queryParams.toString()}`;
 }
 

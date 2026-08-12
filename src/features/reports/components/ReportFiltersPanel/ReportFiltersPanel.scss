@@ -11,7 +11,7 @@
 
 .report-filters-panel__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -30,7 +30,8 @@
   line-height: 16px;
 }
 
-.report-filters-panel__field select {
+.report-filters-panel__field select,
+.report-filters-panel__field input {
   width: 100%;
   height: 40px;
   padding: 0 12px;
@@ -48,7 +49,8 @@
   outline: none;
 }
 
-.report-filters-panel__field select:focus-visible {
+.report-filters-panel__field select:focus-visible,
+.report-filters-panel__field input:focus-visible {
   border-color: var(--ems-color-primary);
   outline: 2px solid var(--ems-color-primary);
   outline-offset: 2px;

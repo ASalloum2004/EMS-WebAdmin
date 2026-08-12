@@ -36,7 +36,8 @@ export function ReportsPage() {
     [language],
   );
   const hasActiveFilters = Boolean(
-    reports.filters.appliedFilters.status,
+    reports.filters.appliedFilters.createdDate.trim() ||
+      reports.filters.appliedFilters.status,
   );
   const hasActiveCriteria =
     Boolean(reports.searchValue.trim()) || hasActiveFilters;

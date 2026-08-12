@@ -17,6 +17,13 @@ export function ReportFiltersPanel({
 }: ReportFiltersPanelProps) {
   const { t } = useI18n();
 
+  function updateFilter(field: keyof ReportFilters, value: string) {
+    onChange({
+      ...filters,
+      [field]: value,
+    } as ReportFilters);
+  }
+
   return (
     <div
       aria-label={t.reports.filters.panelAriaLabel}
@@ -27,9 +34,7 @@ export function ReportFiltersPanel({
         <label className="report-filters-panel__field">
           <span>{t.reports.filters.status}</span>
           <select
-            onChange={(event) =>
-              onChange({ ...filters, status: event.target.value as ReportFilters["status"] })
-            }
+            onChange={(event) => updateFilter("status", event.target.value)}
             value={filters.status}
           >
             <option value="">{t.reports.filters.all}</option>
@@ -43,6 +48,17 @@ export function ReportFiltersPanel({
               {t.reports.reportStatuses.rejected}
             </option>
           </select>
+        </label>
+
+        <label className="report-filters-panel__field">
+          <span>{t.reports.filters.createdDate}</span>
+          <input
+            onChange={(event) =>
+              updateFilter("createdDate", event.target.value)
+            }
+            type="date"
+            value={filters.createdDate}
+          />
         </label>
       </div>
 

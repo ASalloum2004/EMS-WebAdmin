@@ -149,12 +149,13 @@ export const ar: I18nDictionary = {
       unavailable: "إحصائية التقرير غير متاحة",
     },
     search: {
-      placeholder: "البحث في التقارير حسب العنوان...",
-      ariaLabel: "البحث في التقارير حسب العنوان",
+      placeholder: "البحث حسب عنوان الفعالية أو رقم الجناح...",
+      ariaLabel: "البحث في التقارير حسب عنوان الفعالية أو رقم الجناح",
     },
     filters: {
       filterAriaLabel: "فتح عوامل تصفية التقارير",
       panelAriaLabel: "عوامل تصفية التقارير",
+      createdDate: "تاريخ الإنشاء",
       status: "الحالة",
       all: "الكل",
     },

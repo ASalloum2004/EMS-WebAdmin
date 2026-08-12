@@ -2,20 +2,28 @@ import { useCallback, useState } from "react";
 import type { GetReportsParams, ReportFilters } from "../types";
 
 type UseReportFiltersOptions = {
+  onClear?: () => void;
   onFiltersChange?: () => void;
 };
 
 export function createEmptyReportFilters(): ReportFilters {
-  return { status: "" };
+  return {
+    createdDate: "",
+    status: "",
+  };
 }
 
 export function getReportFilterParams(
   filters: ReportFilters,
-): Pick<GetReportsParams, "status"> {
-  return { status: filters.status || undefined };
+): Pick<GetReportsParams, "createdDate" | "status"> {
+  return {
+    createdDate: filters.createdDate.trim() || undefined,
+    status: filters.status || undefined,
+  };
 }
 
 export function useReportFilters({
+  onClear,
   onFiltersChange,
 }: UseReportFiltersOptions = {}) {
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(
@@ -45,8 +53,9 @@ export function useReportFilters({
 
     setDraftFilters(emptyFilters);
     setAppliedFilters(emptyFilters);
+    onClear?.();
     onFiltersChange?.();
-  }, [onFiltersChange]);
+  }, [onClear, onFiltersChange]);
 
   return {
     appliedFilters,

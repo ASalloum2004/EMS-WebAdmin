@@ -70,8 +70,17 @@ export function useReports(errorFallback: string) {
       currentPage: 1,
     }));
   }, []);
-  const filters = useReportFilters({ onFiltersChange: resetPagination });
-  const { status } = getReportFilterParams(filters.appliedFilters);
+  const clearSearch = useCallback(() => {
+    setSearchValue("");
+    setDebouncedSearch("");
+  }, []);
+  const filters = useReportFilters({
+    onClear: clearSearch,
+    onFiltersChange: resetPagination,
+  });
+  const { createdDate, status } = getReportFilterParams(
+    filters.appliedFilters,
+  );
 
   useEffect(() => {
     const nextSearch = searchValue.trim();
@@ -90,12 +99,13 @@ export function useReports(errorFallback: string) {
 
   const requestParams = useMemo<GetReportsParams>(
     () => ({
+      createdDate,
       page: currentPage,
       perPage,
       search: debouncedSearch || undefined,
       status,
     }),
-    [currentPage, debouncedSearch, perPage, status],
+    [createdDate, currentPage, debouncedSearch, perPage, status],
   );
   requestParamsRef.current = requestParams;
 

@@ -203,7 +203,7 @@ test("exposes initial loading, backend errors, and Retry success", async () => {
   assert.equal(view.queryByRole("alert"), null);
 });
 
-test("debounces search and resets server pagination for search and status", async () => {
+test("combines server filters, resets pagination, preserves them, and clears all criteria", async () => {
   const requestedUrls: string[] = [];
   globalThis.fetch = async (input) => {
     const url = new URL(getRequestUrl(input));
@@ -211,7 +211,8 @@ test("debounces search and resets server pagination for search and status", asyn
     const page = Number(url.searchParams.get("page"));
     const hasCriteria =
       url.searchParams.has("filter[search]") ||
-      url.searchParams.has("filter[status]");
+      url.searchParams.has("filter[status]") ||
+      url.searchParams.has("filter[created_date]");
 
     return getReportsResponse(
       hasCriteria ? [rejectedReport] : [pendingReport],
@@ -249,12 +250,23 @@ test("debounces search and resets server pagination for search and status", asyn
   fireEvent.change(view.getByRole("combobox"), {
     target: { value: "rejected" },
   });
+  fireEvent.change(view.getByLabelText("Created Date"), {
+    target: { value: "2026-08-12" },
+  });
   fireEvent.click(view.getByRole("button", { name: "Apply" }));
 
   await waitFor(() => assert.equal(requestedUrls.length, 4));
   latestUrl = new URL(requestedUrls[3]);
   assert.equal(latestUrl.searchParams.get("page"), "1");
+  assert.equal(
+    latestUrl.searchParams.get("filter[search]"),
+    "clarification",
+  );
   assert.equal(latestUrl.searchParams.get("filter[status]"), "rejected");
+  assert.equal(
+    latestUrl.searchParams.get("filter[created_date]"),
+    "2026-08-12",
+  );
   assert.equal(latestUrl.searchParams.get("per_page"), "4");
 
   await waitFor(() =>
@@ -262,5 +274,35 @@ test("debounces search and resets server pagination for search and status", asyn
       view.getByLabelText("Report values").textContent ?? "",
       /Content needs clarification/,
     ),
+  );
+
+  fireEvent.click(view.getByRole("button", { name: "Page two" }));
+  await waitFor(() => assert.equal(requestedUrls.length, 5));
+  latestUrl = new URL(requestedUrls[4]);
+  assert.equal(latestUrl.searchParams.get("page"), "2");
+  assert.equal(
+    latestUrl.searchParams.get("filter[search]"),
+    "clarification",
+  );
+  assert.equal(latestUrl.searchParams.get("filter[status]"), "rejected");
+  assert.equal(
+    latestUrl.searchParams.get("filter[created_date]"),
+    "2026-08-12",
+  );
+
+  fireEvent.click(
+    view.getByRole("button", { name: "Toggle report filters" }),
+  );
+  fireEvent.click(view.getByRole("button", { name: "Clear" }));
+
+  await waitFor(() => assert.equal(requestedUrls.length, 6));
+  latestUrl = new URL(requestedUrls[5]);
+  assert.equal(latestUrl.searchParams.get("page"), "1");
+  assert.equal(latestUrl.searchParams.has("filter[search]"), false);
+  assert.equal(latestUrl.searchParams.has("filter[status]"), false);
+  assert.equal(latestUrl.searchParams.has("filter[created_date]"), false);
+  assert.equal(
+    (view.getByLabelText("Report search") as HTMLInputElement).value,
+    "",
   );
 });

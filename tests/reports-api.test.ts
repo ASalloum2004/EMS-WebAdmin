@@ -73,11 +73,12 @@ afterEach(() => {
   }
 });
 
-test("builds Reports paths with server pagination, search, and status", () => {
+test("builds Reports paths with pagination and combined backend filters", () => {
   assert.equal(DEFAULT_REPORTS_PER_PAGE, 4);
   assert.equal(buildReportsPath(), "reports?page=1&per_page=4");
 
   const searchParams = getSearchParams({
+    createdDate: "  2026-08-12  ",
     page: 3,
     perPage: 8,
     search: "  incorrect information  ",
@@ -91,12 +92,18 @@ test("builds Reports paths with server pagination, search, and status", () => {
     "incorrect information",
   );
   assert.equal(searchParams.get("filter[status]"), "rejected");
+  assert.equal(searchParams.get("filter[created_date]"), "2026-08-12");
+  assert.equal(searchParams.has("search"), false);
+  assert.equal(searchParams.has("query"), false);
+  assert.equal(searchParams.has("created_at"), false);
+  assert.equal(searchParams.has("filter[created_at]"), false);
   assert.equal(searchParams.has("include"), false);
   assert.equal(searchParams.has("sort"), false);
 });
 
 test("omits empty and unsupported Reports parameters", () => {
   const searchParams = getSearchParams({
+    createdDate: "   ",
     page: 0,
     perPage: Number.NaN,
     search: "   ",
@@ -107,6 +114,18 @@ test("omits empty and unsupported Reports parameters", () => {
   assert.equal(searchParams.get("per_page"), "4");
   assert.equal(searchParams.has("filter[search]"), false);
   assert.equal(searchParams.has("filter[status]"), false);
+  assert.equal(searchParams.has("filter[created_date]"), false);
+});
+
+test("serializes only supported Report statuses and omits All", () => {
+  for (const status of ["pending", "resolved", "rejected"] as const) {
+    assert.equal(
+      getSearchParams({ status }).get("filter[status]"),
+      status,
+    );
+  }
+
+  assert.equal(getSearchParams().has("filter[status]"), false);
 });
 
 test("normalizes the verified nested Reports response with internal report fields", () => {
@@ -217,14 +236,24 @@ test("fetches Reports with GET, authentication, and the Admin path", async () =>
     });
   };
 
-  const result = await getReports({ page: 2, search: "information" });
+  const result = await getReports({
+    createdDate: "2026-08-12",
+    page: 2,
+    search: "booth",
+    status: "pending",
+  });
   const url = new URL(requestedUrl);
   const headers = new Headers(requestedInit?.headers);
 
   assert.equal(url.pathname, "/api/v1/admin/reports");
   assert.equal(url.searchParams.get("page"), "2");
   assert.equal(url.searchParams.get("per_page"), "4");
-  assert.equal(url.searchParams.get("filter[search]"), "information");
+  assert.equal(url.searchParams.get("filter[search]"), "booth");
+  assert.equal(url.searchParams.get("filter[status]"), "pending");
+  assert.equal(
+    url.searchParams.get("filter[created_date]"),
+    "2026-08-12",
+  );
   assert.equal(requestedInit?.method, "GET");
   assert.equal(requestedInit?.cache, "no-store");
   assert.equal(headers.get("Authorization"), `Bearer ${generatedToken}`);

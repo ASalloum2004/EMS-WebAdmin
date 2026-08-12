@@ -1,0 +1,373 @@
+.report-details-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--ems-color-modal-backdrop);
+  backdrop-filter: var(--ems-blur-modal-backdrop);
+}
+
+.report-details-modal__dialog {
+  width: min(100%, 760px);
+  max-height: calc(100vh - 48px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--ems-color-modal-border);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  box-shadow: var(--ems-shadow-modal);
+  outline: none;
+}
+
+.report-details-modal__header {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--ems-color-border-soft);
+}
+
+.report-details-modal__heading {
+  min-width: 0;
+}
+
+.report-details-modal__heading h2,
+.report-details-modal__heading p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.report-details-modal__heading h2 {
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+.report-details-modal__heading p {
+  margin-top: 3px;
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+}
+
+.report-details-modal__id,
+.report-details-modal__status {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.report-details-modal__id {
+  border-color: var(--ems-color-border-soft);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-primary);
+}
+
+.report-details-modal__status--pending {
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
+}
+
+.report-details-modal__status--resolved {
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.report-details-modal__status--rejected {
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.report-details-modal__scroll-area {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px 28px;
+  background-color: var(
+    --ems-color-page-background,
+    var(--ems-color-admin-background)
+  );
+}
+
+.report-details-modal__section {
+  padding: 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+}
+
+.report-details-modal__section h3 {
+  margin: 0;
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.report-details-modal__information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.report-details-modal__information-grid > div {
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.report-details-modal__information-grid dt,
+.report-details-modal__information-grid dd {
+  font-family: var(--ems-font-body);
+  overflow-wrap: anywhere;
+}
+
+.report-details-modal__information-grid dt {
+  color: var(--ems-color-muted-light);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.report-details-modal__information-grid dd {
+  margin: 4px 0 0;
+  color: var(--ems-color-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.report-details-modal__long-copy {
+  margin: 12px 0 0;
+  color: var(--ems-color-text);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.report-details-modal__state {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  text-align: center;
+}
+
+.report-details-modal__state p,
+.report-details-modal__actions-note {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 21px;
+}
+
+.report-details-modal__state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.report-details-modal__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--ems-color-border-soft);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+}
+
+.report-details-modal__footer--pending {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  direction: ltr;
+}
+
+.report-details-modal__action,
+.report-details-modal__final-status {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--ems-radius-sm);
+  font-family: var(--ems-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.report-details-modal__action {
+  width: 100%;
+  cursor: pointer;
+}
+
+.report-details-modal__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.report-details-modal__action--reject {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-danger);
+}
+
+.report-details-modal__action--approve {
+  border-color: var(--ems-color-primary);
+  background-color: var(--ems-color-primary);
+  color: var(--ems-color-primary-text);
+}
+
+.report-details-modal__actions-note {
+  grid-column: 1 / -1;
+  color: var(--ems-color-muted-light);
+  direction: inherit;
+  text-align: center;
+}
+
+.report-details-modal__final-label {
+  color: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.report-details-modal__final-status {
+  flex: 1 1 auto;
+}
+
+.report-details-modal__final-status--resolved {
+  border-color: var(--ems-color-status-positive-text);
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.report-details-modal__final-status--rejected {
+  border-color: var(--ems-color-status-negative-text);
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.report-details-modal__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.report-details-modal__skeleton .skeleton {
+  max-width: 100%;
+}
+
+.report-details-modal__skeleton .report-details-modal__information-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .report-details-modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .report-details-modal__dialog {
+    width: 100%;
+    max-height: 94vh;
+    border-radius: var(--ems-radius-md) var(--ems-radius-md) 0 0;
+  }
+
+  .report-details-modal__header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 16px;
+  }
+
+  .report-details-modal__header > .report-details-modal__status,
+  .report-details-modal__header > .report-details-modal__id {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: flex-start;
+  }
+
+  .report-details-modal__close {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .report-details-modal__scroll-area {
+    padding: 18px 16px 22px;
+  }
+
+  .report-details-modal__section {
+    padding: 16px;
+  }
+
+  .report-details-modal__information-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-details-modal__footer {
+    padding: 14px 16px;
+  }
+}
+
+[dir="rtl"] .report-details-modal__action {
+  direction: rtl;
+}
+
+[dir="rtl"] .report-details-modal__actions-note {
+  direction: rtl;
+}

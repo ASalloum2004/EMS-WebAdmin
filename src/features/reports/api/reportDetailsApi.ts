@@ -1,0 +1,75 @@
+import { apiRequest, CONTENT_REQUEST_TIMEOUT_MS } from "../../../api";
+import type {
+  ReportDetails,
+  ReportDetailsResponse,
+  ReportStatus,
+} from "../types";
+
+const unexpectedResponseMessage =
+  "Unexpected report details response format.";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function isReportStatus(value: unknown): value is ReportStatus {
+  return value === "pending" || value === "resolved" || value === "rejected";
+}
+
+export function buildReportDetailsPath(reportId: number) {
+  if (!isPositiveInteger(reportId)) {
+    throw new Error("A valid Report ID is required.");
+  }
+
+  return `reports/${reportId}`;
+}
+
+export function normalizeReportDetailsResponse(
+  response: ReportDetailsResponse,
+): ReportDetails {
+  const details: unknown = isRecord(response) ? response.data : undefined;
+
+  if (
+    !isRecord(details) ||
+    !isPositiveInteger(details.id) ||
+    typeof details.title !== "string" ||
+    typeof details.description !== "string" ||
+    !isReportStatus(details.status) ||
+    (details.admin_notes !== null &&
+      typeof details.admin_notes !== "string") ||
+    typeof details.created_at !== "string"
+  ) {
+    throw new Error(unexpectedResponseMessage);
+  }
+
+  return {
+    admin_notes: details.admin_notes,
+    created_at: details.created_at,
+    description: details.description,
+    id: details.id,
+    status: details.status,
+    title: details.title,
+  };
+}
+
+export async function getReportDetails(
+  reportId: number,
+  signal?: AbortSignal,
+): Promise<ReportDetails> {
+  const response = await apiRequest<ReportDetailsResponse>(
+    buildReportDetailsPath(reportId),
+    {
+      cache: "no-store",
+      method: "GET",
+      requiresAuth: true,
+      signal,
+      timeoutMs: CONTENT_REQUEST_TIMEOUT_MS,
+    },
+  );
+
+  return normalizeReportDetailsResponse(response);
+}

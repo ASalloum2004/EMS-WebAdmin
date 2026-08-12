@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { CircleCheck, CircleX, Clock3, Flag } from "lucide-react";
 import {
   Card,
@@ -9,12 +9,17 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import {
   ReportFiltersPanel,
+  ReportDetailsModal,
   ReportListSkeleton,
   ReportStatsSkeleton,
   ReportTable,
 } from "../components";
-import { useReports, useReportStatistics } from "../hooks";
-import type { ReportStatisticsData } from "../types";
+import {
+  useReportDetails,
+  useReports,
+  useReportStatistics,
+} from "../hooks";
+import type { ReportItem, ReportStatisticsData } from "../types";
 import "./ReportsPage.scss";
 
 type ReportSummaryKey = keyof ReportStatisticsData;
@@ -27,10 +32,23 @@ type ReportSummaryCard = {
 
 export function ReportsPage() {
   const { language, t } = useI18n();
+  const [selectedReportId, setSelectedReportId] = useState<number | null>(
+    null,
+  );
   const reportStatistics = useReportStatistics(
     t.reports.summary.loadError,
   );
   const reports = useReports(t.reports.table.loadError);
+  const reportDetails = useReportDetails(
+    selectedReportId,
+    t.reports.details.loadError,
+  );
+  const openReportDetails = useCallback((report: ReportItem) => {
+    setSelectedReportId(report.id);
+  }, []);
+  const closeReportDetails = useCallback(() => {
+    setSelectedReportId(null);
+  }, []);
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
@@ -173,6 +191,7 @@ export function ReportsPage() {
                     : t.reports.table.empty
                 }
                 items={reports.reports}
+                onSelectReport={openReportDetails}
               />
             ) : null}
 
@@ -192,6 +211,17 @@ export function ReportsPage() {
           </div>
         </Card>
       </div>
+
+      {selectedReportId !== null ? (
+        <ReportDetailsModal
+          details={reportDetails.details}
+          error={reportDetails.error}
+          isLoading={reportDetails.isLoading}
+          onClose={closeReportDetails}
+          onRetry={() => void reportDetails.refetch()}
+          reportId={selectedReportId}
+        />
+      ) : null}
     </ManagementLayout>
   );
 }

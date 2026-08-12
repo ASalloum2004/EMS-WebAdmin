@@ -15,6 +15,7 @@ import "./ReportTable.scss";
 type ReportTableProps = {
   emptyMessage: string;
   items: ReportItem[];
+  onSelectReport?: (report: ReportItem) => void;
 };
 
 export function formatReportDate(
@@ -99,7 +100,11 @@ function createReportColumns(
   ];
 }
 
-export function ReportTable({ emptyMessage, items }: ReportTableProps) {
+export function ReportTable({
+  emptyMessage,
+  items,
+  onSelectReport,
+}: ReportTableProps) {
   const { language, t } = useI18n();
   const columns = useMemo(
     () => createReportColumns(language, t),
@@ -112,8 +117,14 @@ export function ReportTable({ emptyMessage, items }: ReportTableProps) {
       className="report-table"
       columns={columns}
       emptyMessage={emptyMessage}
+      getItemAriaLabel={
+        onSelectReport
+          ? (item) => `${t.reports.details.openAriaLabel}: ${item.title}`
+          : undefined
+      }
       getItemKey={(item) => item.id}
       items={items}
+      onItemClick={onSelectReport}
     />
   );
 }

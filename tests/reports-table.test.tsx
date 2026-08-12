@@ -1,7 +1,7 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import {
   formatReportDate,
   ReportTable,
@@ -87,4 +87,29 @@ test("renders the shared DataTable empty state without fake rows", () => {
   );
 
   assert.equal(view.getByText("No reports.").classList.contains("data-table__empty"), true);
+});
+
+test("opens Report details by internal ID with click, Enter, and Space", () => {
+  const selectedIds: number[] = [];
+  const view = render(
+    <I18nProvider>
+      <ReportTable
+        emptyMessage="No reports."
+        items={[report]}
+        onSelectReport={(selectedReport) => {
+          selectedIds.push(selectedReport.id);
+        }}
+      />
+    </I18nProvider>,
+  );
+  const row = view.getByRole("button", {
+    name: "Open details for report: Content needs clarification",
+  });
+
+  fireEvent.click(row);
+  fireEvent.keyDown(row, { key: "Enter" });
+  fireEvent.keyDown(row, { key: " " });
+
+  assert.deepEqual(selectedIds, [2, 2, 2]);
+  assert.equal(view.queryByText("2"), null);
 });

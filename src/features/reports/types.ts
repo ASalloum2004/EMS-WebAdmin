@@ -14,6 +14,14 @@ export type ReportItem = Pick<
   "admin_notes" | "created_at" | "id" | "status" | "title"
 >;
 
+export type ReportDetails = ReportApiData;
+
+export type ReportDetailsResponse = {
+  data: ReportApiData;
+  message: string;
+  status: boolean;
+};
+
 export type ReportFilters = {
   createdDate: string;
   status: "" | ReportStatus;

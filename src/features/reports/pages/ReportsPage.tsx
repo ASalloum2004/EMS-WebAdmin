@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { CircleCheck, CircleX, Clock3, Flag } from "lucide-react";
 import {
   Card,
   SearchFilterBar,
@@ -6,15 +7,29 @@ import {
 } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
-import { ReportFiltersPanel, ReportTable } from "../components";
+import {
+  ReportFiltersPanel,
+  ReportStatsSkeleton,
+  ReportTable,
+} from "../components";
 import {
   emptyReportFilters,
   filterReports,
   reportMockData,
 } from "../data";
+import { useReportStatistics } from "../hooks";
+import type { ReportStatisticsData } from "../types";
 import "./ReportsPage.scss";
 
 const PAGE_SIZE = 4;
+
+type ReportSummaryKey = keyof ReportStatisticsData;
+
+type ReportSummaryCard = {
+  icon: ReactNode;
+  key: ReportSummaryKey;
+  label: string;
+};
 
 const initialUiState = {
   appliedFilters: emptyReportFilters,
@@ -25,8 +40,15 @@ const initialUiState = {
 };
 
 export function ReportsPage() {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
   const [ui, setUi] = useState(initialUiState);
+  const reportStatistics = useReportStatistics(
+    t.reports.summary.loadError,
+  );
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
+    [language],
+  );
   const filteredReports = useMemo(
     () =>
       filterReports(reportMockData, ui.searchQuery, ui.appliedFilters),
@@ -46,6 +68,28 @@ export function ReportsPage() {
   );
   const hasActiveCriteria =
     Boolean(ui.searchQuery.trim()) || hasActiveFilters;
+  const summaryCards: ReportSummaryCard[] = [
+    {
+      icon: <Flag aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "total_requests",
+      label: t.reports.summary.totalReports,
+    },
+    {
+      icon: <Clock3 aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "pending_requests",
+      label: t.reports.summary.pendingReports,
+    },
+    {
+      icon: <CircleCheck aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "resolved_requests",
+      label: t.reports.summary.resolvedReports,
+    },
+    {
+      icon: <CircleX aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "rejected_requests",
+      label: t.reports.summary.rejectedReports,
+    },
+  ];
 
   function handleSearchChange(value: string) {
     setUi((state) => ({
@@ -90,6 +134,57 @@ export function ReportsPage() {
           <h1>{t.reports.title}</h1>
           <p>{t.reports.description}</p>
         </header>
+
+        {reportStatistics.isInitialLoading ? (
+          <ReportStatsSkeleton />
+        ) : (
+          <div
+            aria-busy={reportStatistics.isRefreshing}
+            className="reports-page__summary"
+          >
+            {summaryCards.map((summaryCard) => {
+              const value =
+                reportStatistics.statistics?.[summaryCard.key] ?? null;
+
+              return (
+                <Card
+                  className={`reports-page__summary-card reports-page__summary-card--${summaryCard.key}`}
+                  icon={summaryCard.icon}
+                  iconClassName="reports-page__summary-icon"
+                  key={summaryCard.key}
+                  title={summaryCard.label}
+                  titleClassName="reports-page__summary-label"
+                >
+                  <strong
+                    aria-label={
+                      value === null
+                        ? t.reports.summary.unavailable
+                        : undefined
+                    }
+                    aria-live="polite"
+                    className="reports-page__summary-value"
+                  >
+                    {value === null ? "—" : numberFormatter.format(value)}
+                  </strong>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {reportStatistics.error ? (
+          <div className="reports-page__state" role="alert">
+            <p>
+              {reportStatistics.error || t.reports.summary.loadError}
+            </p>
+            <button
+              onClick={() => void reportStatistics.refetch()}
+              type="button"
+            >
+              {t.common.tryAgain}
+            </button>
+          </div>
+        ) : null}
 
         <Card
           aria-label={t.reports.panelAriaLabel}

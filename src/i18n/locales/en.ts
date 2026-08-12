@@ -138,6 +138,15 @@ export const en = {
     title: "Reports",
     description: "Review the latest platform reports.",
     panelAriaLabel: "Reports activity",
+    summary: {
+      totalReports: "Total Reports",
+      pendingReports: "Pending Reports",
+      resolvedReports: "Resolved Reports",
+      rejectedReports: "Rejected Reports",
+      loading: "Loading report statistics",
+      loadError: "Unable to load report statistics.",
+      unavailable: "Report statistic unavailable",
+    },
     search: {
       placeholder: "Search reports by title...",
       ariaLabel: "Search reports by title",

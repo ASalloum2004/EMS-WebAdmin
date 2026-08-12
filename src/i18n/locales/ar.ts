@@ -139,6 +139,15 @@ export const ar: I18nDictionary = {
     title: "التقارير",
     description: "راجع أحدث تقارير المنصة.",
     panelAriaLabel: "نشاط التقارير",
+    summary: {
+      totalReports: "إجمالي التقارير",
+      pendingReports: "التقارير قيد الانتظار",
+      resolvedReports: "التقارير التي تم حلها",
+      rejectedReports: "التقارير المرفوضة",
+      loading: "جارٍ تحميل إحصائيات التقارير",
+      loadError: "تعذر تحميل إحصائيات التقارير.",
+      unavailable: "إحصائية التقرير غير متاحة",
+    },
     search: {
       placeholder: "البحث في التقارير حسب العنوان...",
       ariaLabel: "البحث في التقارير حسب العنوان",

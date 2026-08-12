@@ -33,6 +33,71 @@
   line-height: 22px;
 }
 
+.reports-page__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.reports-page__summary-card {
+  --ems-card-min-height: 132px;
+  --ems-card-padding: 22px;
+  --ems-card-header-margin: 10px;
+}
+
+.reports-page__summary-card .card__header {
+  align-items: flex-start;
+}
+
+.reports-page__summary-label {
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.reports-page__summary-icon {
+  --ems-card-icon-background: var(--ems-color-success-surface);
+  --ems-card-icon-color: var(--ems-color-primary);
+
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 12px;
+}
+
+.reports-page__summary-card--pending_requests .reports-page__summary-icon {
+  --ems-card-icon-background: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+}
+
+.reports-page__summary-card--resolved_requests .reports-page__summary-icon {
+  --ems-card-icon-background: var(--ems-color-status-positive-surface);
+  --ems-card-icon-color: var(--ems-color-status-positive-text);
+}
+
+.reports-page__summary-card--rejected_requests .reports-page__summary-icon {
+  --ems-card-icon-background: var(--ems-color-status-negative-surface);
+  --ems-card-icon-color: var(--ems-color-status-negative-text);
+}
+
+.reports-page__summary-icon svg {
+  display: block;
+}
+
+.reports-page__summary-value {
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 34px;
+  font-variant-numeric: tabular-nums;
+}
+
 .reports-page__panel {
   --ems-card-min-height: 0;
   --ems-card-padding: 24px;
@@ -51,6 +116,37 @@
   cursor: pointer;
 }
 
+.reports-page__state {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.reports-page__state p {
+  margin: 0 0 12px;
+}
+
+.reports-page__state button {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+}
+
 .reports-page__divider {
   width: 100%;
   height: 1px;
@@ -63,6 +159,12 @@
   border-top: 1px solid var(--ems-color-border-soft);
 }
 
+@media (max-width: 900px) {
+  .reports-page__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
   .reports-page {
     gap: 20px;
@@ -71,6 +173,10 @@
   .reports-page__header h1 {
     font-size: 26px;
     line-height: 34px;
+  }
+
+  .reports-page__summary {
+    grid-template-columns: 1fr;
   }
 
   .reports-page__panel {

@@ -14,3 +14,16 @@ export type ReportFilters = {
   status: "" | ReportStatus;
   type: "" | ReportType;
 };
+
+export interface ReportStatisticsData {
+  total_requests: number;
+  pending_requests: number;
+  resolved_requests: number;
+  rejected_requests: number;
+}
+
+export interface ReportStatisticsResponse {
+  status: boolean;
+  message: string;
+  data: ReportStatisticsData;
+}

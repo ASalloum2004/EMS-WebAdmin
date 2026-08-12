@@ -241,7 +241,7 @@ test("Approve calls Resolve, refreshes all Report data, and preserves list crite
 
   fireEvent.click(view.getByRole("button", { name: "Approve" }));
   assert.equal(requests.actionRequests.length, 0);
-  fireEvent.change(view.getByLabelText("Admin Notes (optional)"), {
+  fireEvent.change(await view.findByLabelText("Admin Notes (optional)"), {
     target: { value: "Resolved through the Admin UI." },
   });
   fireEvent.click(view.getByRole("button", { name: "Approve Report" }));
@@ -293,7 +293,7 @@ test("Reject posts notes, refreshes details/list/statistics, and shows Rejected"
 
   fireEvent.click(view.getByRole("button", { name: "Reject" }));
   assert.equal(requests.actionRequests.length, 0);
-  fireEvent.change(view.getByLabelText("Admin Notes (optional)"), {
+  fireEvent.change(await view.findByLabelText("Admin Notes (optional)"), {
     target: { value: "Rejected through the Admin UI." },
   });
   fireEvent.click(view.getByRole("button", { name: "Reject Report" }));

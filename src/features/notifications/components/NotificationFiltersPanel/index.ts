@@ -1,2 +1,1 @@
 export * from "./NotificationFiltersPanel";
-export * from "./NotificationTable";

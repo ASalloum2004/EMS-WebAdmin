@@ -1,42 +1,27 @@
 import { useMemo, useState } from "react";
 import { MarkAllReadIcon } from "../../../assets/icons/activityIcons";
-import { Card, SearchFilterBar, TableFooter } from "../../../components";
+import {
+  Card,
+  SearchFilterBar,
+  TableFooter,
+} from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import {
-  ActivityFiltersPanel,
-  ActivityTable,
-  ActivityTabs,
-  type ActivityFilterOption,
+  NotificationFiltersPanel,
+  NotificationTable,
+  type NotificationFilterOption,
 } from "../components";
 import {
   emptyNotificationFilters,
-  emptyReportFilters,
   filterNotifications,
-  filterReports,
-  hasActiveActivityFilters,
   notificationMockData,
-  reportMockData,
 } from "../data";
-import type {
-  ActivityFilterValues,
-  ActivityTab,
-  NotificationFilters,
-  ReportFilters,
-} from "../types";
 import "./NotificationsPage.scss";
 
 const PAGE_SIZE = 4;
 
-type ActivityUiState<TFilters> = {
-  appliedFilters: TFilters;
-  currentPage: number;
-  draftFilters: TFilters;
-  isFilterPanelOpen: boolean;
-  searchQuery: string;
-};
-
-const initialNotificationUiState: ActivityUiState<NotificationFilters> = {
+const initialUiState = {
   appliedFilters: emptyNotificationFilters,
   currentPage: 1,
   draftFilters: emptyNotificationFilters,
@@ -44,70 +29,48 @@ const initialNotificationUiState: ActivityUiState<NotificationFilters> = {
   searchQuery: "",
 };
 
-const initialReportUiState: ActivityUiState<ReportFilters> = {
-  appliedFilters: emptyReportFilters,
-  currentPage: 1,
-  draftFilters: emptyReportFilters,
-  isFilterPanelOpen: false,
-  searchQuery: "",
-};
-
 export function NotificationsPage() {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] =
-    useState<ActivityTab>("notifications");
   const [notifications, setNotifications] = useState(notificationMockData);
-  const [notificationUi, setNotificationUi] = useState(
-    initialNotificationUiState,
-  );
-  const [reportUi, setReportUi] = useState(initialReportUiState);
-
+  const [ui, setUi] = useState(initialUiState);
   const filteredNotifications = useMemo(
     () =>
       filterNotifications(
         notifications,
-        notificationUi.searchQuery,
-        notificationUi.appliedFilters,
+        ui.searchQuery,
+        ui.appliedFilters,
       ),
-    [notificationUi.appliedFilters, notificationUi.searchQuery, notifications],
+    [notifications, ui.appliedFilters, ui.searchQuery],
   );
-  const filteredReports = useMemo(
-    () =>
-      filterReports(
-        reportMockData,
-        reportUi.searchQuery,
-        reportUi.appliedFilters,
-      ),
-    [reportUi.appliedFilters, reportUi.searchQuery],
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredNotifications.length / PAGE_SIZE),
   );
-
-  const activeUi = activeTab === "notifications" ? notificationUi : reportUi;
-  const activeItems =
-    activeTab === "notifications" ? filteredNotifications : filteredReports;
-  const totalPages = Math.max(1, Math.ceil(activeItems.length / PAGE_SIZE));
-  const currentPage = Math.min(activeUi.currentPage, totalPages);
-  const visibleItems = activeItems.slice(
+  const currentPage = Math.min(ui.currentPage, totalPages);
+  const visibleNotifications = filteredNotifications.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-  const hasActiveFilters = hasActiveActivityFilters(
-    activeUi.appliedFilters,
+  const hasActiveFilters = Boolean(
+    ui.appliedFilters.status || ui.appliedFilters.type,
   );
   const hasActiveCriteria =
-    Boolean(activeUi.searchQuery.trim()) || hasActiveFilters;
+    Boolean(ui.searchQuery.trim()) || hasActiveFilters;
   const hasUnreadNotifications = notifications.some(
     (notification) => notification.status === "unread",
   );
-
-  const notificationStatusOptions: ActivityFilterOption[] = [
+  const statusOptions: NotificationFilterOption[] = [
     { label: t.notifications.filters.all, value: "" },
     {
       label: t.notifications.notificationStatuses.unread,
       value: "unread",
     },
-    { label: t.notifications.notificationStatuses.read, value: "read" },
+    {
+      label: t.notifications.notificationStatuses.read,
+      value: "read",
+    },
   ];
-  const notificationTypeOptions: ActivityFilterOption[] = [
+  const typeOptions: NotificationFilterOption[] = [
     { label: t.notifications.filters.all, value: "" },
     {
       label: t.notifications.notificationTypes.success,
@@ -117,40 +80,18 @@ export function NotificationsPage() {
       label: t.notifications.notificationTypes.warning,
       value: "warning",
     },
-    { label: t.notifications.notificationTypes.error, value: "error" },
-    { label: t.notifications.notificationTypes.info, value: "info" },
-  ];
-  const reportStatusOptions: ActivityFilterOption[] = [
-    { label: t.notifications.filters.all, value: "" },
-    { label: t.notifications.reportStatuses.pending, value: "pending" },
     {
-      label: t.notifications.reportStatuses.inReview,
-      value: "in_review",
+      label: t.notifications.notificationTypes.error,
+      value: "error",
     },
-    { label: t.notifications.reportStatuses.resolved, value: "resolved" },
-  ];
-  const reportTypeOptions: ActivityFilterOption[] = [
-    { label: t.notifications.filters.all, value: "" },
-    { label: t.notifications.reportTypes.issue, value: "issue" },
     {
-      label: t.notifications.reportTypes.complaint,
-      value: "complaint",
+      label: t.notifications.notificationTypes.info,
+      value: "info",
     },
-    { label: t.notifications.reportTypes.safety, value: "safety" },
-    { label: t.notifications.reportTypes.other, value: "other" },
   ];
 
   function handleSearchChange(value: string) {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({
-        ...state,
-        currentPage: 1,
-        searchQuery: value,
-      }));
-      return;
-    }
-
-    setReportUi((state) => ({
+    setUi((state) => ({
       ...state,
       currentPage: 1,
       searchQuery: value,
@@ -158,18 +99,7 @@ export function NotificationsPage() {
   }
 
   function handleToggleFilters() {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({
-        ...state,
-        draftFilters: state.isFilterPanelOpen
-          ? state.draftFilters
-          : { ...state.appliedFilters },
-        isFilterPanelOpen: !state.isFilterPanelOpen,
-      }));
-      return;
-    }
-
-    setReportUi((state) => ({
+    setUi((state) => ({
       ...state,
       draftFilters: state.isFilterPanelOpen
         ? state.draftFilters
@@ -178,33 +108,8 @@ export function NotificationsPage() {
     }));
   }
 
-  function handleDraftFiltersChange(filters: ActivityFilterValues) {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({
-        ...state,
-        draftFilters: filters as NotificationFilters,
-      }));
-      return;
-    }
-
-    setReportUi((state) => ({
-      ...state,
-      draftFilters: filters as ReportFilters,
-    }));
-  }
-
   function handleApplyFilters() {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({
-        ...state,
-        appliedFilters: { ...state.draftFilters },
-        currentPage: 1,
-        isFilterPanelOpen: false,
-      }));
-      return;
-    }
-
-    setReportUi((state) => ({
+    setUi((state) => ({
       ...state,
       appliedFilters: { ...state.draftFilters },
       currentPage: 1,
@@ -213,31 +118,12 @@ export function NotificationsPage() {
   }
 
   function handleResetFilters() {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({
-        ...state,
-        appliedFilters: emptyNotificationFilters,
-        currentPage: 1,
-        draftFilters: emptyNotificationFilters,
-      }));
-      return;
-    }
-
-    setReportUi((state) => ({
+    setUi((state) => ({
       ...state,
-      appliedFilters: emptyReportFilters,
+      appliedFilters: emptyNotificationFilters,
       currentPage: 1,
-      draftFilters: emptyReportFilters,
+      draftFilters: emptyNotificationFilters,
     }));
-  }
-
-  function handlePageChange(page: number) {
-    if (activeTab === "notifications") {
-      setNotificationUi((state) => ({ ...state, currentPage: page }));
-      return;
-    }
-
-    setReportUi((state) => ({ ...state, currentPage: page }));
   }
 
   function handleMarkAllAsRead() {
@@ -248,114 +134,79 @@ export function NotificationsPage() {
     );
   }
 
-  const isNotificationsTab = activeTab === "notifications";
-  const statusOptions = isNotificationsTab
-    ? notificationStatusOptions
-    : reportStatusOptions;
-  const typeOptions = isNotificationsTab
-    ? notificationTypeOptions
-    : reportTypeOptions;
-
   return (
     <ManagementLayout>
-      <div className="activity-page">
-        <header className="activity-page__header">
+      <div className="notifications-page">
+        <header className="notifications-page__header">
           <h1>{t.notifications.title}</h1>
           <p>{t.notifications.description}</p>
         </header>
 
         <Card
           aria-label={t.notifications.panelAriaLabel}
-          bodyClassName="activity-page__panel-body"
-          className="activity-page__panel"
+          bodyClassName="notifications-page__panel-body"
+          className="notifications-page__panel"
         >
-          <div className="activity-page__toolbar">
+          <div className="notifications-page__toolbar">
             <SearchFilterBar
-              className="activity-page__search"
-              filterAriaLabel={
-                isNotificationsTab
-                  ? t.notifications.filters.notificationsFilterAriaLabel
-                  : t.notifications.filters.reportsFilterAriaLabel
-              }
+              className="notifications-page__search"
+              filterAriaLabel={t.notifications.filters.filterAriaLabel}
               filterLabel={t.common.filter}
-              inputAriaLabel={
-                isNotificationsTab
-                  ? t.notifications.search.notificationsAriaLabel
-                  : t.notifications.search.reportsAriaLabel
-              }
+              inputAriaLabel={t.notifications.search.ariaLabel}
               isFilterActive={hasActiveFilters}
               onChange={handleSearchChange}
               onFilterClick={handleToggleFilters}
-              placeholder={
-                isNotificationsTab
-                  ? t.notifications.search.notificationsPlaceholder
-                  : t.notifications.search.reportsPlaceholder
-              }
+              placeholder={t.notifications.search.placeholder}
               showFilterButton
-              value={activeUi.searchQuery}
+              value={ui.searchQuery}
             />
-
-            {isNotificationsTab ? (
-              <button
-                className="data-table__action-button activity-page__mark-all"
-                disabled={!hasUnreadNotifications}
-                onClick={handleMarkAllAsRead}
-                type="button"
-              >
-                <MarkAllReadIcon aria-hidden="true" size={17} strokeWidth={2} />
-                <span>{t.notifications.actions.markAllAsRead}</span>
-              </button>
-            ) : null}
+            <button
+              className="data-table__action-button notifications-page__mark-all"
+              disabled={!hasUnreadNotifications}
+              onClick={handleMarkAllAsRead}
+              type="button"
+            >
+              <MarkAllReadIcon aria-hidden="true" size={17} strokeWidth={2} />
+              <span>{t.notifications.actions.markAllAsRead}</span>
+            </button>
           </div>
 
-          {activeUi.isFilterPanelOpen ? (
-            <ActivityFiltersPanel
-              ariaLabel={
-                isNotificationsTab
-                  ? t.notifications.filters.notificationsPanelAriaLabel
-                  : t.notifications.filters.reportsPanelAriaLabel
-              }
-              filters={activeUi.draftFilters}
+          {ui.isFilterPanelOpen ? (
+            <NotificationFiltersPanel
+              filters={ui.draftFilters}
               onApply={handleApplyFilters}
-              onChange={handleDraftFiltersChange}
+              onChange={(draftFilters) =>
+                setUi((state) => ({ ...state, draftFilters }))
+              }
               onReset={handleResetFilters}
               statusOptions={statusOptions}
               typeOptions={typeOptions}
             />
           ) : null}
 
-          <ActivityTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="notifications-page__divider" />
 
-          <div className="activity-page__divider" />
-
-          <section
-            aria-labelledby={`recent-activity-${activeTab}-tab`}
-            className="activity-page__table-panel"
-            id={`recent-activity-${activeTab}-panel`}
-            role="tabpanel"
-          >
-            <ActivityTable
-              activeTab={activeTab}
+          <section className="notifications-page__table-panel">
+            <NotificationTable
               emptyMessage={
                 hasActiveCriteria
                   ? t.notifications.table.noResults
-                  : isNotificationsTab
-                    ? t.notifications.table.emptyNotifications
-                    : t.notifications.table.emptyReports
+                  : t.notifications.table.empty
               }
-              items={visibleItems}
+              items={visibleNotifications}
             />
-
-            {activeItems.length ? (
+            {filteredNotifications.length ? (
               <TableFooter
-                className="activity-page__footer"
+                className="notifications-page__footer"
                 currentPage={currentPage}
-                onPageChange={handlePageChange}
+                onPageChange={(page) =>
+                  setUi((state) => ({ ...state, currentPage: page }))
+                }
                 perPage={PAGE_SIZE}
                 showItemRange
                 showPageSizeSelector={false}
                 showSinglePage
-                totalItems={activeItems.length}
+                totalItems={filteredNotifications.length}
                 totalPages={totalPages}
               />
             ) : null}

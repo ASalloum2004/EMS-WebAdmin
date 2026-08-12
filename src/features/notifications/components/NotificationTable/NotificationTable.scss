@@ -1,0 +1,163 @@
+.notification-table.data-table {
+  max-height: none;
+}
+
+.notification-table .data-table__row {
+  min-height: 92px;
+  padding: 16px 18px;
+}
+
+.notification-table__cell--notification {
+  flex: 1 1 390px;
+}
+
+.notification-table__cell--type,
+.notification-table__cell--status {
+  flex: 0 1 122px;
+}
+
+.notification-table__cell--date {
+  flex: 0 1 136px;
+}
+
+.notification-table__identity {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline-start: 11px;
+  border-inline-start: 3px solid var(--ems-color-border-soft);
+}
+
+.notification-table__identity--unread {
+  border-inline-start-color: var(--ems-color-primary);
+}
+
+.notification-table__icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ems-radius-md);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-primary);
+}
+
+.notification-table__icon--success {
+  color: var(--ems-color-status-positive-text);
+}
+
+.notification-table__icon--warning {
+  color: var(--ems-color-purple);
+}
+
+.notification-table__icon--error {
+  color: var(--ems-color-danger);
+}
+
+.notification-table__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.notification-table__title,
+.notification-table__description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-table__title {
+  color: var(--ems-color-heading);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 21px;
+}
+
+.notification-table__description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ems-color-data-supporting-text);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.notification-table__type,
+.notification-table__status {
+  width: fit-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.notification-table__type--success {
+  color: var(--ems-color-status-positive-text);
+}
+
+.notification-table__type--warning {
+  color: var(--ems-color-purple);
+}
+
+.notification-table__type--error {
+  color: var(--ems-color-danger);
+}
+
+.notification-table__type--info,
+.notification-table__status--unread {
+  color: var(--ems-color-primary);
+}
+
+.notification-table__status--read {
+  color: var(--ems-color-muted-light);
+}
+
+.notification-table__cell--date .data-table__value {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .notification-table__cell--notification {
+    flex-basis: 100%;
+  }
+
+  .notification-table__cell--type,
+  .notification-table__cell--status,
+  .notification-table__cell--date {
+    flex: 1 1 28%;
+  }
+}
+
+@media (max-width: 640px) {
+  .notification-table__cell--type,
+  .notification-table__cell--status,
+  .notification-table__cell--date {
+    flex: 1 1 100%;
+  }
+
+  .notification-table__identity {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-inline-start: 9px;
+  }
+
+  .notification-table__type,
+  .notification-table__status {
+    white-space: normal;
+  }
+}

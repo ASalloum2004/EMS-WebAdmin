@@ -1,26 +1,26 @@
-.activity-table.data-table {
+.report-table.data-table {
   max-height: none;
 }
 
-.activity-table .data-table__row {
+.report-table .data-table__row {
   min-height: 92px;
   padding: 16px 18px;
 }
 
-.activity-table__cell--activity {
+.report-table__cell--report {
   flex: 1 1 390px;
 }
 
-.activity-table__cell--type,
-.activity-table__cell--status {
+.report-table__cell--type,
+.report-table__cell--status {
   flex: 0 1 122px;
 }
 
-.activity-table__cell--date {
+.report-table__cell--date {
   flex: 0 1 136px;
 }
 
-.activity-table__identity {
+.report-table__identity {
   width: 100%;
   min-width: 0;
   display: flex;
@@ -30,11 +30,7 @@
   border-inline-start: 3px solid var(--ems-color-border-soft);
 }
 
-.activity-table__identity--unread {
-  border-inline-start-color: var(--ems-color-primary);
-}
-
-.activity-table__icon {
+.report-table__icon {
   width: 40px;
   height: 40px;
   flex: 0 0 40px;
@@ -46,41 +42,27 @@
   color: var(--ems-color-primary);
 }
 
-.activity-table__icon--success {
-  color: var(--ems-color-status-positive-text);
-}
-
-.activity-table__icon--warning,
-.activity-table__icon--complaint {
-  color: var(--ems-color-purple);
-}
-
-.activity-table__icon--error,
-.activity-table__icon--issue {
-  color: var(--ems-color-danger);
-}
-
-.activity-table__copy {
+.report-table__copy {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.activity-table__title,
-.activity-table__description {
+.report-table__title,
+.report-table__description {
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.activity-table__title {
+.report-table__title {
   color: var(--ems-color-heading);
   font-size: 15px;
   font-weight: 700;
   line-height: 21px;
 }
 
-.activity-table__description {
+.report-table__description {
   display: -webkit-box;
   overflow: hidden;
   color: var(--ems-color-data-supporting-text);
@@ -91,8 +73,8 @@
   -webkit-line-clamp: 2;
 }
 
-.activity-table__type,
-.activity-table__status {
+.report-table__type,
+.report-table__status {
   width: fit-content;
   max-width: 100%;
   display: inline-flex;
@@ -108,65 +90,59 @@
   white-space: nowrap;
 }
 
-.activity-table__type--success,
-.activity-table__status--resolved {
+.report-table__status--resolved {
   color: var(--ems-color-status-positive-text);
 }
 
-.activity-table__type--warning,
-.activity-table__type--complaint,
-.activity-table__status--pending {
+.report-table__type--complaint,
+.report-table__status--pending {
   color: var(--ems-color-purple);
 }
 
-.activity-table__type--error,
-.activity-table__type--issue {
+.report-table__type--issue {
   color: var(--ems-color-danger);
 }
 
-.activity-table__type--info,
-.activity-table__type--safety,
-.activity-table__status--unread,
-.activity-table__status--in_review {
+.report-table__type--safety,
+.report-table__status--in_review {
   color: var(--ems-color-primary);
 }
 
-.activity-table__type--other,
-.activity-table__status--read {
+.report-table__type--other {
   color: var(--ems-color-muted-light);
 }
 
-.activity-table__cell--date .data-table__value {
+.report-table__cell--date .data-table__value {
   font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 900px) {
-  .activity-table__cell--activity {
+  .report-table__cell--report {
     flex-basis: 100%;
   }
 
-  .activity-table__cell--type,
-  .activity-table__cell--status,
-  .activity-table__cell--date {
+  .report-table__cell--type,
+  .report-table__cell--status,
+  .report-table__cell--date {
     flex: 1 1 28%;
   }
 }
 
 @media (max-width: 640px) {
-  .activity-table__cell--type,
-  .activity-table__cell--status,
-  .activity-table__cell--date {
+  .report-table__cell--type,
+  .report-table__cell--status,
+  .report-table__cell--date {
     flex: 1 1 100%;
   }
 
-  .activity-table__identity {
+  .report-table__identity {
     align-items: flex-start;
     flex-direction: column;
     padding-inline-start: 9px;
   }
 
-  .activity-table__type,
-  .activity-table__status {
+  .report-table__type,
+  .report-table__status {
     white-space: normal;
   }
 }

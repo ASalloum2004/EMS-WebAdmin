@@ -1,7 +1,7 @@
 import { getAuthSession } from "../features/auth/utils/authStorage";
 
 export const API_BASE_URL =
-  "https://violations-salt-hybrid-springer.trycloudflare.com/api/v1/admin/";
+  "https://pet-board-season-anytime.trycloudflare.com/api/v1/admin/";
 
 export const CONTENT_REQUEST_TIMEOUT_MS = 15_000;
 

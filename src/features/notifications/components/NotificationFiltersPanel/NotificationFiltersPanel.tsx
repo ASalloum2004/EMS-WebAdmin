@@ -1,45 +1,46 @@
 import { useI18n } from "../../../../i18n";
-import type { ActivityFilterValues } from "../../types";
-import "./ActivityFiltersPanel.scss";
+import type { NotificationFilters } from "../../types";
+import "./NotificationFiltersPanel.scss";
 
-export type ActivityFilterOption = {
+export type NotificationFilterOption = {
   label: string;
   value: string;
 };
 
-type ActivityFiltersPanelProps = {
-  ariaLabel: string;
-  filters: ActivityFilterValues;
+type NotificationFiltersPanelProps = {
+  filters: NotificationFilters;
   onApply: () => void;
-  onChange: (filters: ActivityFilterValues) => void;
+  onChange: (filters: NotificationFilters) => void;
   onReset: () => void;
-  statusOptions: ActivityFilterOption[];
-  typeOptions: ActivityFilterOption[];
+  statusOptions: NotificationFilterOption[];
+  typeOptions: NotificationFilterOption[];
 };
 
-export function ActivityFiltersPanel({
-  ariaLabel,
+export function NotificationFiltersPanel({
   filters,
   onApply,
   onChange,
   onReset,
   statusOptions,
   typeOptions,
-}: ActivityFiltersPanelProps) {
+}: NotificationFiltersPanelProps) {
   const { t } = useI18n();
 
   return (
     <div
-      aria-label={ariaLabel}
-      className="activity-filters-panel"
+      aria-label={t.notifications.filters.panelAriaLabel}
+      className="notification-filters-panel"
       role="group"
     >
-      <div className="activity-filters-panel__grid">
-        <label className="activity-filters-panel__field">
+      <div className="notification-filters-panel__grid">
+        <label className="notification-filters-panel__field">
           <span>{t.notifications.filters.status}</span>
           <select
             onChange={(event) =>
-              onChange({ ...filters, status: event.target.value })
+              onChange({
+                ...filters,
+                status: event.target.value as NotificationFilters["status"],
+              })
             }
             value={filters.status}
           >
@@ -51,11 +52,14 @@ export function ActivityFiltersPanel({
           </select>
         </label>
 
-        <label className="activity-filters-panel__field">
+        <label className="notification-filters-panel__field">
           <span>{t.notifications.filters.type}</span>
           <select
             onChange={(event) =>
-              onChange({ ...filters, type: event.target.value })
+              onChange({
+                ...filters,
+                type: event.target.value as NotificationFilters["type"],
+              })
             }
             value={filters.type}
           >
@@ -68,16 +72,16 @@ export function ActivityFiltersPanel({
         </label>
       </div>
 
-      <div className="activity-filters-panel__actions">
+      <div className="notification-filters-panel__actions">
         <button
-          className="activity-filters-panel__button activity-filters-panel__button--secondary"
+          className="notification-filters-panel__button notification-filters-panel__button--secondary"
           onClick={onReset}
           type="button"
         >
           {t.notifications.filters.reset}
         </button>
         <button
-          className="activity-filters-panel__button activity-filters-panel__button--primary"
+          className="notification-filters-panel__button notification-filters-panel__button--primary"
           onClick={onApply}
           type="button"
         >

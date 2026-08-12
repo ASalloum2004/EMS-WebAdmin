@@ -5,6 +5,7 @@ import { ManagementPage } from "../features/management";
 import { NotificationsPage } from "../features/notifications";
 import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
+import { ReportsPage } from "../features/reports";
 import { VisitorPage } from "../features/visitor";
 import { AuthGuard } from "./AuthGuard";
 
@@ -67,6 +68,14 @@ export function AppRouter() {
     return (
       <AuthGuard>
         <NotificationsPage />
+      </AuthGuard>
+    );
+  }
+
+  if (path === "/reports") {
+    return (
+      <AuthGuard>
+        <ReportsPage />
       </AuthGuard>
     );
   }

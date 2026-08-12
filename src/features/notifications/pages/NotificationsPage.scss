@@ -1,21 +1,21 @@
-.activity-page {
+.notifications-page {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.activity-page .card {
+.notifications-page .card {
   direction: inherit;
 }
 
-.activity-page__header {
+.notifications-page__header {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.activity-page__header h1 {
+.notifications-page__header h1 {
   margin: 0;
   color: var(--ems-color-heading);
   font-family: var(--ems-font-body);
@@ -24,7 +24,7 @@
   line-height: 38px;
 }
 
-.activity-page__header p {
+.notifications-page__header p {
   margin: 0;
   color: var(--ems-color-muted);
   font-family: var(--ems-font-body);
@@ -33,40 +33,40 @@
   line-height: 22px;
 }
 
-.activity-page__panel {
+.notifications-page__panel {
   --ems-card-min-height: 0;
   --ems-card-padding: 24px;
 }
 
-.activity-page__panel-body {
+.notifications-page__panel-body {
   min-width: 0;
   gap: 18px;
 }
 
-.activity-page__toolbar {
+.notifications-page__toolbar {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.activity-page__search.search-filter-bar {
+.notifications-page__search.search-filter-bar {
   min-width: 240px;
   flex: 1 1 auto;
 }
 
-.activity-page__search .search-filter-bar__filter-button {
+.notifications-page__search .search-filter-bar__filter-button {
   cursor: pointer;
 }
 
-.activity-page__mark-all {
+.notifications-page__mark-all {
   min-height: 40px;
   flex: 0 0 auto;
   gap: 7px;
   white-space: nowrap;
 }
 
-.activity-page__mark-all:disabled {
+.notifications-page__mark-all:disabled {
   border-color: var(--ems-color-border-soft);
   background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
   color: var(--ems-color-muted-light);
@@ -74,55 +74,55 @@
   box-shadow: none;
 }
 
-.activity-page__divider {
+.notifications-page__divider {
   width: 100%;
   height: 1px;
   background-color: var(--ems-color-border-soft);
 }
 
-.activity-page__table-panel {
+.notifications-page__table-panel {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.activity-page__footer {
+.notifications-page__footer {
   width: 100%;
   padding-top: 18px;
   border-top: 1px solid var(--ems-color-border-soft);
 }
 
 @media (max-width: 720px) {
-  .activity-page__toolbar {
+  .notifications-page__toolbar {
     align-items: stretch;
     flex-wrap: wrap;
   }
 
-  .activity-page__search.search-filter-bar {
+  .notifications-page__search.search-filter-bar {
     min-width: 100%;
   }
 
-  .activity-page__mark-all {
+  .notifications-page__mark-all {
     margin-inline-start: auto;
   }
 }
 
 @media (max-width: 640px) {
-  .activity-page {
+  .notifications-page {
     gap: 20px;
   }
 
-  .activity-page__header h1 {
+  .notifications-page__header h1 {
     font-size: 26px;
     line-height: 34px;
   }
 
-  .activity-page__panel {
+  .notifications-page__panel {
     --ems-card-padding: 18px;
   }
 
-  .activity-page__search.search-filter-bar {
+  .notifications-page__search.search-filter-bar {
     --search-filter-bar-end-padding: 48px;
 
     height: auto;
@@ -133,12 +133,12 @@
     background-color: transparent;
   }
 
-  .activity-page__search.search-filter-bar:focus-within {
+  .notifications-page__search.search-filter-bar:focus-within {
     border-color: transparent;
     box-shadow: none;
   }
 
-  .activity-page__search .search-filter-bar__input {
+  .notifications-page__search .search-filter-bar__input {
     height: 40px;
     padding-inline-end: 14px;
     border: 1px solid var(--ems-color-border-soft);
@@ -148,21 +148,21 @@
     );
   }
 
-  .activity-page__search .search-filter-bar__search-icon {
+  .notifications-page__search .search-filter-bar__search-icon {
     top: 20px;
   }
 
-  .activity-page__search .search-filter-bar__filter-button,
-  .activity-page__mark-all {
+  .notifications-page__search .search-filter-bar__filter-button,
+  .notifications-page__mark-all {
     width: 100%;
   }
 
-  .activity-page__mark-all {
+  .notifications-page__mark-all {
     padding-inline: 8px;
     white-space: normal;
   }
 
-  .activity-page__search .search-filter-bar__filter-button {
+  .notifications-page__search .search-filter-bar__filter-button {
     height: 38px;
     position: static;
     transform: none;

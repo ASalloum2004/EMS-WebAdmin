@@ -1,3 +1,2 @@
-export * from "./activityFilters";
+export * from "./notificationFilters";
 export * from "./notificationMockData";
-export * from "./reportMockData";

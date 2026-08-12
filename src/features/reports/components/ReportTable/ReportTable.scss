@@ -11,9 +11,13 @@
   flex: 1 1 390px;
 }
 
-.report-table__cell--type,
+.report-table__cell--admin-notes,
 .report-table__cell--status {
   flex: 0 1 122px;
+}
+
+.report-table__cell--admin-notes.data-table__cell--badge {
+  align-items: flex-start;
 }
 
 .report-table__cell--date {
@@ -49,8 +53,7 @@
   gap: 3px;
 }
 
-.report-table__title,
-.report-table__description {
+.report-table__title {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -62,18 +65,6 @@
   line-height: 21px;
 }
 
-.report-table__description {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--ems-color-data-supporting-text);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 19px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.report-table__type,
 .report-table__status {
   width: fit-content;
   max-width: 100%;
@@ -91,25 +82,21 @@
 }
 
 .report-table__status--resolved {
+  background-color: var(--ems-color-status-positive-surface);
   color: var(--ems-color-status-positive-text);
 }
 
-.report-table__type--complaint,
 .report-table__status--pending {
-  color: var(--ems-color-purple);
+  background-color: var(
+    --ems-color-primary-soft,
+    var(--ems-color-success-surface)
+  );
+  color: var(--ems-color-primary-dark);
 }
 
-.report-table__type--issue {
-  color: var(--ems-color-danger);
-}
-
-.report-table__type--safety,
-.report-table__status--in_review {
-  color: var(--ems-color-primary);
-}
-
-.report-table__type--other {
-  color: var(--ems-color-muted-light);
+.report-table__status--rejected {
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
 }
 
 .report-table__cell--date .data-table__value {
@@ -121,7 +108,7 @@
     flex-basis: 100%;
   }
 
-  .report-table__cell--type,
+  .report-table__cell--admin-notes,
   .report-table__cell--status,
   .report-table__cell--date {
     flex: 1 1 28%;
@@ -129,7 +116,7 @@
 }
 
 @media (max-width: 640px) {
-  .report-table__cell--type,
+  .report-table__cell--admin-notes,
   .report-table__cell--status,
   .report-table__cell--date {
     flex: 1 1 100%;
@@ -141,7 +128,6 @@
     padding-inline-start: 9px;
   }
 
-  .report-table__type,
   .report-table__status {
     white-space: normal;
   }

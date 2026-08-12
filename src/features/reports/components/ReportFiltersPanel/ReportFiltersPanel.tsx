@@ -36,30 +36,12 @@ export function ReportFiltersPanel({
             <option value="pending">
               {t.reports.reportStatuses.pending}
             </option>
-            <option value="in_review">
-              {t.reports.reportStatuses.inReview}
-            </option>
             <option value="resolved">
               {t.reports.reportStatuses.resolved}
             </option>
-          </select>
-        </label>
-
-        <label className="report-filters-panel__field">
-          <span>{t.reports.filters.type}</span>
-          <select
-            onChange={(event) =>
-              onChange({ ...filters, type: event.target.value as ReportFilters["type"] })
-            }
-            value={filters.type}
-          >
-            <option value="">{t.reports.filters.all}</option>
-            <option value="issue">{t.reports.reportTypes.issue}</option>
-            <option value="complaint">
-              {t.reports.reportTypes.complaint}
+            <option value="rejected">
+              {t.reports.reportStatuses.rejected}
             </option>
-            <option value="safety">{t.reports.reportTypes.safety}</option>
-            <option value="other">{t.reports.reportTypes.other}</option>
           </select>
         </label>
       </div>

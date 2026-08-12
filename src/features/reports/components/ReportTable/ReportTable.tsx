@@ -9,11 +9,7 @@ import {
   type I18nDictionary,
   type SupportedLanguage,
 } from "../../../../i18n";
-import type {
-  ReportItem,
-  ReportStatus,
-  ReportType,
-} from "../../types";
+import type { ReportItem, ReportStatus } from "../../types";
 import "./ReportTable.scss";
 
 type ReportTableProps = {
@@ -21,7 +17,7 @@ type ReportTableProps = {
   items: ReportItem[];
 };
 
-function formatReportDate(
+export function formatReportDate(
   createdAt: string,
   language: SupportedLanguage,
 ) {
@@ -44,9 +40,6 @@ function ReportIdentity({ item }: { item: ReportItem }) {
       </span>
       <span className="report-table__copy">
         <span className="report-table__title">{item.title}</span>
-        <span className="report-table__description">
-          {item.description}
-        </span>
       </span>
     </span>
   );
@@ -56,15 +49,9 @@ function createReportColumns(
   language: SupportedLanguage,
   t: I18nDictionary,
 ): Array<DataTableColumn<ReportItem>> {
-  const typeLabels: Record<ReportType, string> = {
-    complaint: t.reports.reportTypes.complaint,
-    issue: t.reports.reportTypes.issue,
-    other: t.reports.reportTypes.other,
-    safety: t.reports.reportTypes.safety,
-  };
   const statusLabels: Record<ReportStatus, string> = {
-    in_review: t.reports.reportStatuses.inReview,
     pending: t.reports.reportStatuses.pending,
+    rejected: t.reports.reportStatuses.rejected,
     resolved: t.reports.reportStatuses.resolved,
   };
 
@@ -72,21 +59,24 @@ function createReportColumns(
     {
       className: "report-table__cell--report",
       key: "report",
-      label: t.reports.table.report,
+      label: t.reports.table.title,
       render: (item) => <ReportIdentity item={item} />,
       variant: "primary",
     },
     {
-      className: "report-table__cell--type",
-      key: "type",
-      label: t.reports.table.type,
-      render: (item) => (
-        <span
-          className={`report-table__type report-table__type--${item.type}`}
-        >
-          {typeLabels[item.type]}
-        </span>
-      ),
+      className: "report-table__cell--admin-notes",
+      key: "adminNotes",
+      label: t.reports.table.adminNotes,
+      render: (item) => {
+        const hasAdminNotes =
+          typeof item.admin_notes === "string" &&
+          item.admin_notes.trim().length > 0;
+
+        return hasAdminNotes
+          ? t.reports.table.hasNotes
+          : t.reports.table.noNotes;
+      },
+      variant: "badge",
     },
     {
       className: "report-table__cell--status",
@@ -103,8 +93,8 @@ function createReportColumns(
     {
       className: "report-table__cell--date",
       key: "date",
-      label: t.reports.table.date,
-      render: (item) => formatReportDate(item.createdAt, language),
+      label: t.reports.table.createdAt,
+      render: (item) => formatReportDate(item.created_at, language),
     },
   ];
 }

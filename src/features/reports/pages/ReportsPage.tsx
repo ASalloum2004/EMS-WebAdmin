@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { CircleCheck, CircleX, Clock3, Flag } from "lucide-react";
 import {
   Card,
@@ -9,19 +9,13 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import {
   ReportFiltersPanel,
+  ReportListSkeleton,
   ReportStatsSkeleton,
   ReportTable,
 } from "../components";
-import {
-  emptyReportFilters,
-  filterReports,
-  reportMockData,
-} from "../data";
-import { useReportStatistics } from "../hooks";
+import { useReports, useReportStatistics } from "../hooks";
 import type { ReportStatisticsData } from "../types";
 import "./ReportsPage.scss";
-
-const PAGE_SIZE = 4;
 
 type ReportSummaryKey = keyof ReportStatisticsData;
 
@@ -31,43 +25,21 @@ type ReportSummaryCard = {
   label: string;
 };
 
-const initialUiState = {
-  appliedFilters: emptyReportFilters,
-  currentPage: 1,
-  draftFilters: emptyReportFilters,
-  isFilterPanelOpen: false,
-  searchQuery: "",
-};
-
 export function ReportsPage() {
   const { language, t } = useI18n();
-  const [ui, setUi] = useState(initialUiState);
   const reportStatistics = useReportStatistics(
     t.reports.summary.loadError,
   );
+  const reports = useReports(t.reports.table.loadError);
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
   );
-  const filteredReports = useMemo(
-    () =>
-      filterReports(reportMockData, ui.searchQuery, ui.appliedFilters),
-    [ui.appliedFilters, ui.searchQuery],
-  );
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredReports.length / PAGE_SIZE),
-  );
-  const currentPage = Math.min(ui.currentPage, totalPages);
-  const visibleReports = filteredReports.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
   const hasActiveFilters = Boolean(
-    ui.appliedFilters.status || ui.appliedFilters.type,
+    reports.filters.appliedFilters.status,
   );
   const hasActiveCriteria =
-    Boolean(ui.searchQuery.trim()) || hasActiveFilters;
+    Boolean(reports.searchValue.trim()) || hasActiveFilters;
   const summaryCards: ReportSummaryCard[] = [
     {
       icon: <Flag aria-hidden="true" size={22} strokeWidth={1.8} />,
@@ -90,42 +62,6 @@ export function ReportsPage() {
       label: t.reports.summary.rejectedReports,
     },
   ];
-
-  function handleSearchChange(value: string) {
-    setUi((state) => ({
-      ...state,
-      currentPage: 1,
-      searchQuery: value,
-    }));
-  }
-
-  function handleToggleFilters() {
-    setUi((state) => ({
-      ...state,
-      draftFilters: state.isFilterPanelOpen
-        ? state.draftFilters
-        : { ...state.appliedFilters },
-      isFilterPanelOpen: !state.isFilterPanelOpen,
-    }));
-  }
-
-  function handleApplyFilters() {
-    setUi((state) => ({
-      ...state,
-      appliedFilters: { ...state.draftFilters },
-      currentPage: 1,
-      isFilterPanelOpen: false,
-    }));
-  }
-
-  function handleClearFilters() {
-    setUi((state) => ({
-      ...state,
-      appliedFilters: emptyReportFilters,
-      currentPage: 1,
-      draftFilters: emptyReportFilters,
-    }));
-  }
 
   return (
     <ManagementLayout>
@@ -191,56 +127,68 @@ export function ReportsPage() {
           bodyClassName="reports-page__panel-body"
           className="reports-page__panel"
         >
-          <SearchFilterBar
-            className="reports-page__search"
-            filterAriaLabel={t.reports.filters.filterAriaLabel}
-            filterLabel={t.common.filter}
-            inputAriaLabel={t.reports.search.ariaLabel}
-            isFilterActive={hasActiveFilters}
-            onChange={handleSearchChange}
-            onFilterClick={handleToggleFilters}
-            placeholder={t.reports.search.placeholder}
-            showFilterButton
-            value={ui.searchQuery}
-          />
-
-          {ui.isFilterPanelOpen ? (
-            <ReportFiltersPanel
-              filters={ui.draftFilters}
-              onApply={handleApplyFilters}
-              onChange={(draftFilters) =>
-                setUi((state) => ({ ...state, draftFilters }))
-              }
-              onClear={handleClearFilters}
+          <div aria-busy={reports.isLoading || reports.isRefreshing}>
+            <SearchFilterBar
+              className="reports-page__search"
+              filterAriaLabel={t.reports.filters.filterAriaLabel}
+              filterLabel={t.common.filter}
+              inputAriaLabel={t.reports.search.ariaLabel}
+              isFilterActive={hasActiveFilters}
+              onChange={reports.setSearchValue}
+              onFilterClick={reports.filters.toggleFilterPanel}
+              placeholder={t.reports.search.placeholder}
+              showFilterButton
+              value={reports.searchValue}
             />
-          ) : null}
 
-          <div className="reports-page__divider" />
+            {reports.filters.isFilterPanelOpen ? (
+              <ReportFiltersPanel
+                filters={reports.filters.draftFilters}
+                onApply={reports.filters.applyFilters}
+                onChange={reports.filters.setDraftFilters}
+                onClear={reports.filters.clearFilters}
+              />
+            ) : null}
 
-          <ReportTable
-            emptyMessage={
-              hasActiveCriteria
-                ? t.reports.table.noResults
-                : t.reports.table.empty
-            }
-            items={visibleReports}
-          />
+            <div className="reports-page__divider" />
 
-          {filteredReports.length ? (
-            <TableFooter
-              className="reports-page__footer"
-              currentPage={currentPage}
-              onPageChange={(page) =>
-                setUi((state) => ({ ...state, currentPage: page }))
-              }
-              perPage={PAGE_SIZE}
-              showItemRange
-              showPageSizeSelector={false}
-              showSinglePage
-              totalItems={filteredReports.length}
-              totalPages={totalPages}
-            />
-          ) : null}
+            {reports.isLoading ? <ReportListSkeleton /> : null}
+
+            {!reports.isLoading && reports.error ? (
+              <div className="reports-page__state" role="alert">
+                <p>{reports.error || t.reports.table.loadError}</p>
+                <button onClick={() => void reports.refetch()} type="button">
+                  {t.common.tryAgain}
+                </button>
+              </div>
+            ) : null}
+
+            {!reports.isLoading &&
+            (!reports.error || reports.reports.length) ? (
+              <ReportTable
+                emptyMessage={
+                  hasActiveCriteria
+                    ? t.reports.table.noResults
+                    : t.reports.table.empty
+                }
+                items={reports.reports}
+              />
+            ) : null}
+
+            {!reports.isLoading && reports.reports.length ? (
+              <TableFooter
+                className="reports-page__footer"
+                currentPage={reports.currentPage}
+                onPageChange={reports.setCurrentPage}
+                perPage={reports.perPage}
+                showItemRange
+                showPageSizeSelector={false}
+                showSinglePage
+                totalItems={reports.totalItems}
+                totalPages={reports.totalPages}
+              />
+            ) : null}
+          </div>
         </Card>
       </div>
     </ManagementLayout>

@@ -1,18 +1,52 @@
-export type ReportStatus = "pending" | "in_review" | "resolved";
-export type ReportType = "issue" | "complaint" | "safety" | "other";
+export type ReportStatus = "pending" | "resolved" | "rejected";
 
-export interface ReportItem {
-  id: number;
-  title: string;
+export interface ReportApiData {
+  admin_notes: string | null;
+  created_at: string;
   description: string;
-  type: ReportType;
+  id: number;
   status: ReportStatus;
-  createdAt: string;
+  title: string;
 }
+
+export type ReportItem = Pick<
+  ReportApiData,
+  "admin_notes" | "created_at" | "id" | "status" | "title"
+>;
 
 export type ReportFilters = {
   status: "" | ReportStatus;
-  type: "" | ReportType;
+};
+
+export type ReportsResponse = {
+  data: {
+    current_page: number;
+    data: ReportApiData[];
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  message: string;
+  status: boolean;
+};
+
+export type ReportsPagination = {
+  currentPage: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+};
+
+export type GetReportsResult = {
+  pagination: ReportsPagination;
+  reports: ReportItem[];
+};
+
+export type GetReportsParams = {
+  page?: number;
+  perPage?: number;
+  search?: string;
+  status?: ReportStatus;
 };
 
 export interface ReportStatisticsData {

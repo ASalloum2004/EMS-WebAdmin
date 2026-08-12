@@ -193,12 +193,6 @@
   color: var(--ems-color-muted);
 }
 
-.report-action-confirm-modal__button--cancel-danger {
-  border-color: var(--ems-color-danger);
-  background-color: var(--ems-color-danger-surface);
-  color: var(--ems-color-danger);
-}
-
 .report-action-confirm-modal__button--resolve {
   border: 1px solid var(--ems-color-primary);
   background-color: var(--ems-color-primary);

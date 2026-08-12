@@ -210,11 +210,7 @@ export function ReportActionConfirmModal({
 
         <div className="report-action-confirm-modal__actions">
           <button
-            className={`report-action-confirm-modal__button report-action-confirm-modal__button--cancel${
-              action === "reject"
-                ? " report-action-confirm-modal__button--cancel-danger"
-                : ""
-            }`}
+            className="report-action-confirm-modal__button report-action-confirm-modal__button--cancel"
             disabled={isSubmitting}
             onClick={onCancel}
             ref={cancelButtonRef}

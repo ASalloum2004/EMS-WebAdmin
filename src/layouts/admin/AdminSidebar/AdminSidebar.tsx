@@ -10,6 +10,7 @@ import {
   visitorsIcon,
 } from "../../../assets/AdminSideBar";
 import { useI18n, type I18nDictionary } from "../../../i18n";
+import { AppLink } from "../../../router/AppLink";
 import "./AdminSidebar.scss";
 
 type AdminSidebarItem = {
@@ -93,7 +94,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
           const isActive = isActivePath(item.href);
 
           return (
-            <a
+            <AppLink
               key={item.href}
               href={item.href}
               className={
@@ -109,7 +110,7 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
               />
 
               <span>{t.layout.sidebar[item.labelKey]}</span>
-            </a>
+            </AppLink>
           );
         })}
       </nav>

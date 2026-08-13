@@ -1,3 +1,4 @@
+import { useEffect, useState, type ReactNode } from "react";
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { AnnouncementsPage } from "../features/announcements";
 import { CompanyPage } from "../features/company";
@@ -7,75 +8,40 @@ import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
 import { ReportsPage } from "../features/reports";
 import { VisitorPage } from "../features/visitor";
+import { AdminLayout } from "../layouts";
 import { AuthGuard } from "./AuthGuard";
 
+const adminRoutes: Record<string, ReactNode> = {
+  "/announcements": <AnnouncementsPage />,
+  "/companies": <CompanyPage />,
+  "/management": <ManagementPage />,
+  "/notifications": <NotificationsPage />,
+  "/orders": <OrderPage />,
+  "/profile": <ProfilePage />,
+  "/reports": <ReportsPage />,
+  "/visitors": <VisitorPage />,
+};
+
 export function AppRouter() {
-  const path = window.location.pathname;
+  const [path, setPath] = useState(() => window.location.pathname);
+
+  useEffect(() => {
+    const updatePath = () => setPath(window.location.pathname);
+
+    window.addEventListener("popstate", updatePath);
+    return () => window.removeEventListener("popstate", updatePath);
+  }, []);
 
   if (path === "/reset-password") {
     return <ResetPasswordPage />;
   }
 
-  if (path === "/profile") {
-    return (
-      <AuthGuard>
-        <ProfilePage />
-      </AuthGuard>
-    );
-  }
+  const adminPage = adminRoutes[path];
 
-  if (path === "/management") {
+  if (adminPage) {
     return (
       <AuthGuard>
-        <ManagementPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/companies") {
-    return (
-      <AuthGuard>
-        <CompanyPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/orders") {
-    return (
-      <AuthGuard>
-        <OrderPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/visitors") {
-    return (
-      <AuthGuard>
-        <VisitorPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/announcements") {
-    return (
-      <AuthGuard>
-        <AnnouncementsPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/notifications") {
-    return (
-      <AuthGuard>
-        <NotificationsPage />
-      </AuthGuard>
-    );
-  }
-
-  if (path === "/reports") {
-    return (
-      <AuthGuard>
-        <ReportsPage />
+        <AdminLayout>{adminPage}</AdminLayout>
       </AuthGuard>
     );
   }

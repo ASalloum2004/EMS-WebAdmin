@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "../../../i18n";
+import { AppLink } from "../../../router/AppLink";
 import "./AdminAppbar.scss";
 
 interface AdminAppbarProps {
@@ -33,7 +34,7 @@ export function AdminAppbar({ adminAvatarUrl, adminName }: AdminAppbarProps) {
     <header className="admin-appbar">
       <h1 className="admin-appbar__title">{t.layout.appbar.title}</h1>
 
-      <a
+      <AppLink
         href="/profile"
         className="admin-appbar__avatar-button"
         aria-label={t.layout.appbar.openProfileMenu}
@@ -50,7 +51,7 @@ export function AdminAppbar({ adminAvatarUrl, adminName }: AdminAppbarProps) {
             {getInitials(adminName)}
           </span>
         )}
-      </a>
+      </AppLink>
     </header>
   );
 }

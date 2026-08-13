@@ -742,6 +742,7 @@ export const en = {
     title: "Halls & Booth Management",
     description:
       "View and manage exhibition halls, booth areas, and space allocation details",
+    bus: "Bus",
     services: "Services",
     tabs: {
       hall: "Hall",

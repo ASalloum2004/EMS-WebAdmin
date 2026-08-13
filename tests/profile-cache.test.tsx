@@ -151,6 +151,35 @@ test("App Bar avatar is an accessible Profile navigation link", () => {
   assert.equal(clickedProfileHref, "/profile");
 });
 
+test("App Bar uses in-app navigation for an ordinary Profile click", () => {
+  const previousLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  let popstateCount = 0;
+  const countPopstate = () => {
+    popstateCount += 1;
+  };
+
+  window.history.replaceState(null, "", "/orders");
+  window.addEventListener("popstate", countPopstate);
+
+  try {
+    const view = render(
+      <I18nProvider>
+        <AdminAppbar adminName="Test Admin" />
+      </I18nProvider>,
+    );
+
+    fireEvent.click(
+      view.getByRole("link", { name: "Open admin profile menu" }),
+    );
+
+    assert.equal(window.location.pathname, "/profile");
+    assert.equal(popstateCount, 1);
+  } finally {
+    window.removeEventListener("popstate", countPopstate);
+    window.history.replaceState(null, "", previousLocation);
+  }
+});
+
 test("a wrapped authenticated session does not crash protected profile consumers", async () => {
   setWrappedSession();
   let profileGetCount = 0;
@@ -211,6 +240,49 @@ test("one Profile GET is shared across page changes and a Profile page remount",
   assert.ok((await profileView.findAllByText("Cached Admin")).length >= 2);
   assert.equal(profileGetCount, 1);
   assert.equal(profileView.queryByText("Loading profile information"), null);
+});
+
+test("the persistent Admin shell keeps the cached avatar element across page changes", async () => {
+  const avatarUrl = "/storage/avatars/stable-admin.png";
+  let profileGetCount = 0;
+
+  globalThis.fetch = async () => {
+    profileGetCount += 1;
+    return jsonResponse(profileResponse({ avatar: avatarUrl }));
+  };
+
+  const view = render(
+    <RuntimeProviders>
+      <AdminLayout>
+        <AdminLayout key="companies">Companies content</AdminLayout>
+      </AdminLayout>
+    </RuntimeProviders>,
+  );
+  const firstAvatar = await waitFor(() => {
+    const image = view.container.querySelector<HTMLImageElement>(
+      ".admin-appbar__avatar",
+    );
+    assert.ok(image);
+    return image;
+  });
+  const firstAvatarSource = firstAvatar.src;
+  assert.equal(view.container.querySelectorAll(".admin-appbar").length, 1);
+
+  view.rerender(
+    <RuntimeProviders>
+      <AdminLayout>
+        <AdminLayout key="reports">Reports content</AdminLayout>
+      </AdminLayout>
+    </RuntimeProviders>,
+  );
+
+  const nextAvatar = view.container.querySelector<HTMLImageElement>(
+    ".admin-appbar__avatar",
+  );
+  assert.equal(nextAvatar, firstAvatar);
+  assert.equal(nextAvatar?.src, firstAvatarSource);
+  assert.ok(view.getByText("Reports content"));
+  assert.equal(profileGetCount, 1);
 });
 
 test("simultaneous Profile consumers share one in-flight request", async () => {

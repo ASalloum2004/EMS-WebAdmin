@@ -740,6 +740,7 @@ export const ar: I18nDictionary = {
     title: "إدارة القاعات والأجنحة",
     description:
       "اعرض وأدر قاعات المعرض ومناطق الأجنحة وتفاصيل تخصيص المساحات",
+    bus: "الحافلة",
     services: "الخدمات",
     tabs: {
       hall: "قاعة",

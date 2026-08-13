@@ -200,6 +200,7 @@ export function ManagementPage() {
         <ManagementHeader
           title={t.management.title}
           description={t.management.description}
+          busLabel={t.management.bus}
           actionLabel={t.management.services}
           onActionClick={() => setIsServicesModalOpen(true)}
         />

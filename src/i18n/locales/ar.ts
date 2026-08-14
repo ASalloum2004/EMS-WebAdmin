@@ -575,6 +575,8 @@ export const ar: I18nDictionary = {
         description: "الوصف",
         companyId: "معرّف الشركة",
         companyName: "اسم الشركة",
+        organizerName: "اسم الجهة المنظمة",
+        organizerEmail: "البريد الإلكتروني للجهة المنظمة",
         businessSector: "قطاع الأعمال",
         phone: "الهاتف",
         yearFounded: "سنة التأسيس",

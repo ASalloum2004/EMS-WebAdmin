@@ -90,6 +90,7 @@ export type EventRequestOrganizerApiData = {
   id: number;
   avatar?: string | null;
   name?: string | null;
+  email?: string | null;
   business_sector?: string | null;
   phone?: string | null;
   description?: string | null;
@@ -104,6 +105,7 @@ export type EventRequestOrganizerDetails = {
   id: number;
   avatar: string | null;
   name: string | null;
+  email: string | null;
   business_sector: string | null;
   phone: string | null;
   description: string | null;

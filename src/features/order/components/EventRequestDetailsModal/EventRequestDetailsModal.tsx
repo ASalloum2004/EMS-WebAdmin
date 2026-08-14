@@ -300,10 +300,6 @@ export function EventRequestDetailsModal({
                       language={language}
                       t={t}
                     />
-                    <EventRequestSpeakersSection
-                      speakers={details.speakers}
-                      t={t}
-                    />
                   </div>
                   <div className="event-request-details-modal__column">
                     <EventRequestOrganizerSection
@@ -315,6 +311,10 @@ export function EventRequestDetailsModal({
                       language={language}
                       qrScansCount={details.qr_scans_count}
                       savedCount={details.saved_count}
+                      t={t}
+                    />
+                    <EventRequestSpeakersSection
+                      speakers={details.speakers}
                       t={t}
                     />
                   </div>

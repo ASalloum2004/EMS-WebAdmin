@@ -577,6 +577,8 @@ export const en = {
         description: "Description",
         companyId: "Company ID",
         companyName: "Company name",
+        organizerName: "Organizer Name",
+        organizerEmail: "Organizer Email",
         businessSector: "Business sector",
         phone: "Phone",
         yearFounded: "Year founded",

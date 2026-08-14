@@ -1,6 +1,5 @@
 import "./setup-dom.js";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, test } from "node:test";
 import {
   act,
@@ -34,6 +33,7 @@ const fullDetails: EventRequestDetails = {
     id: 1,
     avatar: null,
     name: "Dar Al feker",
+    email: "hello@dar.com",
     business_sector: "Lectures & Exhibitions",
     phone: "+963112223334",
     description: "Leading readers for reading.",
@@ -124,20 +124,11 @@ test("renders every Event detail section and excludes organizer coordinates", ()
   );
 
   assert.ok(within(dialog).getByText("Dar Al feker"));
-  assert.ok(within(dialog).getByText("Lectures & Exhibitions"));
-  assert.ok(within(dialog).getByText("+963112223334"));
-  assert.ok(within(dialog).getByText("2015"));
-  assert.ok(within(dialog).getByText("Leading readers for reading."));
-  const website = within(dialog).getByRole("link", {
-    name: "https://dar.com/",
-  });
-  const linkedin = within(dialog).getByRole("link", {
-    name: "https://linkedin.com/company/dar",
-  });
-  assert.equal(website.getAttribute("target"), "_blank");
-  assert.equal(website.getAttribute("rel"), "noopener noreferrer");
-  assert.equal(linkedin.getAttribute("target"), "_blank");
-  assert.equal(linkedin.getAttribute("rel"), "noopener noreferrer");
+  assert.ok(within(dialog).getByText("hello@dar.com"));
+  assert.equal(within(dialog).queryByText("Business sector"), null);
+  assert.equal(within(dialog).queryByText("Phone"), null);
+  assert.equal(within(dialog).queryByText("Year founded"), null);
+  assert.equal(within(dialog).queryByText("Company status"), null);
   assert.equal(within(dialog).queryByText("headquarters_lat"), null);
   assert.equal(within(dialog).queryByText("headquarters_lng"), null);
   assert.equal(within(dialog).queryByText("33.513807"), null);
@@ -187,127 +178,46 @@ test("renders the Event logo placeholder above the details content grid", () => 
   assert.equal(placeholder.querySelector("img"), null);
 });
 
-test("renders the organizer identity with the Booth large-avatar contract", () => {
-  const eventLogoUrl = "https://events.example/event-logo.png";
-  const organizerAvatarUrl = "https://organizers.example/avatar.png";
+test("renders organizer name and email without company profile fields", () => {
   const view = renderModal({
     ...fullDetails,
     eventable: {
       ...fullDetails.eventable!,
-      avatar: organizerAvatarUrl,
+      id: 3,
+      name: "Elcoach",
+      email: "zuheiralhomsi73@gmail.com",
     },
-    logo: eventLogoUrl,
   });
-  assert.equal(
-    view
-      .getByRole("img", {
-        name: "Event logo: The Future of Publishing",
-      })
-      .getAttribute("src"),
-    eventLogoUrl,
-  );
   const organizerHeading = view.getByRole("heading", {
     name: "Organizer information",
   });
   const organizerCard = organizerHeading.closest("section");
+  const engagementCard = view
+    .getByRole("heading", { name: "Engagement" })
+    .closest("section");
+  const speakersCard = view
+    .getByRole("heading", { name: "Speakers" })
+    .closest("section");
 
   assert.ok(organizerCard);
-
-  const identity = organizerCard.querySelector<HTMLElement>(
-    ".event-request-details-modal__organizer-heading",
-  );
-  const avatar = organizerCard.querySelector<HTMLElement>(
-    ".event-request-details-modal__organizer-avatar",
-  );
-  const copy = organizerCard.querySelector<HTMLElement>(
-    ".event-request-details-modal__organizer-copy",
-  );
-
-  assert.ok(identity);
-  assert.ok(avatar);
-  assert.ok(copy);
-  assert.equal(identity.firstElementChild, avatar);
-  assert.equal(identity.lastElementChild, copy);
-  assert.equal(avatar.getAttribute("aria-hidden"), "true");
-  const organizerLogo = avatar.querySelector<HTMLImageElement>("img");
-  assert.ok(organizerLogo);
-  assert.equal(organizerLogo.getAttribute("src"), organizerAvatarUrl);
-  assert.notEqual(organizerLogo.getAttribute("src"), eventLogoUrl);
-  assert.equal(organizerLogo.getAttribute("alt"), "");
-  assert.ok(within(copy).getByText("Dar Al feker"));
-
-  const status = within(copy).getByText("Pending");
-  assert.match(status.className, /event-request-details-modal__organizer-status/);
-  assert.match(status.className, /--pending/);
-  assert.equal(within(organizerCard).queryByText("Company name"), null);
-
-  assert.ok(within(organizerCard).getByText("Lectures & Exhibitions"));
-  assert.ok(within(organizerCard).getByText("+963112223334"));
-  assert.ok(within(organizerCard).getByText("2015"));
+  assert.ok(within(organizerCard).getByText("Organizer Name"));
+  assert.ok(within(organizerCard).getByText("Elcoach"));
+  assert.ok(within(organizerCard).getByText("Organizer Email"));
   assert.ok(
-    within(organizerCard).getByText("Leading readers for reading."),
+    within(organizerCard).getByText("zuheiralhomsi73@gmail.com"),
   );
-  assert.equal(within(organizerCard).queryByText("QR_METADATA_VALUE"), null);
+  assert.equal(within(organizerCard).queryByText("Business sector"), null);
+  assert.equal(within(organizerCard).queryByText("Phone"), null);
+  assert.equal(within(organizerCard).queryByText("Year founded"), null);
+  assert.equal(within(organizerCard).queryByText("Company status"), null);
   assert.equal(
-    view.queryByText("Additional event information"),
+    organizerCard.querySelector(".event-request-details-modal__organizer-avatar"),
     null,
   );
-
-  const organizerStyles = readFileSync(
-    "src/features/order/components/EventRequestDetailsModal/EventRequestOrganizerSection.scss",
-    "utf8",
-  );
-
-  assert.match(
-    organizerStyles,
-    /\.event-request-details-modal__organizer-heading\s*\{[\s\S]*?display: flex;[\s\S]*?gap: 13px;/,
-  );
-  assert.match(
-    organizerStyles,
-    /\.event-request-details-modal__organizer-avatar\s*\{[\s\S]*?width: 58px;[\s\S]*?height: 58px;[\s\S]*?flex-basis: 58px;[\s\S]*?border: 1px solid var\(--ems-color-primary\);[\s\S]*?border-radius: 16px;[\s\S]*?font-size: 18px;/,
-  );
-  assert.match(
-    organizerStyles,
-    /@media \(max-width: 640px\)\s*\{[\s\S]*?\.event-request-details-modal__organizer-avatar\s*\{[\s\S]*?width: 54px;[\s\S]*?height: 54px;[\s\S]*?flex-basis: 54px;/,
-  );
-});
-
-test("falls back for missing or broken organizer avatars without reusing the Event logo", () => {
-  const eventLogoUrl = "https://events.example/event-logo.png";
-  const nullLogoView = renderModal({
-    ...fullDetails,
-    eventable: { ...fullDetails.eventable!, avatar: null },
-    logo: eventLogoUrl,
-  });
-  const nullLogoAvatar = nullLogoView.container.querySelector<HTMLElement>(
-    ".event-request-details-modal__organizer-avatar",
-  );
-
-  assert.ok(nullLogoAvatar);
-  assert.equal(nullLogoAvatar.textContent, "DA");
-  assert.equal(nullLogoAvatar.querySelector("img"), null);
-  nullLogoView.unmount();
-
-  const failedLogoView = renderModal({
-    ...fullDetails,
-    eventable: {
-      ...fullDetails.eventable!,
-      avatar: "https://organizers.example/broken-avatar.png",
-    },
-    logo: eventLogoUrl,
-  });
-  const failedLogoAvatar =
-    failedLogoView.container.querySelector<HTMLElement>(
-      ".event-request-details-modal__organizer-avatar",
-    );
-  const failedLogo = failedLogoAvatar?.querySelector<HTMLImageElement>("img");
-
-  assert.ok(failedLogoAvatar);
-  assert.ok(failedLogo);
-  fireEvent.error(failedLogo);
-  assert.equal(failedLogoAvatar.querySelector("img"), null);
-  assert.equal(failedLogoAvatar.textContent, "DA");
-  assert.equal(failedLogoAvatar.getAttribute("aria-hidden"), "true");
+  assert.ok(engagementCard);
+  assert.ok(speakersCard);
+  assert.equal(engagementCard.parentElement, speakersCard.parentElement);
+  assert.equal(engagementCard.nextElementSibling, speakersCard);
 });
 
 test("handles null organizer and zero, one, or many speakers", () => {
@@ -358,15 +268,9 @@ test("renders the Event logo only in the showcase and handles image failure", ()
   const headerAvatar = dialog.querySelector<HTMLElement>(
     ".event-request-details-modal__avatar",
   );
-  const organizerAvatar = dialog.querySelector<HTMLElement>(
-    ".event-request-details-modal__organizer-avatar",
-  );
   assert.ok(headerAvatar);
-  assert.ok(organizerAvatar);
   assert.equal(headerAvatar.textContent, "TF");
   assert.equal(headerAvatar.querySelector("img"), null);
-  assert.equal(organizerAvatar.textContent, "DA");
-  assert.equal(organizerAvatar.querySelector("img"), null);
 
   fireEvent.error(logo);
 
@@ -383,28 +287,6 @@ test("renders the Event logo only in the showcase and handles image failure", ()
     ),
   );
   assert.equal(headerAvatar.textContent, "TF");
-  assert.equal(organizerAvatar.textContent, "DA");
-});
-
-test("renders only safe social links and a safe telephone link", () => {
-  const view = renderModal({
-    ...fullDetails,
-    eventable: {
-      ...fullDetails.eventable!,
-      social_links: {
-        website: "javascript:unsafe()",
-        linkedin: "not a url",
-      },
-    },
-  });
-
-  assert.equal(view.queryByRole("link", { name: "javascript:unsafe()" }), null);
-  assert.equal(view.queryByRole("link", { name: "not a url" }), null);
-  assert.ok(view.getAllByText("Not available").length >= 2);
-  assert.equal(
-    view.getByRole("link", { name: "+963112223334" }).getAttribute("href"),
-    "tel:+963112223334",
-  );
 });
 
 test("pending actions are presentational while terminal and unknown states are non-interactive", () => {

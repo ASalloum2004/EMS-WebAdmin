@@ -74,12 +74,6 @@ export interface EventRequestLogoShowcaseProps {
   t: I18nDictionary;
 }
 
-export interface EventRequestOrganizerLinkProps {
-  href: string | null;
-  label: string;
-  unavailable: string;
-}
-
 export interface EventRequestSpeakersSectionProps {
   speakers: EventRequestSpeakerApiData[];
   t: I18nDictionary;

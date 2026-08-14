@@ -119,6 +119,23 @@ export type EventRequestSpeakerApiData = {
   name: string | null;
 };
 
+export type EventRequestMetricApiValue = number | string | null;
+
+export type EventRequestEngagementApiData = {
+  average_rating?: EventRequestMetricApiValue;
+  avg_rating?: EventRequestMetricApiValue;
+  engagement?: EventRequestEngagementApiData | null;
+  favorites_count?: EventRequestMetricApiValue;
+  qr_scans?: EventRequestMetricApiValue;
+  qr_scans_count?: EventRequestMetricApiValue;
+  ratings_avg_rating?: EventRequestMetricApiValue;
+  saved_count?: EventRequestMetricApiValue;
+  saves_count?: EventRequestMetricApiValue;
+  scans_count?: EventRequestMetricApiValue;
+  statistics?: EventRequestEngagementApiData | null;
+  stats?: EventRequestEngagementApiData | null;
+};
+
 export type EventRequestDetailsApiData = {
   id: number;
   title: string | null;
@@ -132,9 +149,13 @@ export type EventRequestDetailsApiData = {
   qr_token?: string | null;
   eventable?: EventRequestOrganizerApiData | null;
   speakers?: EventRequestSpeakerApiData[] | null;
-  average_rating?: number | null;
-  qr_scans_count?: number | null;
-  saved_count?: number | null;
+  average_rating?: EventRequestMetricApiValue;
+  engagement?: EventRequestEngagementApiData | null;
+  event?: EventRequestEngagementApiData | null;
+  qr_scans_count?: EventRequestMetricApiValue;
+  saved_count?: EventRequestMetricApiValue;
+  statistics?: EventRequestEngagementApiData | null;
+  stats?: EventRequestEngagementApiData | null;
   created_at?: string | null;
   logo?: string | null;
 };
@@ -267,18 +288,37 @@ export type BoothRequestCompanyDetailsResponse = Omit<
   status?: string | null;
 };
 
+export type BoothRequestService = {
+  id: number | null;
+  name: string;
+};
+
+export type BoothRequestServiceResponse =
+  | string
+  | {
+      data?: unknown;
+      details?: unknown;
+      id?: number | string | null;
+      name?: unknown;
+      service?: unknown;
+      service_id?: number | string | null;
+      service_name?: unknown;
+      title?: unknown;
+    };
+
 export type BoothRequestDetailsApiData = BoothRequestBaseApiData & {
   company: BoothRequestCompanyDetails;
-  services: unknown[];
+  services: BoothRequestService[];
 };
 
 export type BoothRequestDetailsResponseData = Omit<
   BoothRequestDetailsApiData,
-  "company" | "created_at" | "reason_for_booking"
+  "company" | "created_at" | "reason_for_booking" | "services"
 > & {
   company: BoothRequestCompanyDetailsResponse;
   created_at?: string | null;
   reason_for_booking?: string | null;
+  services: BoothRequestServiceResponse[];
 };
 
 export type BoothRequestDetailsResponse = {

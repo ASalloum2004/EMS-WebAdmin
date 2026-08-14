@@ -289,6 +289,23 @@ test("renders the Event logo only in the showcase and handles image failure", ()
   assert.equal(headerAvatar.textContent, "TF");
 });
 
+test("renders normalized backend engagement metrics", () => {
+  const view = renderModal({
+    ...fullDetails,
+    average_rating: 4.25,
+    qr_scans_count: 38,
+    saved_count: 12,
+  });
+  const engagementCard = view
+    .getByRole("heading", { name: "Engagement" })
+    .closest("section");
+
+  assert.ok(engagementCard);
+  assert.ok(within(engagementCard).getByText("4.3"));
+  assert.ok(within(engagementCard).getByText("38"));
+  assert.ok(within(engagementCard).getByText("12"));
+});
+
 test("pending actions are presentational while terminal and unknown states are non-interactive", () => {
   let networkRequests = 0;
   globalThis.fetch = async () => {

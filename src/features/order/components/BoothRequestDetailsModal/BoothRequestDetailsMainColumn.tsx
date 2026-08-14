@@ -132,17 +132,10 @@ function RequestedServices({
           }`}
         >
           {details.services.map((service, index) => {
-            const serviceName =
-              typeof service === "object" &&
-              service !== null &&
-              "name" in service
-                ? getTrimmedString(service.name)
-                : getTrimmedString(service);
-
             return (
               <li
                 className="booth-request-details-modal__service-row"
-                key={index}
+                key={`${service.id ?? "service"}-${index}`}
               >
                 <span className="booth-request-details-modal__service-icon">
                   <ServiceIcon
@@ -152,7 +145,7 @@ function RequestedServices({
                   />
                 </span>
                 <strong>
-                  {serviceName ||
+                  {service.name ||
                     t.order.details.services.detailsUnavailable}
                 </strong>
               </li>

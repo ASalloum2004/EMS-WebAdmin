@@ -6,6 +6,7 @@ import {
 import type {
   EventRequestDetails,
   EventRequestDetailsApiData,
+  EventRequestEngagementApiData,
   EventRequestDetailsResponse,
   EventRequestOrganizerApiData,
   EventRequestOrganizerDetails,
@@ -43,6 +44,26 @@ function isOptionalNullableString(value: unknown) {
 
 function isOptionalNullableNumber(value: unknown) {
   return value === undefined || isNullableNumber(value);
+}
+
+function isOptionalMetricValue(value: unknown) {
+  if (value === undefined || value === null) {
+    return true;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value);
+  }
+
+  return (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    Number.isFinite(Number(value))
+  );
+}
+
+function isOptionalMetricContainer(value: unknown) {
+  return value === undefined || value === null || isRecord(value);
 }
 
 function isValidSocialLinks(value: unknown) {
@@ -110,12 +131,103 @@ function isValidDetails(value: unknown): value is EventRequestDetailsApiData {
       value.eventable === null ||
       isValidOrganizer(value.eventable)) &&
     isValidSpeakers(value.speakers) &&
-    isOptionalNullableNumber(value.average_rating) &&
-    isOptionalNullableNumber(value.qr_scans_count) &&
-    isOptionalNullableNumber(value.saved_count) &&
+    isOptionalMetricValue(value.average_rating) &&
+    isOptionalMetricValue(value.qr_scans_count) &&
+    isOptionalMetricValue(value.saved_count) &&
+    isOptionalMetricContainer(value.engagement) &&
+    isOptionalMetricContainer(value.statistics) &&
+    isOptionalMetricContainer(value.stats) &&
+    isOptionalMetricContainer(value.event) &&
     isOptionalNullableString(value.created_at) &&
     isOptionalNullableString(value.logo)
   );
+}
+
+const engagementContainerKeys = [
+  "engagement",
+  "statistics",
+  "stats",
+  "event",
+] as const;
+
+const averageRatingKeys = [
+  "average_rating",
+  "avg_rating",
+  "ratings_avg_rating",
+] as const;
+const qrScansCountKeys = [
+  "qr_scans_count",
+  "qr_scans",
+  "scans_count",
+] as const;
+const savedCountKeys = [
+  "saved_count",
+  "saves_count",
+  "favorites_count",
+] as const;
+
+type EngagementMetricKey = keyof EventRequestEngagementApiData;
+
+function getMetricSources(
+  details: Record<string, unknown>,
+): Record<string, unknown>[] {
+  const sources: Record<string, unknown>[] = [];
+  const visited = new Set<Record<string, unknown>>();
+
+  function addNestedSources(value: unknown, depth: number) {
+    if (!isRecord(value) || visited.has(value) || depth > 4) {
+      return;
+    }
+
+    visited.add(value);
+
+    for (const key of engagementContainerKeys) {
+      addNestedSources(value[key], depth + 1);
+    }
+
+    sources.push(value);
+  }
+
+  for (const key of engagementContainerKeys) {
+    addNestedSources(details[key], 0);
+  }
+
+  sources.push(details);
+
+  return sources;
+}
+
+function normalizeMetricValue(value: unknown) {
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const numberValue = Number(value);
+
+    return Number.isFinite(numberValue) ? numberValue : null;
+  }
+
+  return null;
+}
+
+function getEngagementMetric(
+  sources: Record<string, unknown>[],
+  keys: readonly EngagementMetricKey[],
+) {
+  for (const source of sources) {
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        return normalizeMetricValue(source[key]);
+      }
+    }
+  }
+
+  return null;
 }
 
 function normalizeSocialLinks(
@@ -169,6 +281,8 @@ export function normalizeEventRequestDetailsResponse(
     throw new Error(unexpectedResponseMessage);
   }
 
+  const metricSources = getMetricSources(details);
+
   return {
     id: details.id,
     title: details.title,
@@ -187,9 +301,9 @@ export function normalizeEventRequestDetailsResponse(
       id: speaker.id,
       name: speaker.name,
     })),
-    average_rating: details.average_rating ?? null,
-    qr_scans_count: details.qr_scans_count ?? null,
-    saved_count: details.saved_count ?? null,
+    average_rating: getEngagementMetric(metricSources, averageRatingKeys),
+    qr_scans_count: getEngagementMetric(metricSources, qrScansCountKeys),
+    saved_count: getEngagementMetric(metricSources, savedCountKeys),
     created_at: details.created_at ?? null,
     logo: resolveEventRequestLogoUrl(details.logo),
   };

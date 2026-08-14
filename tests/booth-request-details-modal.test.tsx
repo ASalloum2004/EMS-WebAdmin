@@ -751,6 +751,49 @@ test("normalizes relative booth company logos through the shared media resolver"
   assert.ok(view.getByText("DA"));
 });
 
+test("normalizes requested service names from the details response shapes", () => {
+  const response: BoothRequestDetailsResponse = {
+    status: true,
+    message: "booth request retrieved successfully",
+    data: {
+      ...firstDetails,
+      services: [
+        {
+          service_id: 1,
+          service_name: "Power supply",
+        },
+        {
+          id: 2,
+          service: "Display screen",
+        },
+        {
+          service: {
+            data: {
+              id: 3,
+              name: "Extra lighting",
+            },
+          },
+        },
+        {
+          id: 4,
+          details: {
+            name: "Storage cabinet",
+          },
+        },
+      ],
+    },
+  };
+
+  const details = normalizeBoothRequestDetailsResponse(response);
+
+  assert.deepEqual(details.services, [
+    { id: 1, name: "Power supply" },
+    { id: 2, name: "Display screen" },
+    { id: null, name: "Extra lighting" },
+    { id: 4, name: "Storage cabinet" },
+  ]);
+});
+
 test("missing additional notes use the standard empty value", async () => {
   const detailsWithoutNotes: BoothRequestDetailsResponse["data"] = {
     ...firstDetails,
@@ -962,13 +1005,13 @@ test("empty services use the expanded centered state and logo initials", async (
 });
 
 test("non-empty services render every row in the bounded rows area", async () => {
-  const detailsWithServices: BoothRequestDetailsApiData = {
+  const detailsWithServices: BoothRequestDetailsResponse["data"] = {
     ...firstDetails,
     services: [
-      { id: 1, name: "Power supply", price: 25, is_active: true },
-      { id: 2, name: "Display screen", price: 40, is_active: true },
-      { id: 3, name: "Extra lighting", price: 15, is_active: true },
-      { id: 4, name: "Storage cabinet", price: 20, is_active: true },
+      { service_id: 1, service_name: "Power supply" },
+      { service_id: 2, service_name: "Display screen" },
+      { service_id: 3, service_name: "Extra lighting" },
+      { service_id: 4, service_name: "Storage cabinet" },
     ],
   };
   globalThis.fetch = async () => getResponse(detailsWithServices);
@@ -1003,12 +1046,12 @@ test("non-empty services render every row in the bounded rows area", async () =>
 });
 
 test("three service rows remain content-sized without the scroll modifier", async () => {
-  const detailsWithThreeServices: BoothRequestDetailsApiData = {
+  const detailsWithThreeServices: BoothRequestDetailsResponse["data"] = {
     ...firstDetails,
     services: [
-      { id: 1, name: "Power supply", price: 25, is_active: true },
-      { id: 2, name: "Display screen", price: 40, is_active: true },
-      { id: 3, name: "Extra lighting", price: 15, is_active: true },
+      { service_id: 1, service_name: "Power supply" },
+      { service_id: 2, service_name: "Display screen" },
+      { service_id: 3, service_name: "Extra lighting" },
     ],
   };
   globalThis.fetch = async () => getResponse(detailsWithThreeServices);

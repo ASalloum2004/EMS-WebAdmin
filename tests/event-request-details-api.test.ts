@@ -172,6 +172,28 @@ test("supports null organizer, empty speakers, and nullable metadata", () => {
   assert.equal(details.logo, null);
 });
 
+test("normalizes nested backend engagement metrics before top-level fallbacks", () => {
+  const details = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      average_rating: null,
+      qr_scans_count: 0,
+      saved_count: 0,
+      event: {
+        engagement: {
+          average_rating: "4.25",
+          qr_scans: "38",
+          saves_count: 12,
+        },
+      },
+    }),
+  );
+
+  assert.equal(details.average_rating, 4.25);
+  assert.equal(details.qr_scans_count, 38);
+  assert.equal(details.saved_count, 12);
+});
+
 test("normalizes absolute, relative, empty, missing, and unsafe Event logos", () => {
   const apiOrigin = new URL(API_BASE_URL).origin;
   const absoluteLogo = "https://cdn.example.com/events/logo.png";

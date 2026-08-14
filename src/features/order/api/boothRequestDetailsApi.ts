@@ -6,11 +6,113 @@ import {
 import type {
   BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
+  BoothRequestService,
 } from "../types";
 import { getTrimmedString } from "../utils/getTrimmedString";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function getServiceId(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const numberValue = Number(value);
+
+    return Number.isFinite(numberValue) ? numberValue : null;
+  }
+
+  return null;
+}
+
+const SERVICE_NAME_KEYS = ["name", "service_name", "title", "label"];
+const SERVICE_CONTAINER_KEYS = [
+  "service",
+  "service_details",
+  "details",
+  "data",
+];
+
+function getServiceName(value: unknown, depth = 0): string {
+  const stringValue = getTrimmedString(value);
+
+  if (stringValue || depth > 4) {
+    return stringValue;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const itemName = getServiceName(item, depth + 1);
+
+      if (itemName) {
+        return itemName;
+      }
+    }
+
+    return "";
+  }
+
+  if (!isRecord(value)) {
+    return "";
+  }
+
+  for (const key of SERVICE_NAME_KEYS) {
+    const name = getServiceName(value[key], depth + 1);
+
+    if (name) {
+      return name;
+    }
+  }
+
+  for (const key of SERVICE_CONTAINER_KEYS) {
+    const name = getServiceName(value[key], depth + 1);
+
+    if (name) {
+      return name;
+    }
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    if (!isRecord(nestedValue)) {
+      continue;
+    }
+
+    const name = getServiceName(nestedValue, depth + 1);
+
+    if (name) {
+      return name;
+    }
+  }
+
+  return "";
+}
+
+function getNormalizedServiceId(requestService: unknown) {
+  if (!isRecord(requestService)) {
+    return null;
+  }
+
+  const nestedServiceId = isRecord(requestService.service)
+    ? getServiceId(requestService.service.id)
+    : null;
+
+  return (
+    getServiceId(requestService.service_id) ??
+    nestedServiceId ??
+    getServiceId(requestService.id)
+  );
+}
+
+function normalizeBoothRequestServices(
+  services: BoothRequestDetailsResponse["data"]["services"],
+): BoothRequestService[] {
+  return services.map((requestService) => ({
+    id: getNormalizedServiceId(requestService),
+    name: getServiceName(requestService),
+  }));
 }
 
 export function buildBoothRequestDetailsPath(boothRequestId: number) {
@@ -58,6 +160,7 @@ export function normalizeBoothRequestDetailsResponse(
     },
     created_at: getTrimmedString(details.created_at),
     reason_for_booking: getTrimmedString(details.reason_for_booking),
+    services: normalizeBoothRequestServices(details.services),
   };
 }
 

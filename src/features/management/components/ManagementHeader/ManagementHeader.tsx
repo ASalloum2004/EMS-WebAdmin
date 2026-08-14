@@ -6,6 +6,7 @@ interface ManagementHeaderProps {
   busLabel: string;
   description: string;
   onActionClick?: () => void;
+  onBusClick?: () => void;
   title: string;
 }
 
@@ -14,6 +15,7 @@ export function ManagementHeader({
   busLabel,
   description,
   onActionClick,
+  onBusClick,
   title,
 }: ManagementHeaderProps) {
   return (
@@ -27,6 +29,7 @@ export function ManagementHeader({
         <button
           className="management-header__action management-header__action--with-icon"
           type="button"
+          onClick={onBusClick}
         >
           <BusFront aria-hidden="true" size={18} strokeWidth={2} />
           <span>{busLabel}</span>

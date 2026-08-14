@@ -385,6 +385,15 @@
   padding: 14px 16px;
 }
 
+.management-services-modal__table--bus .management-services-modal__row {
+  grid-template-columns:
+    minmax(130px, 1.2fr)
+    minmax(120px, 1fr)
+    minmax(80px, 0.5fr)
+    minmax(100px, 0.7fr)
+    minmax(70px, 0.5fr);
+}
+
 .management-services-modal__table-head .management-services-modal__row {
   min-height: 46px;
   border-bottom: 1px solid var(--ems-color-border-soft);
@@ -521,6 +530,7 @@
   .management-services-modal__cell--action {
     justify-content: space-between;
   }
+
 }
 
 @media (max-width: 520px) {

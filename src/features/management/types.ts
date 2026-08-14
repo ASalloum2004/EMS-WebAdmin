@@ -216,3 +216,62 @@ export type ServiceResponse = {
   message: string;
   data: ServiceApiData;
 };
+
+export type BusApiData = {
+  id: number;
+  location: string;
+  start_time: string;
+  end_time: string;
+  duration: number;
+};
+
+export type BusPagination = {
+  currentPage?: number;
+  perPage?: number;
+  totalItems?: number;
+  totalPages?: number;
+};
+
+export type BusesResponse = {
+  status: boolean;
+  message: string;
+  data: {
+    data: BusApiData[];
+    current_page?: number | string;
+    per_page?: number | string;
+    total?: number | string;
+    last_page?: number | string;
+  };
+};
+
+export type GetBusesParams = {
+  location?: string;
+  page?: number;
+  perPage?: number;
+};
+
+export type GetBusesResult = {
+  buses: BusApiData[];
+  pagination: BusPagination;
+};
+
+export type BusResponse = {
+  status: boolean;
+  message: string;
+  data: BusApiData;
+};
+
+export type CreateBusPayload = {
+  location: string;
+  start_time: string;
+  end_time: string;
+  duration: number;
+};
+
+export type UpdateBusPayload = CreateBusPayload;
+
+export type DeleteBusResponse = {
+  status: boolean;
+  message: string;
+  data?: unknown;
+};

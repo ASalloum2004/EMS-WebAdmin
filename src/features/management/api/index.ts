@@ -5,6 +5,16 @@ export {
   normalizeBoothsResponse,
 } from "./boothsApi";
 export { createService } from "./createServiceApi";
+export {
+  buildBusesPath,
+  createBus,
+  DEFAULT_BUSES_PER_PAGE,
+  deleteBus,
+  getBus,
+  getBuses,
+  normalizeBusesResponse,
+  updateBus,
+} from "./busesApi";
 export { getEventHallDetails } from "./eventHallDetailsApi";
 export { getEventHalls } from "./eventHallsApi";
 export { updateBooth } from "./updateBoothApi";

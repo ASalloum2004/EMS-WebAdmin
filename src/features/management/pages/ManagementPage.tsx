@@ -9,6 +9,7 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import { ManagementBoothEditModal } from "../components/ManagementBoothEditModal";
 import { ManagementBoothFiltersPanel } from "../components/ManagementBoothFiltersPanel";
+import { ManagementBusModal } from "../components/ManagementBusModal";
 import { ManagementEventHallDetailsModal } from "../components/ManagementEventHallDetailsModal";
 import { ManagementEventHallEditModal } from "../components/ManagementEventHallEditModal";
 import { ManagementFiltersPanel } from "../components/ManagementFiltersPanel";
@@ -41,6 +42,7 @@ import "./ManagementPage.scss";
 export function ManagementPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<ManagementTab>("hall");
+  const [isBusModalOpen, setIsBusModalOpen] = useState(false);
   const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
   const isHallTab = activeTab === "hall";
   const isBoothTab = activeTab === "booth";
@@ -202,7 +204,14 @@ export function ManagementPage() {
           description={t.management.description}
           busLabel={t.management.bus}
           actionLabel={t.management.services}
-          onActionClick={() => setIsServicesModalOpen(true)}
+          onActionClick={() => {
+            setIsBusModalOpen(false);
+            setIsServicesModalOpen(true);
+          }}
+          onBusClick={() => {
+            setIsServicesModalOpen(false);
+            setIsBusModalOpen(true);
+          }}
         />
 
         <section
@@ -430,6 +439,10 @@ export function ManagementPage() {
           <ManagementServicesModal
             onClose={() => setIsServicesModalOpen(false)}
           />
+        ) : null}
+
+        {isBusModalOpen ? (
+          <ManagementBusModal onClose={() => setIsBusModalOpen(false)} />
         ) : null}
       </div>
     </ManagementLayout>

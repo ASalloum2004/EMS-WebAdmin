@@ -1,9 +1,20 @@
+.management-services-modal__table--bus .management-services-modal__row {
+  grid-template-columns:
+    minmax(120px, 1.25fr)
+    minmax(105px, 0.85fr)
+    minmax(105px, 0.7fr)
+    minmax(80px, 0.85fr)
+    minmax(158px, 1fr);
+}
+
 .management-services-modal__form-grid--bus {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .management-services-modal__table--bus .management-services-modal__cell--action {
   gap: 8px;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .management-services-modal__delete-button {

@@ -98,12 +98,20 @@ function RequestOverview({
 
 function RequestedServices({
   details,
+  language,
   t,
 }: {
   details: BoothRequestDetailsApiData;
+  language: "en" | "ar";
   t: I18nDictionary;
 }) {
   const isEmpty = details.services.length === 0;
+
+  function formatServiceAmount(value: number | null | undefined) {
+    return value == null
+      ? t.order.details.emptyValue
+      : formatPrice(value, language);
+  }
 
   return (
     <DetailsCard
@@ -148,6 +156,20 @@ function RequestedServices({
                   {service.name ||
                     t.order.details.services.detailsUnavailable}
                 </strong>
+                <dl className="booth-request-details-modal__service-pricing">
+                  <div>
+                    <dt>{t.order.details.services.quantity}</dt>
+                    <dd>{formatServiceAmount(service.quantity)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.order.details.services.unitPrice}</dt>
+                    <dd>{formatServiceAmount(service.unit_price)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t.order.details.services.rowTotal}</dt>
+                    <dd>{formatServiceAmount(service.total_price)}</dd>
+                  </div>
+                </dl>
               </li>
             );
           })}
@@ -192,7 +214,7 @@ export function BoothRequestDetailsMainColumn({
   return (
     <div className="booth-request-details-modal__column booth-request-details-modal__column--main">
       <RequestOverview details={details} language={language} t={t} />
-      <RequestedServices details={details} t={t} />
+      <RequestedServices details={details} language={language} t={t} />
       <AdditionalNotes details={details} t={t} />
     </div>
   );

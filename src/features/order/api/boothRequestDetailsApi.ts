@@ -28,6 +28,20 @@ function getServiceId(value: unknown) {
   return null;
 }
 
+function getServiceAmount(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const numberValue = Number(value);
+
+    return Number.isFinite(numberValue) ? numberValue : null;
+  }
+
+  return null;
+}
+
 const SERVICE_NAME_KEYS = ["name", "service_name", "title", "label"];
 const SERVICE_CONTAINER_KEYS = [
   "service",
@@ -109,10 +123,17 @@ function getNormalizedServiceId(requestService: unknown) {
 function normalizeBoothRequestServices(
   services: BoothRequestDetailsResponse["data"]["services"],
 ): BoothRequestService[] {
-  return services.map((requestService) => ({
-    id: getNormalizedServiceId(requestService),
-    name: getServiceName(requestService),
-  }));
+  return services.map((requestService) => {
+    const serviceData = isRecord(requestService) ? requestService : {};
+
+    return {
+      id: getNormalizedServiceId(requestService),
+      name: getServiceName(requestService),
+      quantity: getServiceAmount(serviceData.quantity),
+      unit_price: getServiceAmount(serviceData.unit_price),
+      total_price: getServiceAmount(serviceData.total_price),
+    };
+  });
 }
 
 export function buildBoothRequestDetailsPath(boothRequestId: number) {

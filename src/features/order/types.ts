@@ -291,6 +291,9 @@ export type BoothRequestCompanyDetailsResponse = Omit<
 export type BoothRequestService = {
   id: number | null;
   name: string;
+  quantity?: number | null;
+  total_price?: number | null;
+  unit_price?: number | null;
 };
 
 export type BoothRequestServiceResponse =
@@ -300,10 +303,13 @@ export type BoothRequestServiceResponse =
       details?: unknown;
       id?: number | string | null;
       name?: unknown;
+      quantity?: number | string | null;
       service?: unknown;
       service_id?: number | string | null;
       service_name?: unknown;
+      total_price?: number | string | null;
       title?: unknown;
+      unit_price?: number | string | null;
     };
 
 export type BoothRequestDetailsApiData = BoothRequestBaseApiData & {

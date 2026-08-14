@@ -761,6 +761,9 @@ test("normalizes requested service names from the details response shapes", () =
         {
           service_id: 1,
           service_name: "Power supply",
+          quantity: 3,
+          unit_price: 160,
+          total_price: 480,
         },
         {
           id: 2,
@@ -787,10 +790,34 @@ test("normalizes requested service names from the details response shapes", () =
   const details = normalizeBoothRequestDetailsResponse(response);
 
   assert.deepEqual(details.services, [
-    { id: 1, name: "Power supply" },
-    { id: 2, name: "Display screen" },
-    { id: null, name: "Extra lighting" },
-    { id: 4, name: "Storage cabinet" },
+    {
+      id: 1,
+      name: "Power supply",
+      quantity: 3,
+      unit_price: 160,
+      total_price: 480,
+    },
+    {
+      id: 2,
+      name: "Display screen",
+      quantity: null,
+      unit_price: null,
+      total_price: null,
+    },
+    {
+      id: null,
+      name: "Extra lighting",
+      quantity: null,
+      unit_price: null,
+      total_price: null,
+    },
+    {
+      id: 4,
+      name: "Storage cabinet",
+      quantity: null,
+      unit_price: null,
+      total_price: null,
+    },
   ]);
 });
 
@@ -1043,6 +1070,36 @@ test("non-empty services render every row in the bounded rows area", async () =>
     within(servicesCard).queryByText("No additional services requested"),
     null,
   );
+});
+
+test("requested services render backend quantity and pricing fields", async () => {
+  const detailsWithServicePricing: BoothRequestDetailsResponse["data"] = {
+    ...firstDetails,
+    services: [
+      {
+        service_id: 1,
+        service_name: "Booth Design",
+        quantity: 3,
+        unit_price: 160,
+        total_price: 480,
+      },
+    ],
+  };
+  globalThis.fetch = async () => getResponse(detailsWithServicePricing);
+  const view = renderHarness();
+
+  openRequestDetails(view);
+  await view.findByRole("heading", { name: "Dar Al feker" });
+
+  const servicesCard = view
+    .getByRole("heading", { name: "Requested Services" })
+    .closest("section");
+  const pricing = servicesCard?.querySelector(
+    ".booth-request-details-modal__service-pricing",
+  );
+
+  assert.ok(pricing);
+  assert.equal(pricing.textContent, "Quantity3Unit price160Row total480");
 });
 
 test("three service rows remain content-sized without the scroll modifier", async () => {

@@ -179,6 +179,7 @@ export const ar: I18nDictionary = {
       loadError: "تعذر تحميل تفاصيل التقرير.",
       information: "معلومات التقرير",
       reportId: "معرّف التقرير",
+      boothNumber: "رقم الجناح",
       emptyValue: "غير متاح",
       invalidDate: "تاريخ غير صالح",
       description: "الوصف",

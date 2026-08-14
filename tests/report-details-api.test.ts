@@ -8,6 +8,7 @@ import {
 } from "../src/features/reports/api/reportDetailsApi.js";
 import type {
   ReportApiData,
+  ReportDetails,
   ReportDetailsResponse,
 } from "../src/features/reports/types.js";
 
@@ -20,8 +21,16 @@ const report: ReportApiData = {
   title: "Outdated information",
 };
 
+const reportDetails: ReportDetails = {
+  ...report,
+  reportable: {
+    id: 3,
+    title: "The Future of Publishing",
+  },
+};
+
 const response: ReportDetailsResponse = {
-  data: report,
+  data: reportDetails,
   message: "Success",
   status: true,
 };
@@ -72,20 +81,35 @@ test("normalizes every confirmed Report details field and no unconfirmed fields"
   const details = normalizeReportDetailsResponse({
     ...response,
     data: {
-      ...report,
+      ...reportDetails,
       reporter: { id: 99 },
-    } as ReportApiData,
+    } as ReportDetails,
   });
 
-  assert.deepEqual(details, report);
+  assert.deepEqual(details, reportDetails);
   assert.equal("reporter" in details, false);
+});
+
+test("preserves a related Booth Number without using its ID", () => {
+  const details = normalizeReportDetailsResponse({
+    ...response,
+    data: {
+      ...reportDetails,
+      reportable: {
+        id: 198,
+        number: "26E-01",
+      },
+    },
+  });
+
+  assert.deepEqual(details.reportable, { id: 198, number: "26E-01" });
 });
 
 test("accepts null admin notes and rejects invalid details shapes", () => {
   assert.equal(
     normalizeReportDetailsResponse({
       ...response,
-      data: { ...report, admin_notes: null },
+      data: { ...reportDetails, admin_notes: null },
     }).admin_notes,
     null,
   );
@@ -95,9 +119,9 @@ test("accepts null admin notes and rejects invalid details shapes", () => {
       normalizeReportDetailsResponse({
         ...response,
         data: {
-          ...report,
+          ...reportDetails,
           status: "unknown",
-        } as unknown as ReportApiData,
+        } as unknown as ReportDetails,
       }),
     /Unexpected report details response format/,
   );
@@ -105,7 +129,7 @@ test("accepts null admin notes and rejects invalid details shapes", () => {
     () =>
       normalizeReportDetailsResponse({
         ...response,
-        data: null as unknown as ReportApiData,
+        data: null as unknown as ReportDetails,
       }),
     /Unexpected report details response format/,
   );
@@ -138,7 +162,7 @@ test("fetches Report details with authenticated GET and the Admin path", async (
   assert.equal(requestedInit?.method, "GET");
   assert.equal(requestedInit?.cache, "no-store");
   assert.equal(headers.get("Authorization"), `Bearer ${token}`);
-  assert.deepEqual(details, report);
+  assert.deepEqual(details, reportDetails);
 });
 
 test("preserves backend Report details errors", async () => {

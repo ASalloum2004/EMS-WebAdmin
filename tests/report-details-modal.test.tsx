@@ -20,6 +20,10 @@ const pendingDetails: ReportDetails = {
   description:
     "The complete description is intentionally displayed in the details view.",
   id: 7,
+  reportable: {
+    id: 3,
+    title: "The Future of Publishing",
+  },
   status: "pending",
   title: "Outdated information",
 };
@@ -68,7 +72,10 @@ test("renders every confirmed Report field and pending actions", () => {
   const renderedText = view.container.textContent ?? "";
 
   assert.match(renderedText, /Report Details/);
-  assert.match(renderedText, /#7/);
+  assert.match(renderedText, /Title/);
+  assert.match(renderedText, /The Future of Publishing/);
+  assert.doesNotMatch(renderedText, /Report ID/);
+  assert.doesNotMatch(renderedText, /#7/);
   assert.match(renderedText, /Outdated information/);
   assert.match(renderedText, /The complete description is intentionally displayed/);
   assert.match(renderedText, /Reviewed by the moderation team/);
@@ -82,6 +89,39 @@ test("renders every confirmed Report field and pending actions", () => {
   const approveButton = view.getByRole("button", { name: "Approve" });
   assert.equal(rejectButton.hasAttribute("disabled"), false);
   assert.equal(approveButton.hasAttribute("disabled"), false);
+});
+
+test("prioritizes the related Booth Number over the related title", () => {
+  const view = renderDetailsModal({
+    details: {
+      ...pendingDetails,
+      reportable: {
+        id: 198,
+        number: "26E-01",
+      },
+    },
+  });
+
+  const renderedText = view.container.textContent ?? "";
+
+  assert.match(renderedText, /Booth Number/);
+  assert.match(renderedText, /26E-01/);
+  assert.doesNotMatch(renderedText, /198/);
+});
+
+test("uses the existing unavailable value when the related item has no label", () => {
+  const view = renderDetailsModal({
+    details: {
+      ...pendingDetails,
+      reportable: { id: 3 },
+    },
+  });
+
+  const renderedText = view.container.textContent ?? "";
+
+  assert.match(renderedText, /Title/);
+  assert.match(renderedText, /Not available/);
+  assert.doesNotMatch(renderedText, /#3/);
 });
 
 test("Approve confirmation collects optional notes for the Resolve callback", async () => {

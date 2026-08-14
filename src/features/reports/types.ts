@@ -14,10 +14,18 @@ export type ReportItem = Pick<
   "admin_notes" | "created_at" | "id" | "status" | "title"
 >;
 
-export type ReportDetails = ReportApiData;
+export interface Reportable {
+  id: number;
+  number?: string;
+  title?: string;
+}
+
+export type ReportDetails = ReportApiData & {
+  reportable: Reportable;
+};
 
 export type ReportDetailsResponse = {
-  data: ReportApiData;
+  data: ReportDetails;
   message: string;
   status: boolean;
 };

@@ -41,7 +41,13 @@ export function normalizeReportDetailsResponse(
     !isReportStatus(details.status) ||
     (details.admin_notes !== null &&
       typeof details.admin_notes !== "string") ||
-    typeof details.created_at !== "string"
+    typeof details.created_at !== "string" ||
+    !isRecord(details.reportable) ||
+    !isPositiveInteger(details.reportable.id) ||
+    (details.reportable.number !== undefined &&
+      typeof details.reportable.number !== "string") ||
+    (details.reportable.title !== undefined &&
+      typeof details.reportable.title !== "string")
   ) {
     throw new Error(unexpectedResponseMessage);
   }
@@ -51,6 +57,15 @@ export function normalizeReportDetailsResponse(
     created_at: details.created_at,
     description: details.description,
     id: details.id,
+    reportable: {
+      id: details.reportable.id,
+      ...(typeof details.reportable.number === "string"
+        ? { number: details.reportable.number }
+        : {}),
+      ...(typeof details.reportable.title === "string"
+        ? { title: details.reportable.title }
+        : {}),
+    },
     status: details.status,
     title: details.title,
   };

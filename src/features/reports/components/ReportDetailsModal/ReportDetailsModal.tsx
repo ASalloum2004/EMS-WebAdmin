@@ -429,8 +429,19 @@ export function ReportDetailsModal({
                 <h3>{t.reports.details.information}</h3>
                 <dl className="report-details-modal__information-grid">
                   <div>
-                    <dt>{t.reports.details.reportId}</dt>
-                    <dd>#{details.id}</dd>
+                    <dt>
+                      {details.reportable.number !== undefined
+                        ? t.reports.details.boothNumber
+                        : t.reports.table.title}
+                    </dt>
+                    <dd>
+                      {getDisplayValue(
+                        details.reportable.number ??
+                          details.reportable.title ??
+                          null,
+                        t.reports.details.emptyValue,
+                      )}
+                    </dd>
                   </div>
                   <div>
                     <dt>{t.reports.table.title}</dt>

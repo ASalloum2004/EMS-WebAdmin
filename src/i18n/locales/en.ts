@@ -163,7 +163,7 @@ export const en = {
       adminNotes: "Admin Notes",
       hasNotes: "Has Notes",
       noNotes: "No Notes",
-      title: "Title",
+      title: "EVent Title",
       status: "Status",
       createdAt: "Created At",
       loading: "Loading reports",
@@ -178,6 +178,7 @@ export const en = {
       loadError: "Unable to load report details.",
       information: "Report Information",
       reportId: "Report ID",
+      boothNumber: "Booth Number",
       emptyValue: "Not available",
       invalidDate: "Invalid date",
       description: "Description",
@@ -232,7 +233,8 @@ export const en = {
       descriptionPlaceholder: "Write the announcement message",
       media: "Media Attachment",
       draft: "Save as Draft",
-      draftHelper: "Keep this announcement as a draft instead of publishing it.",
+      draftHelper:
+        "Keep this announcement as a draft instead of publishing it.",
     },
     audience: {
       exhibitors: "Exhibitors",
@@ -858,8 +860,7 @@ export const en = {
       applyFilters: "Apply filters",
       clearFilters: "Clear filters",
       invalidFilterPrice: "Invalid price value",
-      minPriceGreaterThanMaxPrice:
-        "Min price cannot be greater than max price",
+      minPriceGreaterThanMaxPrice: "Min price cannot be greater than max price",
       createError: "Failed to create service.",
       updateError: "Failed to update service.",
       createdSuccess: "Service created successfully.",

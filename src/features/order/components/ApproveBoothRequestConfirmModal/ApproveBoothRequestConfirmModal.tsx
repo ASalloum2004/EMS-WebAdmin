@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import { ApproveRequestIcon } from "../../../../assets/icons/orderIcons";
 import { useI18n } from "../../../../i18n";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 import "./ApproveBoothRequestConfirmModal.scss";
 
 const FOCUSABLE_SELECTOR = [
@@ -13,6 +14,7 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export interface ApproveBoothRequestConfirmModalProps {
+  companyName?: string | null;
   error: string;
   isApproving: boolean;
   onCancel: () => void;
@@ -21,11 +23,11 @@ export interface ApproveBoothRequestConfirmModalProps {
 }
 
 export function ApproveBoothRequestConfirmModal({
+  companyName,
   error,
   isApproving,
   onCancel,
   onConfirm,
-  requestId,
 }: ApproveBoothRequestConfirmModalProps) {
   const { t } = useI18n();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -148,8 +150,10 @@ export function ApproveBoothRequestConfirmModal({
             {t.order.approveConfirmation.message}
           </p>
           <p className="approve-booth-request-confirm-modal__request-id">
-            <span>{t.order.approveConfirmation.requestLabel}</span>
-            <strong>#{requestId}</strong>
+            <span>{t.order.table.company}</span>
+            <strong>
+              {getTrimmedString(companyName) || t.order.details.emptyValue}
+            </strong>
           </p>
           {error ? (
             <p

@@ -32,14 +32,6 @@ export function EventRequestInformationSection({
       >
         <dl className="event-request-details-modal__facts">
           <div>
-            <dt>{labels.eventHall}</dt>
-            <dd>
-              {details.event_hall_id === null
-                ? labels.notAvailable
-                : `#${details.event_hall_id}`}
-            </dd>
-          </div>
-          <div>
             <dt>{labels.startTime}</dt>
             <dd>{formatDateTime(details.start_at, language, t)}</dd>
           </div>

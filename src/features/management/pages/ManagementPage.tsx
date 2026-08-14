@@ -384,7 +384,7 @@ export function ManagementPage() {
               columns={eventHallColumns}
               emptyMessage={t.management.eventHalls.empty}
               getItemAriaLabel={(eventHall) =>
-                `${t.management.eventHalls.details.openAriaLabel} #${eventHall.id}`
+                `${t.management.eventHalls.details.openAriaLabel} ${eventHall.number}`
               }
               getItemKey={(eventHall) => eventHall.id}
               items={visibleEventHalls}
@@ -420,7 +420,6 @@ export function ManagementPage() {
           <ManagementEventHallDetailsModal
             details={eventHallDetails.eventHallDetails}
             error={eventHallDetails.error}
-            eventHallId={eventHallDetails.selectedEventHallId}
             isLoading={eventHallDetails.isLoading}
             onClose={eventHallDetails.closeDetails}
             onRetry={() => void eventHallDetails.retry()}

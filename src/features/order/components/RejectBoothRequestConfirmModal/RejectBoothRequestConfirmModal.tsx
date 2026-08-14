@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import { RejectRequestIcon } from "../../../../assets/icons/orderIcons";
 import { useI18n } from "../../../../i18n";
+import { getTrimmedString } from "../../utils/getTrimmedString";
 import "./RejectBoothRequestConfirmModal.scss";
 
 const FOCUSABLE_SELECTOR = [
@@ -13,6 +14,7 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 export interface RejectBoothRequestConfirmModalProps {
+  companyName?: string | null;
   error: string;
   isRejecting: boolean;
   onCancel: () => void;
@@ -21,11 +23,11 @@ export interface RejectBoothRequestConfirmModalProps {
 }
 
 export function RejectBoothRequestConfirmModal({
+  companyName,
   error,
   isRejecting,
   onCancel,
   onConfirm,
-  requestId,
 }: RejectBoothRequestConfirmModalProps) {
   const { t } = useI18n();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -148,8 +150,10 @@ export function RejectBoothRequestConfirmModal({
             {t.order.rejectConfirmation.message}
           </p>
           <p className="reject-booth-request-confirm-modal__request-id">
-            <span>{t.order.rejectConfirmation.requestLabel}</span>
-            <strong>#{requestId}</strong>
+            <span>{t.order.table.company}</span>
+            <strong>
+              {getTrimmedString(companyName) || t.order.details.emptyValue}
+            </strong>
           </p>
           {error ? (
             <p

@@ -28,7 +28,6 @@ export function ApproveEventRequestConfirmModal({
   isApproving,
   onCancel,
   onConfirm,
-  requestId,
 }: ApproveEventRequestConfirmModalProps) {
   const { t } = useI18n();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -159,10 +158,6 @@ export function ApproveEventRequestConfirmModal({
                 {getTrimmedString(eventTitle) ||
                   t.order.eventRequests.details.notAvailable}
               </dd>
-            </div>
-            <div>
-              <dt>{labels.requestLabel}</dt>
-              <dd>#{requestId}</dd>
             </div>
           </dl>
           {error ? (

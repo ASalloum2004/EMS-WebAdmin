@@ -53,12 +53,7 @@ export function ApproveEventRequestConflictModal({
   const isBusy = isApproving || isPageLoading;
   const labels = t.order.eventRequests.approveConflict;
   const detailsLabels = t.order.eventRequests.details;
-  const fallbackExplanation = labels.message.replace(
-    "{{id}}",
-    String(conflict.requestId),
-  );
-  const explanation =
-    getTrimmedString(conflict.message) || fallbackExplanation;
+  const explanation = labels.message;
   const conflictCount = labels.count.replace(
     "{{count}}",
     String(conflict.meta.total),
@@ -209,21 +204,9 @@ export function ApproveEventRequestConflictModal({
                 <h3>{getTrimmedString(request.title) || emptyValue}</h3>
                 <dl>
                   <div>
-                    <dt>{detailsLabels.requestId}</dt>
-                    <dd>#{request.id}</dd>
-                  </div>
-                  <div>
                     <dt>{labels.organizer}</dt>
                     <dd>
                       {getTrimmedString(request.eventable?.name) || emptyValue}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>{detailsLabels.eventHall}</dt>
-                    <dd>
-                      {request.event_hall_id === null
-                        ? emptyValue
-                        : `#${request.event_hall_id}`}
                     </dd>
                   </div>
                   <div>

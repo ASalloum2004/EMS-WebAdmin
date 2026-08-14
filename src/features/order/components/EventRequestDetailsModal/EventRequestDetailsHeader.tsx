@@ -32,9 +32,6 @@ export function EventRequestDetailsHeader({
         <h2 id="event-request-details-title">{eventTitle}</h2>
         {details ? (
           <div className="event-request-details-modal__header-badges">
-            <span className="event-request-details-modal__request-badge">
-              {t.order.eventRequests.table.requestPrefix} #{details.id}
-            </span>
             <span className="event-request-details-modal__type-badge">
               {typeLabel}
             </span>

@@ -24,9 +24,6 @@ export function EventRequestSpeakersSection({
                 <strong>
                   {getTrimmedString(speaker.name) || labels.notAvailable}
                 </strong>
-                <small>
-                  {labels.speakerId} #{speaker.id}
-                </small>
               </span>
             </li>
           ))}

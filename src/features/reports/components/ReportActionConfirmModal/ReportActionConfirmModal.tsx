@@ -24,6 +24,7 @@ interface ReportActionConfirmModalProps {
   onClearErrors: () => void;
   onConfirm: (payload: ReportActionPayload) => Promise<void> | void;
   reportId: number;
+  reportTitle?: string | null;
 }
 
 export function ReportActionConfirmModal({
@@ -34,7 +35,7 @@ export function ReportActionConfirmModal({
   onCancel,
   onClearErrors,
   onConfirm,
-  reportId,
+  reportTitle,
 }: ReportActionConfirmModalProps) {
   const { t } = useI18n();
   const [notes, setNotes] = useState("");
@@ -158,10 +159,12 @@ export function ReportActionConfirmModal({
           >
             {copy.message}
           </p>
-          <p className="report-action-confirm-modal__report-id">
-            <span>{t.reports.details.actionConfirmation.reportLabel}</span>
-            <strong>#{reportId}</strong>
-          </p>
+          {reportTitle?.trim() ? (
+            <p className="report-action-confirm-modal__report-id">
+              <span>{t.reports.details.actionConfirmation.reportLabel}</span>
+              <strong>{reportTitle}</strong>
+            </p>
+          ) : null}
 
           <label className="report-action-confirm-modal__field">
             <span>

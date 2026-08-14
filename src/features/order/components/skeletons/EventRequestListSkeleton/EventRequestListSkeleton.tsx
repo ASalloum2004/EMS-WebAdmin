@@ -29,16 +29,14 @@ export function EventRequestListSkeleton() {
         key: "title",
         label: labels.eventTitle,
         render: (row) => <Skeleton height={18} width={row.titleWidth} />,
-        supportingText: () => <Skeleton height={13} width={92} />,
         variant: "primary",
       },
       {
         className: "event-request-table__cell--event",
-        key: "event",
-        label: labels.eventHall,
+        key: "type",
+        label: labels.eventType,
         render: () => (
           <span className="event-request-table__stack">
-            <Skeleton height={14} width={92} />
             <Skeleton height={24} variant="pill" width={78} />
           </span>
         ),

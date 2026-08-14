@@ -41,12 +41,6 @@ export function getHallColumns(
       render: (hall) => hall.area,
       variant: "metric",
     },
-    {
-      key: "id",
-      label: t.management.table.id,
-      render: (hall) => `#${hall.id}`,
-      variant: "badge",
-    },
   ];
 }
 
@@ -82,12 +76,6 @@ export function getBoothColumns(
         renderBoothBookingStatus(booth, t.management.booths.status),
       variant: "metric",
     },
-    {
-      key: "id",
-      label: t.management.table.id,
-      render: (booth) => `#${booth.id}`,
-      variant: "badge",
-    },
   ];
 }
 
@@ -112,12 +100,6 @@ export function getEventHallColumns(
       label: t.management.eventHalls.pricePerHour,
       render: (eventHall) => eventHall.price_per_hour,
       variant: "metric",
-    },
-    {
-      key: "id",
-      label: t.management.table.id,
-      render: (eventHall) => `#${eventHall.id}`,
-      variant: "badge",
     },
   ];
 }

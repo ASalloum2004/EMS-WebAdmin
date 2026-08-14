@@ -114,10 +114,6 @@ function CompanyProfile({
   language: "en" | "ar";
   t: I18nDictionary;
 }) {
-  const companyId =
-    Number.isFinite(details.company.id) && details.company.id > 0
-      ? details.company.id
-      : details.company_id;
   const description = getTrimmedString(details.company.description);
 
   return (
@@ -147,10 +143,6 @@ function CompanyProfile({
       </div>
 
       <dl className="booth-request-details-modal__profile-facts">
-        <div>
-          <dt>{t.order.details.companyProfile.companyId}</dt>
-          <dd>#{companyId}</dd>
-        </div>
         <div>
           <dt>{t.order.details.companyProfile.industry}</dt>
           <dd>

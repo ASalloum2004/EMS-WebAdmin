@@ -67,7 +67,9 @@ export function ManagementEventHallEditModal({
           <h2 id="event-hall-edit-title">
             {t.management.eventHalls.editPriceTitle}
           </h2>
-          <p>#{eventHall.id}</p>
+          <p>
+            {t.management.eventHalls.number}: {eventHall.number}
+          </p>
         </div>
 
         <label className="management-booth-modal__field">

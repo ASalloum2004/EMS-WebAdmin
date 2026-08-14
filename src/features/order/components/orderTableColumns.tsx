@@ -32,7 +32,7 @@ export function getBoothRequestCompanyDisplayName(
   return (
     getTrimmedString(request.company_name) ||
     getTrimmedString(request.company?.name) ||
-    `${t.order.table.companyPrefix} #${request.company_id}`
+    t.order.details.emptyValue
   );
 }
 
@@ -57,23 +57,11 @@ export function getBoothRequestColumns(
 ): Array<DataTableColumn<BoothRequestApiData>> {
   return [
     {
-      key: "company_id",
+      key: "company",
       className: "order-table__cell--company",
-      label: t.order.table.companyId,
+      label: t.order.table.company,
       render: (request) => getBoothRequestCompanyDisplayName(request, t),
-      supportingText: (request) => (
-        <span aria-label={`${t.order.table.requestId}: ${request.id}`}>
-          {t.order.table.requestPrefix} #{request.id}
-        </span>
-      ),
       variant: "primary",
-    },
-    {
-      key: "booth_id",
-      className: "order-table__cell--identifier",
-      label: t.order.table.boothId,
-      render: (request) => `${t.order.table.boothPrefix} #${request.booth_id}`,
-      variant: "metric",
     },
     {
       key: "status",

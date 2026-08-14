@@ -42,10 +42,7 @@ export function ApproveBoothRequestConflictModal({
   const loadingId = useId();
   const titleId = useId();
   const isBusy = isApproving || isPageLoading;
-  const explanation = t.order.approveConflict.message.replace(
-    "{{id}}",
-    String(conflict.requestId),
-  );
+  const explanation = t.order.approveConflict.message;
   const conflictCount = t.order.approveConflict.count.replace(
     "{{count}}",
     String(conflict.meta.total),
@@ -188,30 +185,6 @@ export function ApproveBoothRequestConflictModal({
                 key={requestKey}
               >
                 <dl>
-                  <div>
-                    <dt>{t.order.table.requestId}</dt>
-                    <dd>
-                      {request.id === null
-                        ? t.order.details.emptyValue
-                        : `#${request.id}`}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>{t.order.table.boothId}</dt>
-                    <dd>
-                      {request.booth_id === null
-                        ? t.order.details.emptyValue
-                        : `#${request.booth_id}`}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>{t.order.table.companyId}</dt>
-                    <dd>
-                      {request.company_id === null
-                        ? t.order.details.emptyValue
-                        : `#${request.company_id}`}
-                    </dd>
-                  </div>
                   <div>
                     <dt>{t.order.table.status}</dt>
                     <dd>

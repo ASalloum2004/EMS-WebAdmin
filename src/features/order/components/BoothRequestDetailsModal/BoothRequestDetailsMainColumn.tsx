@@ -69,10 +69,6 @@ function RequestOverview({
       value: t.order.details.overview.boothBooking,
     },
     {
-      label: t.order.details.overview.allocatedSpace,
-      value: `${t.order.table.boothPrefix} #${details.booth_id}`,
-    },
-    {
       label: t.order.details.overview.requestedServices,
       value: String(details.services.length),
     },

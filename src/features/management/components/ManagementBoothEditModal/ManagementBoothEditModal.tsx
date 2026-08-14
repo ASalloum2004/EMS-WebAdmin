@@ -99,7 +99,9 @@ export function ManagementBoothEditModal({
       >
         <div className="management-booth-modal__header">
           <h2 id="booth-edit-title">{t.management.booths.editTitle}</h2>
-          <p>#{booth.id}</p>
+          <p>
+            {t.management.booths.number}: {booth.number}
+          </p>
         </div>
 
         <label className="management-booth-modal__field">

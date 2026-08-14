@@ -28,16 +28,9 @@ export function BoothRequestListSkeleton() {
       {
         className: "order-table__cell--company",
         key: "company",
-        label: t.order.table.companyId,
+        label: t.order.table.company,
         render: (row) => <Skeleton height={18} width={row.companyWidth} />,
-        supportingText: () => <Skeleton height={13} width={92} />,
         variant: "primary",
-      },
-      {
-        className: "order-table__cell--identifier",
-        key: "booth",
-        label: t.order.table.boothId,
-        render: () => <Skeleton height={14} width={82} />,
       },
       {
         className: "order-table__cell--status",

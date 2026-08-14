@@ -178,7 +178,6 @@ export const ar: I18nDictionary = {
       closeAriaLabel: "إغلاق تفاصيل التقرير",
       loadError: "تعذر تحميل تفاصيل التقرير.",
       information: "معلومات التقرير",
-      reportId: "معرّف التقرير",
       boothNumber: "رقم الجناح",
       emptyValue: "غير متاح",
       invalidDate: "تاريخ غير صالح",
@@ -499,7 +498,6 @@ export const ar: I18nDictionary = {
         title: "الموافقة على طلب الفعالية؟",
         message: "هل أنت متأكد من رغبتك في الموافقة على طلب الفعالية هذا؟",
         eventLabel: "الفعالية",
-        requestLabel: "معرّف الطلب",
         confirm: "الموافقة على الطلب",
         loading: "جارٍ تنفيذ الموافقة…",
         error: "تعذرت الموافقة على طلب الفعالية.",
@@ -509,7 +507,6 @@ export const ar: I18nDictionary = {
         message:
           "هل أنت متأكد من رغبتك في رفض طلب الفعالية هذا؟ لا يمكن التراجع عن هذا الإجراء.",
         eventLabel: "الفعالية",
-        requestLabel: "معرّف الطلب",
         confirm: "رفض الطلب",
         loading: "جارٍ الرفض…",
         error: "تعذر رفض طلب الفعالية.",
@@ -517,7 +514,7 @@ export const ar: I18nDictionary = {
       approveConflict: {
         title: "طلبات فعاليات متعارضة",
         message:
-          "تتداخل طلبات فعاليات معلّقة أخرى مع الطلب رقم {{id}} في القاعة نفسها والموعد نفسه. راجعها قبل الموافقة على أي حال.",
+          "تتداخل طلبات فعاليات معلّقة أخرى في القاعة نفسها والموعد نفسه. راجعها قبل الموافقة على أي حال.",
         count: "{{count}} من طلبات الفعاليات المتعارضة",
         approveAnyway: "الموافقة على أي حال",
         approving: "جارٍ تنفيذ الموافقة…",
@@ -533,11 +530,7 @@ export const ar: I18nDictionary = {
       },
       table: {
         ariaLabel: "جدول طلبات الفعاليات",
-        requestId: "معرّف طلب الفعالية",
-        requestPrefix: "طلب",
         eventTitle: "عنوان الفعالية",
-        eventHall: "قاعة الفعاليات",
-        eventHallPrefix: "قاعة الفعاليات",
         eventType: "نوع الفعالية",
         eventStatus: "حالة الفعالية",
         startTime: "وقت البدء",
@@ -565,8 +558,6 @@ export const ar: I18nDictionary = {
         organizerInformation: "معلومات الجهة المنظمة",
         speakers: "المتحدثون",
         engagement: "التفاعل",
-        requestId: "معرّف الطلب",
-        eventHall: "قاعة الفعاليات",
         type: "النوع",
         status: "الحالة",
         startTime: "وقت البدء",
@@ -574,7 +565,6 @@ export const ar: I18nDictionary = {
         duration: "المدة",
         createdAt: "تاريخ الإنشاء",
         description: "الوصف",
-        companyId: "معرّف الشركة",
         companyName: "اسم الشركة",
         organizerName: "اسم الجهة المنظمة",
         organizerEmail: "البريد الإلكتروني للجهة المنظمة",
@@ -588,7 +578,6 @@ export const ar: I18nDictionary = {
         averageRating: "متوسط التقييم",
         qrScans: "عدد مرات مسح رمز QR",
         savedCount: "عدد مرات الحفظ",
-        speakerId: "معرّف المتحدث",
         noOrganizer: "لا تتوفر معلومات عن الجهة المنظمة.",
         noSpeakers: "لا يوجد متحدثون معيّنون لهذه الفعالية.",
         notRatedYet: "لم تُقيّم بعد",
@@ -635,12 +624,7 @@ export const ar: I18nDictionary = {
     },
     table: {
       ariaLabel: "كل طلبات الأجنحة",
-      requestId: "معرّف الطلب",
-      requestPrefix: "طلب",
-      boothId: "معرّف الجناح",
-      boothPrefix: "جناح",
-      companyId: "معرّف الشركة",
-      companyPrefix: "شركة",
+      company: "الشركة",
       status: "الحالة",
       createdDate: "تاريخ الإنشاء",
       empty: "لا توجد طلبات أجنحة.",
@@ -656,7 +640,6 @@ export const ar: I18nDictionary = {
       title: "رفض طلب حجز الجناح؟",
       message:
         "هل أنت متأكد من رغبتك في رفض طلب حجز الجناح هذا؟ لا يمكن التراجع عن هذا الإجراء.",
-      requestLabel: "معرّف الطلب",
       confirm: "رفض الطلب",
       rejecting: "جارٍ الرفض…",
       error: "تعذر رفض طلب الجناح.",
@@ -665,7 +648,6 @@ export const ar: I18nDictionary = {
       title: "الموافقة على طلب حجز الجناح؟",
       message:
         "هل أنت متأكد من رغبتك في الموافقة على طلب حجز هذا الجناح؟ سيتم تخصيص الجناح لهذه الشركة.",
-      requestLabel: "معرّف الطلب",
       confirm: "الموافقة على الطلب",
       approving: "جارٍ تنفيذ الموافقة…",
       error: "تعذر الموافقة على طلب الجناح.",
@@ -673,7 +655,7 @@ export const ar: I18nDictionary = {
     approveConflict: {
       title: "طلبات متعارضة على الجناح",
       message:
-        "توجد طلبات معلّقة أخرى لهذا الجناح. ستؤدي الموافقة على الطلب رقم {{id}} إلى رفض الطلبات المتعارضة تلقائياً.",
+        "توجد طلبات معلّقة أخرى لهذا الجناح. ستؤدي الموافقة على هذا الطلب إلى رفض الطلبات المتعارضة تلقائياً.",
       count: "{{count}} طلبات متعارضة",
       approveAnyway: "الموافقة على أي حال",
       approving: "جارٍ تنفيذ الموافقة...",
@@ -697,7 +679,6 @@ export const ar: I18nDictionary = {
         submissionDate: "تاريخ التقديم",
         requestType: "نوع الطلب",
         boothBooking: "حجز جناح",
-        allocatedSpace: "المساحة / الجناح المخصص",
         requestedServices: "الخدمات المطلوبة",
       },
       services: {
@@ -714,7 +695,6 @@ export const ar: I18nDictionary = {
       companyProfile: {
         title: "ملف الشركة",
         verified: "عارض موثّق",
-        companyId: "معرّف الشركة",
         industry: "القطاع / مجال العمل",
         headquarters: "المقر الرئيسي",
         yearFounded: "سنة التأسيس",
@@ -752,7 +732,7 @@ export const ar: I18nDictionary = {
       ariaLabel: "عرض الإدارة",
     },
     search: {
-      hallsPlaceholder: "ابحث بالمعرف أو الرقم أو النوع...",
+      hallsPlaceholder: "ابحث بالرقم أو النوع...",
       boothsPlaceholder: "ابحث برقم الجناح...",
       eventHallsPlaceholder: "البحث في قاعات الفعاليات...",
       hallsAriaLabel: "بحث في القاعات",
@@ -804,8 +784,6 @@ export const ar: I18nDictionary = {
         duration: "المدة",
         description: "الوصف",
         createdAt: "تاريخ الإنشاء",
-        eventId: "معرّف الفعالية",
-        eventHallId: "معرّف قاعة الفعاليات",
         type: "النوع",
         status: "الحالة",
         hour: "ساعة",
@@ -889,9 +867,6 @@ export const ar: I18nDictionary = {
       hallFiltersAriaLabel: "عوامل تصفية القاعات",
       boothFiltersAriaLabel: "عوامل تصفية الأجنحة",
       eventHallFiltersAriaLabel: "عوامل تصفية قاعات الفعاليات",
-    },
-    table: {
-      id: "المعرف",
     },
     validation: {
       invalidMinimumArea: "أدخل مساحة دنيا صالحة.",

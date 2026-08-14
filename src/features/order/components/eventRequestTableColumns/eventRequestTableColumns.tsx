@@ -94,22 +94,14 @@ export function getEventRequestColumns(
       key: "title",
       label: translations.eventTitle,
       render: (request) => request.title,
-      supportingText: (request) => (
-        <span aria-label={`${translations.requestId}: ${request.id}`}>
-          {translations.requestPrefix} #{request.id}
-        </span>
-      ),
       variant: "primary",
     },
     {
-      key: "event",
+      key: "type",
       className: "event-request-table__cell--event",
-      label: translations.eventHall,
+      label: translations.eventType,
       render: (request) => (
         <span className="event-request-table__stack">
-          <span>
-            {translations.eventHallPrefix} #{request.event_hall_id}
-          </span>
           <span
             aria-label={`${translations.eventType}: ${getEventTypeLabel(request.type, t)}`}
             className="event-request-table__type-badge"

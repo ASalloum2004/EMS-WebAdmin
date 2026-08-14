@@ -13,7 +13,7 @@ const FOCUSABLE_SELECTOR = [
 interface ManagementEventHallDetailsModalProps {
   details: EventHallDetails | null;
   error: string;
-  eventHallId: number;
+  eventHallId?: number;
   isLoading: boolean;
   onClose: () => void;
   onRetry: () => void;
@@ -165,14 +165,6 @@ function EventCard({ event }: { event: EventHallEventDetails }) {
           </dd>
         </div>
         <div>
-          <dt>{translations.eventId}</dt>
-          <dd>#{event.id}</dd>
-        </div>
-        <div>
-          <dt>{translations.eventHallId}</dt>
-          <dd>#{event.event_hall_id}</dd>
-        </div>
-        <div>
           <dt>{translations.type}</dt>
           <dd>{typeLabel}</dd>
         </div>
@@ -188,7 +180,6 @@ function EventCard({ event }: { event: EventHallEventDetails }) {
 export function ManagementEventHallDetailsModal({
   details,
   error,
-  eventHallId,
   isLoading,
   onClose,
   onRetry,
@@ -281,9 +272,6 @@ export function ManagementEventHallDetailsModal({
               </p>
             ) : null}
           </div>
-          <span className="management-event-hall-details__id-badge">
-            #{details?.id ?? eventHallId}
-          </span>
           <ModalCloseButton
             ariaLabel={translations.closeAriaLabel}
             className="management-event-hall-details__close"
@@ -319,10 +307,6 @@ export function ManagementEventHallDetailsModal({
                   {translations.information}
                 </h3>
                 <dl className="management-event-hall-details__summary-grid">
-                  <div>
-                    <dt>{t.management.table.id}</dt>
-                    <dd>#{details.id}</dd>
-                  </div>
                   <div>
                     <dt>{t.management.eventHalls.number}</dt>
                     <dd>{details.number}</dd>

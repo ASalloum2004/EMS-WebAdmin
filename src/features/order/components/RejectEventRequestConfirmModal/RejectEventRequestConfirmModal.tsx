@@ -28,7 +28,6 @@ export function RejectEventRequestConfirmModal({
   isRejecting,
   onCancel,
   onConfirm,
-  requestId,
 }: RejectEventRequestConfirmModalProps) {
   const { t } = useI18n();
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -159,10 +158,6 @@ export function RejectEventRequestConfirmModal({
                 {getTrimmedString(eventTitle) ||
                   t.order.eventRequests.details.notAvailable}
               </dd>
-            </div>
-            <div>
-              <dt>{labels.requestLabel}</dt>
-              <dd>#{requestId}</dd>
             </div>
           </dl>
           {error ? (

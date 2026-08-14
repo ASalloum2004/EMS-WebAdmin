@@ -201,7 +201,6 @@ export function ReportDetailsModal({
   onRetry,
   rejectError,
   rejectFieldErrors,
-  reportId,
   resolveError,
   resolveFieldErrors,
 }: ReportDetailsModalProps) {
@@ -397,9 +396,7 @@ export function ReportDetailsModal({
           </div>
           {details ? (
             <ReportStatusBadge status={details.status} t={t} />
-          ) : (
-            <span className="report-details-modal__id">#{reportId}</span>
-          )}
+          ) : null}
           <ModalCloseButton
             ariaLabel={t.reports.details.closeAriaLabel}
             className="report-details-modal__close"
@@ -522,6 +519,7 @@ export function ReportDetailsModal({
           onClearErrors={() => clearActionError(confirmationAction)}
           onConfirm={confirmAction}
           reportId={details.id}
+          reportTitle={details.title}
         />
       ) : null}
     </>

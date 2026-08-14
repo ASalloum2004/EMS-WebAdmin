@@ -50,12 +50,6 @@ export function ManagementTableSkeleton({
           label: t.management.booths.area,
           render: (row) => <Skeleton height={14} width={row.valueWidth} />,
         },
-        {
-          key: "id",
-          label: t.management.table.id,
-          render: () => <Skeleton height={28} variant="pill" width={62} />,
-          variant: "badge",
-        },
       ];
     }
 
@@ -93,12 +87,6 @@ export function ManagementTableSkeleton({
             } satisfies DataTableColumn<ManagementSkeletonRow>,
           ]
         : []),
-      {
-        key: "id",
-        label: t.management.table.id,
-        render: () => <Skeleton height={28} variant="pill" width={62} />,
-        variant: "badge",
-      },
     ];
   }, [t, variant]);
 

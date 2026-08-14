@@ -177,7 +177,6 @@ export const en = {
       closeAriaLabel: "Close report details",
       loadError: "Unable to load report details.",
       information: "Report Information",
-      reportId: "Report ID",
       boothNumber: "Booth Number",
       emptyValue: "Not available",
       invalidDate: "Invalid date",
@@ -502,7 +501,6 @@ export const en = {
         title: "Approve Event Request?",
         message: "Are you sure you want to approve this Event Request?",
         eventLabel: "Event",
-        requestLabel: "Request ID",
         confirm: "Approve Request",
         loading: "Approving…",
         error: "Unable to approve Event Request.",
@@ -512,7 +510,6 @@ export const en = {
         message:
           "Are you sure you want to reject this Event Request? This action cannot be undone.",
         eventLabel: "Event",
-        requestLabel: "Request ID",
         confirm: "Reject Request",
         loading: "Rejecting…",
         error: "Unable to reject Event Request.",
@@ -520,7 +517,7 @@ export const en = {
       approveConflict: {
         title: "Conflicting Event Requests",
         message:
-          "Other pending Event Requests overlap with request #{{id}} in the same hall and schedule. Review them before approving anyway.",
+          "Other pending Event Requests overlap in the same hall and schedule. Review them before approving anyway.",
         count: "{{count}} conflicting Event Requests",
         approveAnyway: "Approve Anyway",
         approving: "Approving…",
@@ -536,11 +533,7 @@ export const en = {
       },
       table: {
         ariaLabel: "Event requests",
-        requestId: "Event Request ID",
-        requestPrefix: "Request",
         eventTitle: "Event title",
-        eventHall: "Event Hall",
-        eventHallPrefix: "Event Hall",
         eventType: "Event type",
         eventStatus: "Event status",
         startTime: "Start time",
@@ -568,8 +561,6 @@ export const en = {
         organizerInformation: "Organizer information",
         speakers: "Speakers",
         engagement: "Engagement",
-        requestId: "Request ID",
-        eventHall: "Event Hall",
         type: "Type",
         status: "Status",
         startTime: "Start Time",
@@ -577,7 +568,6 @@ export const en = {
         duration: "Duration",
         createdAt: "Created At",
         description: "Description",
-        companyId: "Company ID",
         companyName: "Company name",
         organizerName: "Organizer Name",
         organizerEmail: "Organizer Email",
@@ -591,7 +581,6 @@ export const en = {
         averageRating: "Average rating",
         qrScans: "QR scans",
         savedCount: "Saved count",
-        speakerId: "Speaker ID",
         noOrganizer: "No organizer information is available.",
         noSpeakers: "No speakers are assigned to this event.",
         notRatedYet: "Not rated yet",
@@ -638,12 +627,7 @@ export const en = {
     },
     table: {
       ariaLabel: "All booth requests",
-      requestId: "Request ID",
-      requestPrefix: "Request",
-      boothId: "Booth ID",
-      boothPrefix: "Booth",
-      companyId: "Company ID",
-      companyPrefix: "Company",
+      company: "Company",
       status: "Status",
       createdDate: "Created Date",
       empty: "No booth requests found.",
@@ -659,7 +643,6 @@ export const en = {
       title: "Reject booth request?",
       message:
         "Are you sure you want to reject this booth request? This action cannot be undone.",
-      requestLabel: "Request ID",
       confirm: "Reject Request",
       rejecting: "Rejecting…",
       error: "Unable to reject booth request.",
@@ -668,7 +651,6 @@ export const en = {
       title: "Approve booth request?",
       message:
         "Are you sure you want to approve this booth request? The booth will be allocated to this company.",
-      requestLabel: "Request ID",
       confirm: "Approve Request",
       approving: "Approving…",
       error: "Unable to approve booth request.",
@@ -676,7 +658,7 @@ export const en = {
     approveConflict: {
       title: "Conflicting booth requests",
       message:
-        "Other pending requests exist for this booth. Approving request #{{id}} will automatically reject the conflicting requests.",
+        "Other pending requests exist for this booth. Approving this request will automatically reject the conflicting requests.",
       count: "{{count}} conflicting requests",
       approveAnyway: "Approve Anyway",
       approving: "Approving…",
@@ -700,7 +682,6 @@ export const en = {
         submissionDate: "Submission Date",
         requestType: "Request Type",
         boothBooking: "Booth Booking",
-        allocatedSpace: "Allocated Space / Booth",
         requestedServices: "Requested Services",
       },
       services: {
@@ -717,7 +698,6 @@ export const en = {
       companyProfile: {
         title: "Company Profile",
         verified: "Verified exhibitor",
-        companyId: "Company ID",
         industry: "Industry / Business sector",
         headquarters: "Headquarters",
         yearFounded: "Year Founded",
@@ -755,7 +735,7 @@ export const en = {
       ariaLabel: "Management view",
     },
     search: {
-      hallsPlaceholder: "Search by id, number, or type...",
+      hallsPlaceholder: "Search by number or type...",
       boothsPlaceholder: "Search by booth number...",
       eventHallsPlaceholder: "Search event halls...",
       hallsAriaLabel: "Search halls",
@@ -807,8 +787,6 @@ export const en = {
         duration: "Duration",
         description: "Description",
         createdAt: "Created At",
-        eventId: "Event ID",
-        eventHallId: "Event Hall ID",
         type: "Type",
         status: "Status",
         hour: "hour",
@@ -891,9 +869,6 @@ export const en = {
       hallFiltersAriaLabel: "Hall filters",
       boothFiltersAriaLabel: "Booth filters",
       eventHallFiltersAriaLabel: "Event Hall filters",
-    },
-    table: {
-      id: "ID",
     },
     validation: {
       invalidMinimumArea: "Enter a valid minimum area.",

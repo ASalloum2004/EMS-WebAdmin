@@ -302,9 +302,6 @@ export function ManagementServicesModal({
           >
             <div className="management-services-modal__form-header">
               <h3>{formTitle}</h3>
-              {serviceForm.selectedService ? (
-                <span>#{serviceForm.selectedService.id}</span>
-              ) : null}
             </div>
 
             <div className="management-services-modal__form-grid">

@@ -441,6 +441,7 @@ export function BoothRequestDetailsModal({
 
       {isApproveConfirmationVisible && details ? (
         <ApproveBoothRequestConfirmModal
+          companyName={details.company.name}
           error={approveError}
           isApproving={isApproving}
           onCancel={closeApproveConfirmation}
@@ -463,6 +464,7 @@ export function BoothRequestDetailsModal({
 
       {isRejectConfirmationVisible && details ? (
         <RejectBoothRequestConfirmModal
+          companyName={details.company.name}
           error={rejectError}
           isRejecting={isRejecting}
           onCancel={closeRejectConfirmation}

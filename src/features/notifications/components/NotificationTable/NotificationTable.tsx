@@ -26,29 +26,55 @@ type NotificationTableProps = {
   items: NotificationItem[];
 };
 
+type NotificationVisualType = "success" | "warning" | "error" | "info";
+
+function getNotificationVisualType(
+  type: NotificationType,
+): NotificationVisualType {
+  if (
+    type === "success" ||
+    type === "warning" ||
+    type === "error" ||
+    type === "info"
+  ) {
+    return type;
+  }
+
+  return "info";
+}
+
 function NotificationIcon({ type }: { type: NotificationType }) {
   const iconProps = {
     "aria-hidden": true,
     size: 20,
     strokeWidth: 1.9,
   } as const;
+  const visualType = getNotificationVisualType(type);
 
-  if (type === "success") {
+  if (visualType === "success") {
     return <SuccessNotificationIcon {...iconProps} />;
   }
 
-  if (type === "warning") {
+  if (visualType === "warning") {
     return <WarningNotificationIcon {...iconProps} />;
   }
 
-  if (type === "error") {
+  if (visualType === "error") {
     return <ErrorNotificationIcon {...iconProps} />;
   }
 
   return <InformationNotificationIcon {...iconProps} />;
 }
 
-function NotificationIdentity({ item }: { item: NotificationItem }) {
+function NotificationIdentity({
+  item,
+  t,
+}: {
+  item: NotificationItem;
+  t: I18nDictionary;
+}) {
+  const visualType = getNotificationVisualType(item.type);
+
   return (
     <span
       className={
@@ -59,18 +85,37 @@ function NotificationIdentity({ item }: { item: NotificationItem }) {
     >
       <span
         aria-hidden="true"
-        className={`notification-table__icon notification-table__icon--${item.type}`}
+        className={`notification-table__icon notification-table__icon--${visualType}`}
       >
         <NotificationIcon type={item.type} />
       </span>
       <span className="notification-table__copy">
         <span className="notification-table__title">{item.title}</span>
-        <span className="notification-table__description">
-          {item.description}
+        <span className="notification-table__type-label">
+          {getNotificationTypeLabel(item.type, t)}
         </span>
       </span>
     </span>
   );
+}
+
+function getNotificationTypeLabel(
+  type: NotificationType,
+  t: I18nDictionary,
+) {
+  const typeLabels: Record<NotificationVisualType, string> = {
+    error: t.notifications.notificationTypes.error,
+    info: t.notifications.notificationTypes.info,
+    success: t.notifications.notificationTypes.success,
+    warning: t.notifications.notificationTypes.warning,
+  };
+  const visualType = getNotificationVisualType(type);
+
+  if (type === visualType) {
+    return typeLabels[visualType];
+  }
+
+  return type.replace(/_/g, " ");
 }
 
 function formatNotificationDate(
@@ -92,12 +137,6 @@ function createNotificationColumns(
   language: SupportedLanguage,
   t: I18nDictionary,
 ): Array<DataTableColumn<NotificationItem>> {
-  const typeLabels: Record<NotificationType, string> = {
-    error: t.notifications.notificationTypes.error,
-    info: t.notifications.notificationTypes.info,
-    success: t.notifications.notificationTypes.success,
-    warning: t.notifications.notificationTypes.warning,
-  };
   const statusLabels: Record<NotificationStatus, string> = {
     read: t.notifications.notificationStatuses.read,
     unread: t.notifications.notificationStatuses.unread,
@@ -108,20 +147,8 @@ function createNotificationColumns(
       className: "notification-table__cell--notification",
       key: "notification",
       label: t.notifications.table.notification,
-      render: (item) => <NotificationIdentity item={item} />,
+      render: (item) => <NotificationIdentity item={item} t={t} />,
       variant: "primary",
-    },
-    {
-      className: "notification-table__cell--type",
-      key: "type",
-      label: t.notifications.table.type,
-      render: (item) => (
-        <span
-          className={`notification-table__type notification-table__type--${item.type}`}
-        >
-          {typeLabels[item.type]}
-        </span>
-      ),
     },
     {
       className: "notification-table__cell--status",

@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { Bell, BellRing, CheckCheck } from "lucide-react";
 import { MarkAllReadIcon } from "../../../assets/icons/activityIcons";
 import {
   Card,
+  filterBySearchQuery,
   SearchFilterBar,
   TableFooter,
 } from "../../../components";
@@ -9,91 +11,136 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import {
   NotificationFiltersPanel,
+  NotificationListSkeleton,
+  NotificationStatsSkeleton,
   NotificationTable,
   type NotificationFilterOption,
 } from "../components";
+import { emptyNotificationFilters } from "../data";
 import {
-  emptyNotificationFilters,
-  filterNotifications,
-  notificationMockData,
-} from "../data";
+  useMarkAllNotificationsRead,
+  useNotifications,
+  useNotificationStatistics,
+} from "../hooks";
+import type {
+  NotificationStatisticsData,
+  NotificationView,
+} from "../types";
 import "./NotificationsPage.scss";
 
-const PAGE_SIZE = 4;
+type NotificationSummaryKey = keyof NotificationStatisticsData;
+
+type NotificationSummaryCard = {
+  icon: ReactNode;
+  key: NotificationSummaryKey;
+  label: string;
+};
 
 const initialUiState = {
   appliedFilters: emptyNotificationFilters,
-  currentPage: 1,
   draftFilters: emptyNotificationFilters,
   isFilterPanelOpen: false,
   searchQuery: "",
 };
 
 export function NotificationsPage() {
-  const { t } = useI18n();
-  const [notifications, setNotifications] = useState(notificationMockData);
+  const { language, t } = useI18n();
+  const [activeView, setActiveView] =
+    useState<NotificationView>("all");
   const [ui, setUi] = useState(initialUiState);
-  const filteredNotifications = useMemo(
+  const notificationStatistics = useNotificationStatistics(
+    t.notifications.summary.loadError,
+  );
+  const allNotifications = useNotifications({
+    enabled: activeView === "all",
+    errorFallback: t.notifications.table.loadError,
+    type: ui.appliedFilters.type,
+    view: "all",
+  });
+  const unreadNotifications = useNotifications({
+    enabled: activeView === "unread",
+    errorFallback: t.notifications.table.loadError,
+    type: ui.appliedFilters.type,
+    view: "unread",
+  });
+  const activeNotifications =
+    activeView === "all" ? allNotifications : unreadNotifications;
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
+    [language],
+  );
+  const visibleNotifications = useMemo(
     () =>
-      filterNotifications(
-        notifications,
+      filterBySearchQuery(
+        activeNotifications.notifications,
         ui.searchQuery,
-        ui.appliedFilters,
+        (item) => [item.title, item.description],
       ),
-    [notifications, ui.appliedFilters, ui.searchQuery],
+    [activeNotifications.notifications, ui.searchQuery],
   );
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredNotifications.length / PAGE_SIZE),
-  );
-  const currentPage = Math.min(ui.currentPage, totalPages);
-  const visibleNotifications = filteredNotifications.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-  const hasActiveFilters = Boolean(
-    ui.appliedFilters.status || ui.appliedFilters.type,
-  );
+  const hasActiveFilters = Boolean(ui.appliedFilters.type.trim());
   const hasActiveCriteria =
     Boolean(ui.searchQuery.trim()) || hasActiveFilters;
-  const hasUnreadNotifications = notifications.some(
-    (notification) => notification.status === "unread",
+  const isNotificationListLoading =
+    activeNotifications.isLoading || activeNotifications.isRefreshing;
+  const summaryCards: NotificationSummaryCard[] = [
+    {
+      icon: <Bell aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "total_notifications",
+      label: t.notifications.summary.totalNotifications,
+    },
+    {
+      icon: <BellRing aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "unread_notifications",
+      label: t.notifications.tabs.unreadNotifications,
+    },
+    {
+      icon: <CheckCheck aria-hidden="true" size={22} strokeWidth={1.8} />,
+      key: "read_notifications",
+      label: t.notifications.summary.readNotifications,
+    },
+  ];
+  const typeOptions = useMemo<NotificationFilterOption[]>(() => {
+    const notificationTypes = new Set<string>();
+
+    if (ui.draftFilters.type) {
+      notificationTypes.add(ui.draftFilters.type);
+    }
+
+    activeNotifications.notifications.forEach((notification) => {
+      notificationTypes.add(notification.type);
+    });
+
+    return [
+      { label: t.notifications.filters.all, value: "" },
+      ...Array.from(notificationTypes, (type) => ({
+        label: type.replace(/_/g, " "),
+        value: type,
+      })),
+    ];
+  }, [activeNotifications.notifications, t, ui.draftFilters.type]);
+  const refreshAfterMarkAllAsRead = useCallback(async () => {
+    await Promise.all([
+      allNotifications.refetch(),
+      unreadNotifications.refetch(),
+      notificationStatistics.refetch(),
+    ]);
+  }, [
+    allNotifications.refetch,
+    notificationStatistics.refetch,
+    unreadNotifications.refetch,
+  ]);
+  const markAllNotificationsRead = useMarkAllNotificationsRead({
+    errorFallback: t.notifications.actions.markAllAsReadError,
+    onSuccess: refreshAfterMarkAllAsRead,
+  });
+  const hasUnreadNotifications = Boolean(
+    notificationStatistics.statistics?.unread_notifications,
   );
-  const statusOptions: NotificationFilterOption[] = [
-    { label: t.notifications.filters.all, value: "" },
-    {
-      label: t.notifications.notificationStatuses.unread,
-      value: "unread",
-    },
-    {
-      label: t.notifications.notificationStatuses.read,
-      value: "read",
-    },
-  ];
-  const typeOptions: NotificationFilterOption[] = [
-    { label: t.notifications.filters.all, value: "" },
-    {
-      label: t.notifications.notificationTypes.success,
-      value: "success",
-    },
-    {
-      label: t.notifications.notificationTypes.warning,
-      value: "warning",
-    },
-    {
-      label: t.notifications.notificationTypes.error,
-      value: "error",
-    },
-    {
-      label: t.notifications.notificationTypes.info,
-      value: "info",
-    },
-  ];
 
   function handleSearchChange(value: string) {
     setUi((state) => ({
       ...state,
-      currentPage: 1,
       searchQuery: value,
     }));
   }
@@ -109,29 +156,37 @@ export function NotificationsPage() {
   }
 
   function handleApplyFilters() {
+    allNotifications.setCurrentPage(1);
+    unreadNotifications.setCurrentPage(1);
     setUi((state) => ({
       ...state,
       appliedFilters: { ...state.draftFilters },
-      currentPage: 1,
       isFilterPanelOpen: false,
     }));
   }
 
   function handleResetFilters() {
+    allNotifications.setCurrentPage(1);
+    unreadNotifications.setCurrentPage(1);
     setUi((state) => ({
       ...state,
       appliedFilters: emptyNotificationFilters,
-      currentPage: 1,
       draftFilters: emptyNotificationFilters,
     }));
   }
 
-  function handleMarkAllAsRead() {
-    setNotifications((items) =>
-      items.map((item) =>
-        item.status === "unread" ? { ...item, status: "read" } : item,
-      ),
-    );
+  function handleViewChange(view: NotificationView) {
+    if (view === activeView) {
+      return;
+    }
+
+    setActiveView(view);
+
+    if (view === "all") {
+      allNotifications.setCurrentPage(1);
+    } else {
+      unreadNotifications.setCurrentPage(1);
+    }
   }
 
   return (
@@ -142,75 +197,192 @@ export function NotificationsPage() {
           <p>{t.notifications.description}</p>
         </header>
 
+        <div
+          aria-label={t.notifications.title}
+          className="notifications-page__tabs"
+          role="tablist"
+        >
+          <button
+            aria-controls="notifications-list-panel"
+            aria-selected={activeView === "all"}
+            className={`notifications-page__tab${
+              activeView === "all" ? " notifications-page__tab--active" : ""
+            }`}
+            onClick={() => handleViewChange("all")}
+            role="tab"
+            tabIndex={activeView === "all" ? 0 : -1}
+            type="button"
+          >
+            {t.notifications.tabs.allNotifications}
+          </button>
+          <button
+            aria-controls="notifications-list-panel"
+            aria-selected={activeView === "unread"}
+            className={`notifications-page__tab${
+              activeView === "unread"
+                ? " notifications-page__tab--active"
+                : ""
+            }`}
+            onClick={() => handleViewChange("unread")}
+            role="tab"
+            tabIndex={activeView === "unread" ? 0 : -1}
+            type="button"
+          >
+            {t.notifications.tabs.unreadNotifications}
+          </button>
+        </div>
+
+        {notificationStatistics.isLoading ? (
+          <NotificationStatsSkeleton />
+        ) : (
+          <div
+            aria-busy={notificationStatistics.isRefreshing}
+            className="notifications-page__summary"
+          >
+            {summaryCards.map((summaryCard) => {
+              const value =
+                notificationStatistics.statistics?.[summaryCard.key] ?? null;
+
+              return (
+                <Card
+                  className="notifications-page__summary-card"
+                  icon={summaryCard.icon}
+                  iconClassName="notifications-page__summary-icon"
+                  key={summaryCard.key}
+                  title={summaryCard.label}
+                  titleClassName="notifications-page__summary-label"
+                >
+                  <strong
+                    aria-label={
+                      value === null
+                        ? t.notifications.summary.unavailable
+                        : undefined
+                    }
+                    aria-live="polite"
+                    className="notifications-page__summary-value"
+                  >
+                    {value === null ? "—" : numberFormatter.format(value)}
+                  </strong>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {notificationStatistics.error ? (
+          <div className="notifications-page__state" role="alert">
+            <p>
+              {notificationStatistics.error || t.notifications.summary.loadError}
+            </p>
+            <button
+              onClick={() => void notificationStatistics.refetch()}
+              type="button"
+            >
+              {t.common.tryAgain}
+            </button>
+          </div>
+        ) : null}
+
         <Card
           aria-label={t.notifications.panelAriaLabel}
           bodyClassName="notifications-page__panel-body"
           className="notifications-page__panel"
+          id="notifications-list-panel"
+          role="tabpanel"
         >
-          <div className="notifications-page__toolbar">
-            <SearchFilterBar
-              className="notifications-page__search"
-              filterAriaLabel={t.notifications.filters.filterAriaLabel}
-              filterLabel={t.common.filter}
-              inputAriaLabel={t.notifications.search.ariaLabel}
-              isFilterActive={hasActiveFilters}
-              onChange={handleSearchChange}
-              onFilterClick={handleToggleFilters}
-              placeholder={t.notifications.search.placeholder}
-              showFilterButton
-              value={ui.searchQuery}
-            />
-            <button
-              className="data-table__action-button notifications-page__mark-all"
-              disabled={!hasUnreadNotifications}
-              onClick={handleMarkAllAsRead}
-              type="button"
-            >
-              <MarkAllReadIcon aria-hidden="true" size={17} strokeWidth={2} />
-              <span>{t.notifications.actions.markAllAsRead}</span>
-            </button>
-          </div>
-
-          {ui.isFilterPanelOpen ? (
-            <NotificationFiltersPanel
-              filters={ui.draftFilters}
-              onApply={handleApplyFilters}
-              onChange={(draftFilters) =>
-                setUi((state) => ({ ...state, draftFilters }))
-              }
-              onReset={handleResetFilters}
-              statusOptions={statusOptions}
-              typeOptions={typeOptions}
-            />
-          ) : null}
-
-          <div className="notifications-page__divider" />
-
-          <section className="notifications-page__table-panel">
-            <NotificationTable
-              emptyMessage={
-                hasActiveCriteria
-                  ? t.notifications.table.noResults
-                  : t.notifications.table.empty
-              }
-              items={visibleNotifications}
-            />
-            {filteredNotifications.length ? (
-              <TableFooter
-                className="notifications-page__footer"
-                currentPage={currentPage}
-                onPageChange={(page) =>
-                  setUi((state) => ({ ...state, currentPage: page }))
+          <div aria-busy={isNotificationListLoading}>
+            <div className="notifications-page__toolbar">
+              <SearchFilterBar
+                className="notifications-page__search"
+                filterAriaLabel={t.notifications.filters.filterAriaLabel}
+                filterLabel={t.common.filter}
+                inputAriaLabel={t.notifications.search.ariaLabel}
+                isFilterActive={hasActiveFilters}
+                onChange={handleSearchChange}
+                onFilterClick={handleToggleFilters}
+                placeholder={t.notifications.search.placeholder}
+                showFilterButton
+                value={ui.searchQuery}
+              />
+              <button
+                className="data-table__action-button notifications-page__mark-all"
+                disabled={
+                  !hasUnreadNotifications ||
+                  markAllNotificationsRead.isMarkingAllAsRead
                 }
-                perPage={PAGE_SIZE}
-                showItemRange
-                showPageSizeSelector={false}
-                showSinglePage
-                totalItems={filteredNotifications.length}
-                totalPages={totalPages}
+                onClick={() => void markAllNotificationsRead.markAllAsRead()}
+                type="button"
+              >
+                <MarkAllReadIcon aria-hidden="true" size={17} strokeWidth={2} />
+                <span>{t.notifications.actions.markAllAsRead}</span>
+              </button>
+            </div>
+
+            {markAllNotificationsRead.error ? (
+              <p className="notifications-page__action-error" role="alert">
+                {markAllNotificationsRead.error}
+              </p>
+            ) : null}
+
+            {ui.isFilterPanelOpen ? (
+              <NotificationFiltersPanel
+                filters={ui.draftFilters}
+                onApply={handleApplyFilters}
+                onChange={(draftFilters) =>
+                  setUi((state) => ({ ...state, draftFilters }))
+                }
+                onReset={handleResetFilters}
+                typeOptions={typeOptions}
               />
             ) : null}
-          </section>
+
+            <div className="notifications-page__divider" />
+
+            <section className="notifications-page__table-panel">
+              {isNotificationListLoading ? <NotificationListSkeleton /> : null}
+
+              {!isNotificationListLoading && activeNotifications.error ? (
+                <div className="notifications-page__state" role="alert">
+                  <p>{activeNotifications.error || t.notifications.table.loadError}</p>
+                  <button
+                    onClick={() => void activeNotifications.refetch()}
+                    type="button"
+                  >
+                    {t.common.tryAgain}
+                  </button>
+                </div>
+              ) : null}
+
+              {!isNotificationListLoading &&
+              (!activeNotifications.error ||
+                activeNotifications.notifications.length) ? (
+                <NotificationTable
+                  emptyMessage={
+                    hasActiveCriteria
+                      ? t.notifications.table.noResults
+                      : t.notifications.table.empty
+                  }
+                  items={visibleNotifications}
+                />
+              ) : null}
+
+              {!isNotificationListLoading &&
+              !ui.searchQuery.trim() &&
+              activeNotifications.notifications.length ? (
+                <TableFooter
+                  className="notifications-page__footer"
+                  currentPage={activeNotifications.currentPage}
+                  onPageChange={activeNotifications.setCurrentPage}
+                  perPage={activeNotifications.perPage}
+                  showItemRange
+                  showPageSizeSelector={false}
+                  showSinglePage
+                  totalItems={activeNotifications.totalItems}
+                  totalPages={activeNotifications.totalPages}
+                />
+              ) : null}
+            </section>
+          </div>
         </Card>
       </div>
     </ManagementLayout>

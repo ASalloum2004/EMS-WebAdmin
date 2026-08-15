@@ -33,6 +33,99 @@
   line-height: 22px;
 }
 
+.notifications-page__tabs {
+  width: min(100%, 360px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+}
+
+.notifications-page__tab {
+  min-width: 0;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--ems-radius-sm);
+  background-color: transparent;
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.notifications-page__tab:not(.notifications-page__tab--active):hover {
+  color: var(--ems-color-primary);
+}
+
+.notifications-page__tab--active {
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-primary);
+  box-shadow: var(--ems-shadow-button);
+}
+
+.notifications-page__tab:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+.notifications-page__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.notifications-page__summary-card {
+  --ems-card-min-height: 132px;
+  --ems-card-padding: 22px;
+  --ems-card-header-margin: 10px;
+}
+
+.notifications-page__summary-card .card__header {
+  align-items: flex-start;
+}
+
+.notifications-page__summary-label {
+  color: var(--ems-color-muted);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+
+.notifications-page__summary-icon {
+  --ems-card-icon-background: var(--ems-color-success-surface);
+  --ems-card-icon-color: var(--ems-color-primary);
+
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+  border-radius: 12px;
+}
+
+.notifications-page__summary-icon svg {
+  display: block;
+}
+
+.notifications-page__summary-value {
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-body);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 34px;
+  font-variant-numeric: tabular-nums;
+}
+
 .notifications-page__panel {
   --ems-card-min-height: 0;
   --ems-card-padding: 24px;
@@ -93,6 +186,50 @@
   border-top: 1px solid var(--ems-color-border-soft);
 }
 
+.notifications-page__state,
+.notifications-page__action-error {
+  margin: 0;
+  color: var(--ems-color-danger);
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.notifications-page__state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notifications-page__state p {
+  margin: 0;
+}
+
+.notifications-page__state button {
+  border: 0;
+  background-color: transparent;
+  color: var(--ems-color-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notifications-page__state button:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .notifications-page__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .notifications-page__summary-card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 720px) {
   .notifications-page__toolbar {
     align-items: stretch;
@@ -116,6 +253,23 @@
   .notifications-page__header h1 {
     font-size: 26px;
     line-height: 34px;
+  }
+
+  .notifications-page__tabs {
+    width: 100%;
+  }
+
+  .notifications-page__tab {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .notifications-page__summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .notifications-page__summary-card:last-child {
+    grid-column: auto;
   }
 
   .notifications-page__panel {

@@ -99,8 +99,20 @@ export const en = {
     title: "Notifications",
     description: "Review your latest platform notifications.",
     panelAriaLabel: "Notifications activity",
+    tabs: {
+      allNotifications: "All Notifications",
+      unreadNotifications: "Unread Notifications",
+    },
+    summary: {
+      totalNotifications: "Total Notifications",
+      readNotifications: "Read Notifications",
+      loading: "Loading notification statistics",
+      loadError: "Unable to load notification statistics.",
+      unavailable: "Notification statistic unavailable",
+    },
     actions: {
       markAllAsRead: "Mark all as read",
+      markAllAsReadError: "Unable to mark all notifications as read.",
     },
     search: {
       placeholder: "Search notifications by title...",
@@ -120,6 +132,8 @@ export const en = {
       type: "Type",
       status: "Status",
       date: "Date",
+      loading: "Loading notifications",
+      loadError: "Unable to load notifications.",
       empty: "No notifications are available.",
       noResults: "No notifications match your search or filters.",
     },

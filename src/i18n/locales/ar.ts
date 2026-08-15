@@ -100,8 +100,20 @@ export const ar: I18nDictionary = {
     title: "الإشعارات",
     description: "راجع أحدث إشعارات المنصة.",
     panelAriaLabel: "نشاط الإشعارات",
+    tabs: {
+      allNotifications: "جميع الإشعارات",
+      unreadNotifications: "الإشعارات غير المقروءة",
+    },
+    summary: {
+      totalNotifications: "إجمالي الإشعارات",
+      readNotifications: "الإشعارات المقروءة",
+      loading: "جارٍ تحميل إحصائيات الإشعارات",
+      loadError: "تعذر تحميل إحصائيات الإشعارات.",
+      unavailable: "إحصائية الإشعارات غير متاحة",
+    },
     actions: {
       markAllAsRead: "تحديد الكل كمقروء",
+      markAllAsReadError: "تعذر تحديد كل الإشعارات كمقروءة.",
     },
     search: {
       placeholder: "البحث في الإشعارات حسب العنوان...",
@@ -121,6 +133,8 @@ export const ar: I18nDictionary = {
       type: "النوع",
       status: "الحالة",
       date: "التاريخ",
+      loading: "جارٍ تحميل الإشعارات",
+      loadError: "تعذر تحميل الإشعارات.",
       empty: "لا توجد إشعارات متاحة.",
       noResults: "لا توجد إشعارات تطابق البحث أو عوامل التصفية.",
     },

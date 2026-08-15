@@ -12,7 +12,6 @@ type NotificationFiltersPanelProps = {
   onApply: () => void;
   onChange: (filters: NotificationFilters) => void;
   onReset: () => void;
-  statusOptions: NotificationFilterOption[];
   typeOptions: NotificationFilterOption[];
 };
 
@@ -21,7 +20,6 @@ export function NotificationFiltersPanel({
   onApply,
   onChange,
   onReset,
-  statusOptions,
   typeOptions,
 }: NotificationFiltersPanelProps) {
   const { t } = useI18n();
@@ -33,25 +31,6 @@ export function NotificationFiltersPanel({
       role="group"
     >
       <div className="notification-filters-panel__grid">
-        <label className="notification-filters-panel__field">
-          <span>{t.notifications.filters.status}</span>
-          <select
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                status: event.target.value as NotificationFilters["status"],
-              })
-            }
-            value={filters.status}
-          >
-            {statusOptions.map((option) => (
-              <option key={option.value || "all"} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <label className="notification-filters-panel__field">
           <span>{t.notifications.filters.type}</span>
           <select

@@ -11,7 +11,6 @@
   flex: 1 1 390px;
 }
 
-.notification-table__cell--type,
 .notification-table__cell--status {
   flex: 0 1 122px;
 }
@@ -66,7 +65,7 @@
 }
 
 .notification-table__title,
-.notification-table__description {
+.notification-table__type-label {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -78,18 +77,13 @@
   line-height: 21px;
 }
 
-.notification-table__description {
-  display: -webkit-box;
-  overflow: hidden;
+.notification-table__type-label {
   color: var(--ems-color-data-supporting-text);
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 600;
   line-height: 19px;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
-.notification-table__type,
 .notification-table__status {
   width: fit-content;
   max-width: 100%;
@@ -106,19 +100,6 @@
   white-space: nowrap;
 }
 
-.notification-table__type--success {
-  color: var(--ems-color-status-positive-text);
-}
-
-.notification-table__type--warning {
-  color: var(--ems-color-purple);
-}
-
-.notification-table__type--error {
-  color: var(--ems-color-danger);
-}
-
-.notification-table__type--info,
 .notification-table__status--unread {
   color: var(--ems-color-primary);
 }
@@ -136,7 +117,6 @@
     flex-basis: 100%;
   }
 
-  .notification-table__cell--type,
   .notification-table__cell--status,
   .notification-table__cell--date {
     flex: 1 1 28%;
@@ -144,7 +124,6 @@
 }
 
 @media (max-width: 640px) {
-  .notification-table__cell--type,
   .notification-table__cell--status,
   .notification-table__cell--date {
     flex: 1 1 100%;
@@ -156,7 +135,6 @@
     padding-inline-start: 9px;
   }
 
-  .notification-table__type,
   .notification-table__status {
     white-space: normal;
   }

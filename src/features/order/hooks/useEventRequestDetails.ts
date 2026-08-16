@@ -51,6 +51,7 @@ export function useEventRequestDetails(
       latestRequestIdRef.current += 1;
       activeRequestRef.current?.abort();
       activeRequestRef.current = null;
+      lastAutomaticallyRequestedIdRef.current = null;
     };
   }, []);
 

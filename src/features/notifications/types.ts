@@ -76,3 +76,5 @@ export type MarkAllNotificationsReadResponse = {
   message: string;
   status: boolean;
 };
+
+export type MarkNotificationReadResponse = unknown;

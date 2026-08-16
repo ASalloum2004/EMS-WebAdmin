@@ -21,11 +21,13 @@ export interface Reportable {
 }
 
 export type ReportDetails = ReportApiData & {
-  reportable: Reportable;
+  reportable: Reportable | null;
 };
 
 export type ReportDetailsResponse = {
-  data: ReportDetails;
+  data: ReportApiData & {
+    reportable?: Reportable | null;
+  };
   message: string;
   status: boolean;
 };

@@ -135,6 +135,17 @@ test("accepts null admin notes and rejects invalid details shapes", () => {
   );
 });
 
+test("accepts a Report details response without a reportable relation", () => {
+  const details = normalizeReportDetailsResponse({
+    ...response,
+    data: {
+      ...report,
+    },
+  });
+
+  assert.equal(details.reportable, null);
+});
+
 test("fetches Report details with authenticated GET and the Admin path", async () => {
   const token = installGeneratedAuthSession();
   let requestedUrl = "";

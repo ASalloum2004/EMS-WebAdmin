@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   ErrorNotificationIcon,
   InformationNotificationIcon,
+  MarkAllReadIcon,
   SuccessNotificationIcon,
   WarningNotificationIcon,
 } from "../../../../assets/icons/activityIcons";
@@ -14,6 +15,10 @@ import {
   type I18nDictionary,
   type SupportedLanguage,
 } from "../../../../i18n";
+import {
+  formatNotificationDate,
+  getNotificationTypeLabel,
+} from "../../data";
 import type {
   NotificationItem,
   NotificationStatus,
@@ -23,7 +28,10 @@ import "./NotificationTable.scss";
 
 type NotificationTableProps = {
   emptyMessage: string;
+  isMarkingAsRead: boolean;
   items: NotificationItem[];
+  onMarkAsRead: (notification: NotificationItem) => void;
+  onSelectNotification: (notification: NotificationItem) => void;
 };
 
 type NotificationVisualType = "success" | "warning" | "error" | "info";
@@ -68,9 +76,11 @@ function NotificationIcon({ type }: { type: NotificationType }) {
 
 function NotificationIdentity({
   item,
+  onSelect,
   t,
 }: {
   item: NotificationItem;
+  onSelect: (notification: NotificationItem) => void;
   t: I18nDictionary;
 }) {
   const visualType = getNotificationVisualType(item.type);
@@ -89,52 +99,24 @@ function NotificationIdentity({
       >
         <NotificationIcon type={item.type} />
       </span>
-      <span className="notification-table__copy">
+      <button
+        aria-label={`${t.notifications.details.openAriaLabel}: ${item.title}`}
+        className="notification-table__copy notification-table__details-trigger"
+        onClick={() => onSelect(item)}
+        type="button"
+      >
         <span className="notification-table__title">{item.title}</span>
         <span className="notification-table__type-label">
           {getNotificationTypeLabel(item.type, t)}
         </span>
-      </span>
+      </button>
     </span>
   );
 }
 
-function getNotificationTypeLabel(
-  type: NotificationType,
-  t: I18nDictionary,
-) {
-  const typeLabels: Record<NotificationVisualType, string> = {
-    error: t.notifications.notificationTypes.error,
-    info: t.notifications.notificationTypes.info,
-    success: t.notifications.notificationTypes.success,
-    warning: t.notifications.notificationTypes.warning,
-  };
-  const visualType = getNotificationVisualType(type);
-
-  if (type === visualType) {
-    return typeLabels[visualType];
-  }
-
-  return type.replace(/_/g, " ");
-}
-
-function formatNotificationDate(
-  createdAt: string,
-  language: SupportedLanguage,
-) {
-  const date = new Date(createdAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat(language === "ar" ? "ar-SY" : "en-US", {
-    dateStyle: "medium",
-  }).format(date);
-}
-
 function createNotificationColumns(
   language: SupportedLanguage,
+  onSelectNotification: (notification: NotificationItem) => void,
   t: I18nDictionary,
 ): Array<DataTableColumn<NotificationItem>> {
   const statusLabels: Record<NotificationStatus, string> = {
@@ -147,7 +129,13 @@ function createNotificationColumns(
       className: "notification-table__cell--notification",
       key: "notification",
       label: t.notifications.table.notification,
-      render: (item) => <NotificationIdentity item={item} t={t} />,
+      render: (item) => (
+        <NotificationIdentity
+          item={item}
+          onSelect={onSelectNotification}
+          t={t}
+        />
+      ),
       variant: "primary",
     },
     {
@@ -173,12 +161,15 @@ function createNotificationColumns(
 
 export function NotificationTable({
   emptyMessage,
+  isMarkingAsRead,
   items,
+  onMarkAsRead,
+  onSelectNotification,
 }: NotificationTableProps) {
   const { language, t } = useI18n();
   const columns = useMemo(
-    () => createNotificationColumns(language, t),
-    [language, t],
+    () => createNotificationColumns(language, onSelectNotification, t),
+    [language, onSelectNotification, t],
   );
 
   return (
@@ -189,6 +180,20 @@ export function NotificationTable({
       emptyMessage={emptyMessage}
       getItemKey={(item) => item.id}
       items={items}
+      actions={(item) =>
+        item.status === "unread" ? (
+          <button
+            aria-label={`${t.notifications.actions.markAsRead}: ${item.title}`}
+            className="data-table__action-button notification-table__mark-read"
+            disabled={isMarkingAsRead}
+            onClick={() => onMarkAsRead(item)}
+            type="button"
+          >
+            <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
+            <span>{t.notifications.actions.markAsRead}</span>
+          </button>
+        ) : null
+      }
     />
   );
 }

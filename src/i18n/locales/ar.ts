@@ -114,6 +114,8 @@ export const ar: I18nDictionary = {
     actions: {
       markAllAsRead: "تحديد الكل كمقروء",
       markAllAsReadError: "تعذر تحديد كل الإشعارات كمقروءة.",
+      markAsRead: "تحديد كمقروء",
+      markAsReadError: "تعذر تحديد هذا الإشعار كمقروء.",
     },
     search: {
       placeholder: "البحث في الإشعارات حسب العنوان...",
@@ -143,10 +145,23 @@ export const ar: I18nDictionary = {
       warning: "تحذير",
       error: "خطأ",
       info: "معلومات",
+      reportCreated: "تم إنشاء تقرير",
+      boothBookingRequestCreated: "تم إنشاء طلب حجز بوث",
+      eventBookingRequestCreated: "تم إنشاء طلب حجز فعالية",
     },
     notificationStatuses: {
       unread: "غير مقروء",
       read: "مقروء",
+    },
+    details: {
+      title: "تفاصيل الإشعار",
+      openAriaLabel: "فتح تفاصيل الإشعار",
+      closeAriaLabel: "إغلاق تفاصيل الإشعار",
+      targetId: "معرّف الهدف",
+      openTarget: "فتح العنصر المرتبط",
+      targetUnavailable: "لا يوجد عنصر مرتبط متاح.",
+      description: "الوصف",
+      readConfirmation: "تمت قراءة هذا الإشعار.",
     },
   },
   reports: {

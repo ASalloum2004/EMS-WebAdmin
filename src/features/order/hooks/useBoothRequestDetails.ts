@@ -46,6 +46,7 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
       latestRequestIdRef.current += 1;
       activeRequestRef.current?.abort();
       activeRequestRef.current = null;
+      lastAutomaticallyRequestedIdRef.current = null;
     };
   }, []);
 

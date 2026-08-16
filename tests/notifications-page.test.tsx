@@ -172,7 +172,7 @@ test("uses server endpoints for tabs and refreshes both lists and statistics aft
 
   await waitFor(() => {
     assert.ok(view.getByText("New Report Received"));
-    assert.ok(view.getByText("report created"));
+    assert.ok(view.getByText("Report created"));
     assert.ok(within(totalCard).getByText("1"));
     assert.ok(within(unreadCard).getByText("1"));
     assert.ok(within(readCard).getByText("0"));
@@ -245,4 +245,127 @@ test("uses server endpoints for tabs and refreshes both lists and statistics aft
     ).length >= 2,
   );
   assert.ok(view.getByText("No notifications are available."));
+});
+
+test("opens notification details and marks a single notification as read from the API", async () => {
+  const requests: Array<{ method: string; pathname: string }> = [];
+  let hasMarkedNotificationAsRead = false;
+
+  globalThis.fetch = async (input, init) => {
+    const url = new URL(
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url,
+    );
+    const method = init?.method ?? "GET";
+    requests.push({ method, pathname: url.pathname });
+
+    if (url.pathname.endsWith(`/${unreadNotification.id}/read`)) {
+      hasMarkedNotificationAsRead = true;
+
+      return new Response(JSON.stringify({}), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (url.pathname.endsWith("/statistics")) {
+      return new Response(
+        JSON.stringify({
+          data: {
+            read_notifications: hasMarkedNotificationAsRead ? 1 : 0,
+            total_notifications: 1,
+            unread_notifications: hasMarkedNotificationAsRead ? 0 : 1,
+          },
+          message: "Success",
+          status: true,
+        }),
+        { headers: { "Content-Type": "application/json" }, status: 200 },
+      );
+    }
+
+    if (url.pathname.endsWith("/unread")) {
+      return new Response(
+        JSON.stringify(
+          hasMarkedNotificationAsRead
+            ? {
+                data: {
+                  current_page: 1,
+                  data: [],
+                  last_page: 1,
+                  per_page: 15,
+                  total: 0,
+                },
+                message: "Success",
+                status: true,
+              }
+            : createListResponse(null),
+        ),
+        { headers: { "Content-Type": "application/json" }, status: 200 },
+      );
+    }
+
+    return new Response(
+      JSON.stringify(
+        createListResponse(
+          hasMarkedNotificationAsRead ? "2026-08-15T09:30:04.000000Z" : null,
+        ),
+      ),
+      { headers: { "Content-Type": "application/json" }, status: 200 },
+    );
+  };
+
+  const view = render(
+    <I18nProvider>
+      <NotificationsPage />
+    </I18nProvider>,
+  );
+
+  const openDetailsButton = await view.findByRole("button", {
+    name: "Open notification details: New Report Received",
+  });
+  fireEvent.click(openDetailsButton);
+
+  const targetLink = view.getByRole("link", {
+    name: "Open related item: 1",
+  });
+  assert.equal(targetLink.getAttribute("href"), "/reports?reportId=1");
+
+  fireEvent.click(view.getByRole("button", { name: "Mark as read" }));
+
+  await waitFor(() => {
+    assert.ok(view.getByText("This notification has been read."));
+  });
+
+  assert.ok(
+    requests.some(
+      (request) =>
+        request.method === "PATCH" &&
+        request.pathname ===
+          `/api/v1/admin/notifications/${unreadNotification.id}/read`,
+    ),
+  );
+  assert.ok(
+    requests.filter(
+      (request) =>
+        request.method === "GET" &&
+        request.pathname === "/api/v1/admin/notifications",
+    ).length >= 2,
+  );
+  assert.ok(
+    requests.filter(
+      (request) =>
+        request.method === "GET" &&
+        request.pathname === "/api/v1/admin/notifications/unread",
+    ).length >= 1,
+  );
+  assert.ok(
+    requests.filter(
+      (request) =>
+        request.method === "GET" &&
+        request.pathname === "/api/v1/admin/notifications/statistics",
+    ).length >= 2,
+  );
 });

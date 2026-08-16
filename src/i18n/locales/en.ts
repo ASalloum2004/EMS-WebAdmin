@@ -113,6 +113,8 @@ export const en = {
     actions: {
       markAllAsRead: "Mark all as read",
       markAllAsReadError: "Unable to mark all notifications as read.",
+      markAsRead: "Mark as read",
+      markAsReadError: "Unable to mark this notification as read.",
     },
     search: {
       placeholder: "Search notifications by title...",
@@ -142,10 +144,23 @@ export const en = {
       warning: "Warning",
       error: "Error",
       info: "Information",
+      reportCreated: "Report created",
+      boothBookingRequestCreated: "Booth booking request created",
+      eventBookingRequestCreated: "Event booking request created",
     },
     notificationStatuses: {
       unread: "Unread",
       read: "Read",
+    },
+    details: {
+      title: "Notification details",
+      openAriaLabel: "Open notification details",
+      closeAriaLabel: "Close notification details",
+      targetId: "Target ID",
+      openTarget: "Open related item",
+      targetUnavailable: "No related item is available.",
+      description: "Description",
+      readConfirmation: "This notification has been read.",
     },
   },
   reports: {

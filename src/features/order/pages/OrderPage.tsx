@@ -38,7 +38,6 @@ import {
 import {
   getEventRequestSummaryStatistics,
   getOrderSummaryStatistics,
-  type BoothRequestApiData,
 } from "../types";
 import "./OrderPage.scss";
 
@@ -49,18 +48,83 @@ type SummaryCard = {
   value: number | null;
 };
 
+type OrderDetailsTarget = {
+  id: number;
+  tab: OrderTab;
+};
+
+function getPositiveIntegerSearchParam(searchParam: string | null) {
+  if (!searchParam || !/^\d+$/.test(searchParam)) {
+    return null;
+  }
+
+  const parsedValue = Number(searchParam);
+
+  return Number.isSafeInteger(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : null;
+}
+
+function getOrderDetailsTargetFromSearch(): OrderDetailsTarget | null {
+  const searchParams = new URLSearchParams(window.location.search);
+  const tab = searchParams.get("tab");
+
+  if (tab === "booth") {
+    const id = getPositiveIntegerSearchParam(
+      searchParams.get("boothRequestId"),
+    );
+
+    return id === null ? null : { id, tab };
+  }
+
+  if (tab === "event") {
+    const id = getPositiveIntegerSearchParam(
+      searchParams.get("eventRequestId"),
+    );
+
+    return id === null ? null : { id, tab };
+  }
+
+  return null;
+}
+
+function clearOrderDetailsSearch() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const detailSearchParams = ["tab", "boothRequestId", "eventRequestId"];
+  const hasDetailsSearch = detailSearchParams.some((searchParam) =>
+    searchParams.has(searchParam),
+  );
+
+  if (!hasDetailsSearch) {
+    return;
+  }
+
+  detailSearchParams.forEach((searchParam) => searchParams.delete(searchParam));
+  const search = searchParams.toString();
+
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`,
+  );
+}
+
 export function OrderPage() {
   const { language, t } = useI18n();
-  const [activeTab, setActiveTab] = useState<OrderTab>("booth");
+  const [initialDetailsTarget] = useState(getOrderDetailsTargetFromSearch);
+  const [activeTab, setActiveTab] = useState<OrderTab>(
+    initialDetailsTarget?.tab ?? "booth",
+  );
   const isBoothTab = activeTab === "booth";
   const isEventTab = activeTab === "event";
-  const [selectedRequest, setSelectedRequest] =
-    useState<BoothRequestApiData | null>(null);
+  const [selectedBoothRequestId, setSelectedBoothRequestId] = useState<
+    number | null
+  >(initialDetailsTarget?.tab === "booth" ? initialDetailsTarget.id : null);
   const [selectedEventRequestId, setSelectedEventRequestId] = useState<
     number | null
-  >(null);
+  >(initialDetailsTarget?.tab === "event" ? initialDetailsTarget.id : null);
   const boothRequestDetails = useBoothRequestDetails(
-    selectedRequest?.id ?? null,
+    selectedBoothRequestId,
   );
   const boothRequests = useBoothRequests();
   const boothRequestStatistics = useBoothRequestStatistics();
@@ -207,7 +271,8 @@ export function OrderPage() {
     boothRequestActions.closeApproveConflict();
     boothRequestActions.clearApproveError();
     boothRequestActions.clearRejectError();
-    setSelectedRequest(null);
+    clearOrderDetailsSearch();
+    setSelectedBoothRequestId(null);
   }, [
     boothRequestActions.closeApproveConflict,
     boothRequestActions.clearApproveError,
@@ -217,6 +282,7 @@ export function OrderPage() {
     eventRequestActions.clearApproveError();
     eventRequestActions.clearRejectError();
     eventRequestActions.closeApproveConflict();
+    clearOrderDetailsSearch();
     setSelectedEventRequestId(null);
   }, [
     eventRequestActions.clearApproveError,
@@ -394,7 +460,9 @@ export function OrderPage() {
                     }
                     getItemKey={(request) => request.id}
                     items={boothRequests.requests}
-                    onItemClick={setSelectedRequest}
+                    onItemClick={(request) =>
+                      setSelectedBoothRequestId(request.id)
+                    }
                   />
                 ) : null}
 
@@ -506,7 +574,7 @@ export function OrderPage() {
         </div>
       </section>
 
-      {selectedRequest ? (
+      {selectedBoothRequestId !== null ? (
         <BoothRequestDetailsModal
           approveConflict={boothRequestActions.approveConflict}
           approveConflictError={boothRequestActions.approveConflictError}

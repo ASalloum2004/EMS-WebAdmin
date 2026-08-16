@@ -26,11 +26,35 @@
   align-items: center;
   gap: 12px;
   padding-inline-start: 11px;
+  padding-block: 0;
+  padding-inline-end: 0;
+  border-block: 0;
+  border-inline-end: 0;
   border-inline-start: 3px solid var(--ems-color-border-soft);
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
 }
 
 .notification-table__identity--unread {
   border-inline-start-color: var(--ems-color-primary);
+}
+
+.notification-table__details-trigger {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.notification-table__details-trigger:focus-visible {
+  outline: 2px solid var(--ems-color-primary);
+  outline-offset: 3px;
 }
 
 .notification-table__icon {
@@ -106,6 +130,20 @@
 
 .notification-table__status--read {
   color: var(--ems-color-muted-light);
+}
+
+.notification-table__mark-read {
+  min-height: 34px;
+  gap: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.notification-table__mark-read:disabled {
+  border-color: var(--ems-color-border-soft);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted-light);
+  cursor: not-allowed;
 }
 
 .notification-table__cell--date .data-table__value {

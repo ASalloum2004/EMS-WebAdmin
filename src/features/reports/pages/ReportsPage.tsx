@@ -31,10 +31,41 @@ type ReportSummaryCard = {
   label: string;
 };
 
+function getReportDetailsIdFromSearch() {
+  const reportId = new URLSearchParams(window.location.search).get("reportId");
+
+  if (!reportId || !/^\d+$/.test(reportId)) {
+    return null;
+  }
+
+  const parsedReportId = Number(reportId);
+
+  return Number.isSafeInteger(parsedReportId) && parsedReportId > 0
+    ? parsedReportId
+    : null;
+}
+
+function clearReportDetailsSearch() {
+  const searchParams = new URLSearchParams(window.location.search);
+
+  if (!searchParams.has("reportId")) {
+    return;
+  }
+
+  searchParams.delete("reportId");
+  const search = searchParams.toString();
+
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`,
+  );
+}
+
 export function ReportsPage() {
   const { language, t } = useI18n();
   const [selectedReportId, setSelectedReportId] = useState<number | null>(
-    null,
+    getReportDetailsIdFromSearch,
   );
   const reportStatistics = useReportStatistics(
     t.reports.summary.loadError,
@@ -68,6 +99,7 @@ export function ReportsPage() {
   const closeReportDetails = useCallback(() => {
     reportActions.clearRejectError();
     reportActions.clearResolveError();
+    clearReportDetailsSearch();
     setSelectedReportId(null);
   }, [
     reportActions.clearRejectError,

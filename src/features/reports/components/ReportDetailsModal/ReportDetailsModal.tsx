@@ -427,14 +427,14 @@ export function ReportDetailsModal({
                 <dl className="report-details-modal__information-grid">
                   <div>
                     <dt>
-                      {details.reportable.number !== undefined
+                      {details.reportable?.number !== undefined
                         ? t.reports.details.boothNumber
                         : t.reports.table.title}
                     </dt>
                     <dd>
                       {getDisplayValue(
-                        details.reportable.number ??
-                          details.reportable.title ??
+                        details.reportable?.number ??
+                          details.reportable?.title ??
                           null,
                         t.reports.details.emptyValue,
                       )}

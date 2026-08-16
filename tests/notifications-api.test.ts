@@ -6,6 +6,10 @@ import {
 } from "../src/features/notifications/api/allNotificationsApi.js";
 import { markAllNotificationsRead } from "../src/features/notifications/api/markAllNotificationsReadApi.js";
 import {
+  buildMarkNotificationReadPath,
+  markNotificationRead,
+} from "../src/features/notifications/api/markNotificationReadApi.js";
+import {
   getNotificationStatistics,
   normalizeNotificationStatisticsResponse,
 } from "../src/features/notifications/api/notificationStatisticsApi.js";
@@ -18,6 +22,7 @@ import {
   buildUnreadNotificationsPath,
   getUnreadNotifications,
 } from "../src/features/notifications/api/unreadNotificationsApi.js";
+import { getNotificationTarget } from "../src/features/notifications/data/notificationTargets.js";
 import type {
   NotificationsListResponse,
   NotificationStatisticsResponse,
@@ -255,8 +260,9 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
   );
   await getNotificationStatistics();
   await markAllNotificationsRead();
+  await markNotificationRead(rawNotification.id);
 
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 3);
   assert.equal(
     new URL(requests[0]?.url).pathname,
     "/api/v1/admin/notifications/statistics",
@@ -265,11 +271,50 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
     new URL(requests[1]?.url).pathname,
     "/api/v1/admin/notifications/read-all",
   );
+  assert.equal(
+    new URL(requests[2]?.url).pathname,
+    `/api/v1/admin/notifications/${rawNotification.id}/read`,
+  );
   assert.equal(requests[0]?.init?.method, "GET");
   assert.equal(requests[1]?.init?.method, "PATCH");
+  assert.equal(requests[2]?.init?.method, "PATCH");
   assert.equal(requests[1]?.init?.body, undefined);
+  assert.equal(requests[2]?.init?.body, undefined);
   assert.equal(
     new Headers(requests[1]?.init?.headers).get("Authorization"),
     `Bearer ${generatedToken}`,
+  );
+  assert.equal(
+    new Headers(requests[2]?.init?.headers).get("Authorization"),
+    `Bearer ${generatedToken}`,
+  );
+});
+
+test("builds a safe single-read path and maps only known notification targets", () => {
+  assert.equal(
+    buildMarkNotificationReadPath("  notification/id  "),
+    "notifications/notification%2Fid/read",
+  );
+
+  assert.deepEqual(
+    getNotificationTarget({
+      ...normalizeNotificationsResponse(notificationsResponse).notifications[0]!,
+      type: "report_created",
+    }),
+    { href: "/reports?reportId=1", id: 1 },
+  );
+  assert.deepEqual(
+    getNotificationTarget({
+      ...normalizeNotificationsResponse(notificationsResponse).notifications[0]!,
+      type: "booth_booking_request_created",
+    }),
+    { href: "/orders?tab=booth&boothRequestId=1", id: 1 },
+  );
+  assert.equal(
+    getNotificationTarget({
+      ...normalizeNotificationsResponse(notificationsResponse).notifications[0]!,
+      type: "other_notification",
+    }),
+    null,
   );
 });

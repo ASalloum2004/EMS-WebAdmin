@@ -11,6 +11,7 @@ import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
 import {
   NotificationFiltersPanel,
+  NotificationDetailsModal,
   NotificationListSkeleton,
   NotificationStatsSkeleton,
   NotificationTable,
@@ -19,11 +20,13 @@ import {
 import { emptyNotificationFilters } from "../data";
 import {
   useMarkAllNotificationsRead,
+  useMarkNotificationRead,
   useNotifications,
   useNotificationStatistics,
 } from "../hooks";
 import type {
   NotificationStatisticsData,
+  NotificationItem,
   NotificationView,
 } from "../types";
 import "./NotificationsPage.scss";
@@ -47,6 +50,8 @@ export function NotificationsPage() {
   const { language, t } = useI18n();
   const [activeView, setActiveView] =
     useState<NotificationView>("all");
+  const [selectedNotification, setSelectedNotification] =
+    useState<NotificationItem | null>(null);
   const [ui, setUi] = useState(initialUiState);
   const notificationStatistics = useNotificationStatistics(
     t.notifications.summary.loadError,
@@ -119,7 +124,7 @@ export function NotificationsPage() {
       })),
     ];
   }, [activeNotifications.notifications, t, ui.draftFilters.type]);
-  const refreshAfterMarkAllAsRead = useCallback(async () => {
+  const refreshNotificationData = useCallback(async () => {
     await Promise.all([
       allNotifications.refetch(),
       unreadNotifications.refetch(),
@@ -132,7 +137,11 @@ export function NotificationsPage() {
   ]);
   const markAllNotificationsRead = useMarkAllNotificationsRead({
     errorFallback: t.notifications.actions.markAllAsReadError,
-    onSuccess: refreshAfterMarkAllAsRead,
+    onSuccess: refreshNotificationData,
+  });
+  const markNotificationRead = useMarkNotificationRead({
+    errorFallback: t.notifications.actions.markAsReadError,
+    onSuccess: refreshNotificationData,
   });
   const hasUnreadNotifications = Boolean(
     notificationStatistics.statistics?.unread_notifications,
@@ -188,6 +197,21 @@ export function NotificationsPage() {
       unreadNotifications.setCurrentPage(1);
     }
   }
+
+  const handleMarkNotificationAsRead = useCallback(
+    async (notification: NotificationItem) => {
+      const response = await markNotificationRead.markAsRead(notification.id);
+
+      if (response !== null) {
+        setSelectedNotification((currentNotification) =>
+          currentNotification?.id === notification.id
+            ? { ...currentNotification, status: "read" }
+            : currentNotification,
+        );
+      }
+    },
+    [markNotificationRead.markAsRead],
+  );
 
   return (
     <ManagementLayout>
@@ -318,9 +342,9 @@ export function NotificationsPage() {
               </button>
             </div>
 
-            {markAllNotificationsRead.error ? (
+            {markAllNotificationsRead.error || markNotificationRead.error ? (
               <p className="notifications-page__action-error" role="alert">
-                {markAllNotificationsRead.error}
+                {markNotificationRead.error || markAllNotificationsRead.error}
               </p>
             ) : null}
 
@@ -362,7 +386,14 @@ export function NotificationsPage() {
                       ? t.notifications.table.noResults
                       : t.notifications.table.empty
                   }
+                  isMarkingAsRead={
+                    markNotificationRead.markingNotificationId !== null
+                  }
                   items={visibleNotifications}
+                  onMarkAsRead={(notification) =>
+                    void handleMarkNotificationAsRead(notification)
+                  }
+                  onSelectNotification={setSelectedNotification}
                 />
               ) : null}
 
@@ -385,6 +416,20 @@ export function NotificationsPage() {
           </div>
         </Card>
       </div>
+
+      {selectedNotification ? (
+        <NotificationDetailsModal
+          error={markNotificationRead.error}
+          isMarkingAsRead={
+            markNotificationRead.markingNotificationId === selectedNotification.id
+          }
+          notification={selectedNotification}
+          onClose={() => setSelectedNotification(null)}
+          onMarkAsRead={(notification) =>
+            void handleMarkNotificationAsRead(notification)
+          }
+        />
+      ) : null}
     </ManagementLayout>
   );
 }

@@ -18,9 +18,6 @@ export function EventRequestDetailsSkeleton() {
         {t.order.eventRequests.details.loading}
       </span>
       <div aria-hidden="true" className="event-request-details-skeleton">
-        <div className="event-request-details-modal__logo-showcase">
-          <Skeleton height={56} variant="rect" width={214} />
-        </div>
         <div className="event-request-details-modal__content-grid">
           {[0, 1].map((columnIndex) => (
             <div className="event-request-details-modal__column" key={columnIndex}>

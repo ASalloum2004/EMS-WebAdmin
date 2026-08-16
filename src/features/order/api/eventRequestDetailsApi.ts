@@ -15,6 +15,28 @@ import type {
 
 const unexpectedResponseMessage =
   "Unexpected event request details response format.";
+const SPEAKER_AVATAR_KEYS = [
+  "avatar",
+  "avatar_url",
+  "image",
+  "image_url",
+  "image_path",
+  "photo",
+  "photo_url",
+  "profile_image",
+  "profile_image_url",
+  "profile_photo",
+  "profile_photo_url",
+  "media",
+] as const;
+const MEDIA_URL_KEYS = [
+  "url",
+  "original_url",
+  "full_url",
+  "image_url",
+  "avatar_url",
+  "path",
+] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -260,6 +282,56 @@ function normalizeOrganizer(
   };
 }
 
+function resolveSpeakerAvatarUrl(value: unknown, depth = 0): string | null {
+  if (typeof value === "string") {
+    return resolveApiMediaUrl(value);
+  }
+
+  if (depth > 2) {
+    return null;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const imageUrl = resolveSpeakerAvatarUrl(item, depth + 1);
+
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  for (const key of MEDIA_URL_KEYS) {
+    const imageUrl = resolveSpeakerAvatarUrl(value[key], depth + 1);
+
+    if (imageUrl) {
+      return imageUrl;
+    }
+  }
+
+  return null;
+}
+
+function getSpeakerAvatarUrl(
+  speaker: EventRequestSpeakerApiData,
+): string | null {
+  for (const key of SPEAKER_AVATAR_KEYS) {
+    const imageUrl = resolveSpeakerAvatarUrl(speaker[key]);
+
+    if (imageUrl) {
+      return imageUrl;
+    }
+  }
+
+  return null;
+}
+
 export function buildEventRequestDetailsPath(eventRequestId: number) {
   if (
     !Number.isFinite(eventRequestId) ||
@@ -300,6 +372,7 @@ export function normalizeEventRequestDetailsResponse(
     speakers: (details.speakers ?? []).map((speaker) => ({
       id: speaker.id,
       name: speaker.name,
+      avatar: getSpeakerAvatarUrl(speaker),
     })),
     average_rating: getEngagementMetric(metricSources, averageRatingKeys),
     qr_scans_count: getEngagementMetric(metricSources, qrScansCountKeys),

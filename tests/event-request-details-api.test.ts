@@ -41,8 +41,12 @@ const rawDetails: EventRequestDetailsApiData = {
     status: "pending",
   },
   speakers: [
-    { id: 4, name: "Fawzy" },
-    { id: 5, name: "Elcoach" },
+    { id: 4, name: "Fawzy", avatar: null },
+    {
+      id: 5,
+      name: "Elcoach",
+      avatar: "https://images.example.com/elcoach.png",
+    },
   ],
   average_rating: null,
   qr_scans_count: 0,
@@ -170,6 +174,61 @@ test("supports null organizer, empty speakers, and nullable metadata", () => {
   assert.equal(details.average_rating, null);
   assert.equal(details.qr_token, null);
   assert.equal(details.logo, null);
+});
+
+test("normalizes relative speaker avatars through the shared media resolver", () => {
+  const details = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      speakers: [
+        {
+          id: 5,
+          name: "Elcoach",
+          avatar: "/storage/speakers/elcoach.png",
+        },
+      ],
+    }),
+  );
+
+  assert.equal(
+    details.speakers[0]?.avatar,
+    `${new URL(API_BASE_URL).origin}/storage/speakers/elcoach.png`,
+  );
+});
+
+test("normalizes speaker image and photo payload variants", () => {
+  const details = normalizeEventRequestDetailsResponse(
+    getResponse({
+      ...rawDetails,
+      speakers: [
+        {
+          id: 4,
+          name: "Fawzy",
+          image: "storage/speakers/fawzy.png",
+        },
+        {
+          id: 5,
+          name: "Elcoach",
+          photo: {
+            original_url: "/storage/speakers/elcoach.png",
+          },
+        },
+      ],
+    }),
+  );
+
+  assert.deepEqual(details.speakers, [
+    {
+      id: 4,
+      name: "Fawzy",
+      avatar: `${new URL(API_BASE_URL).origin}/storage/speakers/fawzy.png`,
+    },
+    {
+      id: 5,
+      name: "Elcoach",
+      avatar: `${new URL(API_BASE_URL).origin}/storage/speakers/elcoach.png`,
+    },
+  ]);
 });
 
 test("normalizes nested backend engagement metrics before top-level fallbacks", () => {

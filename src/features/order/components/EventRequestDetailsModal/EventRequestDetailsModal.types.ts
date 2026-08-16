@@ -6,7 +6,7 @@ import type {
   EventRequestActionResponse,
   EventRequestDetails,
   EventRequestOrganizerDetails,
-  EventRequestSpeakerApiData,
+  EventRequestSpeakerDetails,
 } from "../../types";
 
 export interface EventRequestDetailsModalProps {
@@ -68,14 +68,8 @@ export interface EventRequestOrganizerSectionProps {
   t: I18nDictionary;
 }
 
-export interface EventRequestLogoShowcaseProps {
-  logo: string | null;
-  title: string | null;
-  t: I18nDictionary;
-}
-
 export interface EventRequestSpeakersSectionProps {
-  speakers: EventRequestSpeakerApiData[];
+  speakers: EventRequestSpeakerDetails[];
   t: I18nDictionary;
 }
 

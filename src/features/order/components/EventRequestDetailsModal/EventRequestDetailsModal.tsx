@@ -11,7 +11,6 @@ import type { EventRequestDetailsModalProps } from "./EventRequestDetailsModal.t
 import { EventRequestDetailsStates } from "./EventRequestDetailsStates";
 import { EventRequestEngagementSection } from "./EventRequestEngagementSection";
 import { EventRequestInformationSection } from "./EventRequestInformationSection";
-import { EventRequestLogoShowcase } from "./EventRequestLogoShowcase";
 import { EventRequestOrganizerSection } from "./EventRequestOrganizerSection";
 import { EventRequestSpeakersSection } from "./EventRequestSpeakersSection";
 import "./EventRequestDetailsModal.scss";
@@ -287,39 +286,32 @@ export function EventRequestDetailsModal({
             {isLoading && !details ? (
               <EventRequestDetailsSkeleton />
             ) : details ? (
-              <>
-                <EventRequestLogoShowcase
-                  logo={details.logo}
-                  title={details.title}
-                  t={t}
-                />
-                <div className="event-request-details-modal__content-grid">
-                  <div className="event-request-details-modal__column">
-                    <EventRequestInformationSection
-                      details={details}
-                      language={language}
-                      t={t}
-                    />
-                  </div>
-                  <div className="event-request-details-modal__column">
-                    <EventRequestOrganizerSection
-                      organizer={details.eventable}
-                      t={t}
-                    />
-                    <EventRequestEngagementSection
-                      averageRating={details.average_rating}
-                      language={language}
-                      qrScansCount={details.qr_scans_count}
-                      savedCount={details.saved_count}
-                      t={t}
-                    />
-                    <EventRequestSpeakersSection
-                      speakers={details.speakers}
-                      t={t}
-                    />
-                  </div>
+              <div className="event-request-details-modal__content-grid">
+                <div className="event-request-details-modal__column">
+                  <EventRequestInformationSection
+                    details={details}
+                    language={language}
+                    t={t}
+                  />
                 </div>
-              </>
+                <div className="event-request-details-modal__column">
+                  <EventRequestOrganizerSection
+                    organizer={details.eventable}
+                    t={t}
+                  />
+                  <EventRequestEngagementSection
+                    averageRating={details.average_rating}
+                    language={language}
+                    qrScansCount={details.qr_scans_count}
+                    savedCount={details.saved_count}
+                    t={t}
+                  />
+                  <EventRequestSpeakersSection
+                    speakers={details.speakers}
+                    t={t}
+                  />
+                </div>
+              </div>
             ) : (
               <EventRequestDetailsStates
                 error={error}

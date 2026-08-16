@@ -115,8 +115,26 @@ export type EventRequestOrganizerDetails = {
 };
 
 export type EventRequestSpeakerApiData = {
+  avatar?: unknown;
+  avatar_url?: unknown;
+  id: number;
+  image?: unknown;
+  image_path?: unknown;
+  image_url?: unknown;
+  media?: unknown;
+  name: string | null;
+  photo?: unknown;
+  photo_url?: unknown;
+  profile_image?: unknown;
+  profile_image_url?: unknown;
+  profile_photo?: unknown;
+  profile_photo_url?: unknown;
+};
+
+export type EventRequestSpeakerDetails = {
   id: number;
   name: string | null;
+  avatar: string | null;
 };
 
 export type EventRequestMetricApiValue = number | string | null;
@@ -172,7 +190,7 @@ export type EventRequestDetails = {
   description: string | null;
   qr_token: string | null;
   eventable: EventRequestOrganizerDetails | null;
-  speakers: EventRequestSpeakerApiData[];
+  speakers: EventRequestSpeakerDetails[];
   average_rating: number | null;
   qr_scans_count: number | null;
   saved_count: number | null;

@@ -1,8 +1,39 @@
+import { useEffect, useState } from "react";
 import { ContactIcon } from "../../../../assets/icons/orderIcons";
+import type { EventRequestSpeakerDetails } from "../../types";
 import { getTrimmedString } from "../../utils/getTrimmedString";
 import { EventRequestDetailsCard } from "./EventRequestDetailsCard";
 import type { EventRequestSpeakersSectionProps } from "./EventRequestDetailsModal.types";
 import { getInitials } from "./EventRequestDetailsModal.utils";
+
+function SpeakerAvatar({
+  speaker,
+}: {
+  speaker: EventRequestSpeakerDetails;
+}) {
+  const [hasAvatarError, setHasAvatarError] = useState(false);
+
+  useEffect(() => {
+    setHasAvatarError(false);
+  }, [speaker.avatar, speaker.id]);
+
+  return (
+    <span
+      aria-hidden="true"
+      className="event-request-details-modal__speaker-avatar"
+    >
+      {speaker.avatar && !hasAvatarError ? (
+        <img
+          alt=""
+          onError={() => setHasAvatarError(true)}
+          src={speaker.avatar}
+        />
+      ) : (
+        getInitials(speaker.name)
+      )}
+    </span>
+  );
+}
 
 export function EventRequestSpeakersSection({
   speakers,
@@ -19,7 +50,7 @@ export function EventRequestSpeakersSection({
         <ul className="event-request-details-modal__speakers">
           {speakers.map((speaker) => (
             <li key={speaker.id}>
-              <span aria-hidden="true">{getInitials(speaker.name)}</span>
+              <SpeakerAvatar speaker={speaker} />
               <span>
                 <strong>
                   {getTrimmedString(speaker.name) || labels.notAvailable}

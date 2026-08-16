@@ -45,8 +45,12 @@ const fullDetails: EventRequestDetails = {
     status: "pending",
   },
   speakers: [
-    { id: 4, name: "Fawzy" },
-    { id: 5, name: "Elcoach" },
+    { id: 4, name: "Fawzy", avatar: null },
+    {
+      id: 5,
+      name: "Elcoach",
+      avatar: "https://images.example.com/elcoach.png",
+    },
   ],
   average_rating: null,
   qr_scans_count: 0,
@@ -159,9 +163,8 @@ test("renders every Event detail section and excludes organizer coordinates", ()
   );
 });
 
-test("renders the Event logo placeholder above the details content grid", () => {
+test("renders the details content grid without a logo showcase", () => {
   const view = renderModal({ ...fullDetails, logo: null });
-  const placeholder = view.getByRole("img", { name: "Event logo" });
   const scrollArea = view.container.querySelector<HTMLElement>(
     ".event-request-details-modal__scroll-area",
   );
@@ -171,11 +174,15 @@ test("renders the Event logo placeholder above the details content grid", () => 
 
   assert.ok(scrollArea);
   assert.ok(contentGrid);
-  assert.match(placeholder.className, /__logo-showcase/);
-  assert.equal(scrollArea.firstElementChild, placeholder);
-  assert.equal(placeholder.nextElementSibling, contentGrid);
-  assert.ok(view.getByText("The Event logo will appear here when available."));
-  assert.equal(placeholder.querySelector("img"), null);
+  assert.equal(scrollArea.firstElementChild, contentGrid);
+  assert.equal(
+    view.container.querySelector(".event-request-details-modal__logo-showcase"),
+    null,
+  );
+  assert.equal(
+    view.queryByText("The Event logo will appear here when available."),
+    null,
+  );
 });
 
 test("renders organizer name and email without company profile fields", () => {
@@ -248,7 +255,26 @@ test("handles null organizer and zero, one, or many speakers", () => {
   assert.ok(manySpeakerView.getByText("Elcoach"));
 });
 
-test("renders the Event logo only in the showcase and handles image failure", () => {
+test("renders a speaker avatar and falls back to initials when it cannot load", () => {
+  const view = renderModal(fullDetails);
+  const avatar = view.container.querySelector<HTMLImageElement>(
+    ".event-request-details-modal__speaker-avatar img",
+  );
+
+  assert.ok(avatar);
+  assert.equal(avatar.getAttribute("src"), fullDetails.speakers[1]?.avatar);
+
+  fireEvent.error(avatar);
+  assert.equal(
+    view.container.querySelector(
+      ".event-request-details-modal__speaker-avatar img",
+    ),
+    null,
+  );
+  assert.ok(view.getByText("E"));
+});
+
+test("renders the Event logo next to its title and handles image failure", () => {
   const logoUrl = "https://events.example/event-logo.png";
   const view = renderModal({ ...fullDetails, logo: logoUrl });
   const dialog = view.getByRole("dialog", {
@@ -260,17 +286,15 @@ test("renders the Event logo only in the showcase and handles image failure", ()
 
   assert.equal(logo.getAttribute("src"), logoUrl);
   assert.match(
-    logo.closest<HTMLElement>(
-      ".event-request-details-modal__logo-showcase",
-    )?.className ?? "",
-    /__logo-showcase/,
+    logo.closest<HTMLElement>(".event-request-details-modal__avatar")
+      ?.className ?? "",
+    /__avatar/,
   );
   const headerAvatar = dialog.querySelector<HTMLElement>(
     ".event-request-details-modal__avatar",
   );
   assert.ok(headerAvatar);
-  assert.equal(headerAvatar.textContent, "TF");
-  assert.equal(headerAvatar.querySelector("img"), null);
+  assert.equal(headerAvatar.querySelector("img"), logo);
 
   fireEvent.error(logo);
 
@@ -279,12 +303,6 @@ test("renders the Event logo only in the showcase and handles image failure", ()
       name: "Event logo: The Future of Publishing",
     }),
     null,
-  );
-  assert.ok(within(dialog).getByRole("img", { name: "Event logo" }));
-  assert.ok(
-    within(dialog).getByText(
-      "The Event logo will appear here when available.",
-    ),
   );
   assert.equal(headerAvatar.textContent, "TF");
 });

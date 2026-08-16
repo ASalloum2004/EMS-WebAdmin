@@ -118,6 +118,13 @@ export const en = {
       delete: "Delete",
       deleteError: "Unable to delete this notification.",
     },
+    deleteDialog: {
+      title: "Delete notification?",
+      message:
+        'Are you sure you want to delete "{{title}}"? This action cannot be undone.',
+      confirm: "Delete notification",
+      deleting: "Deleting...",
+    },
     search: {
       placeholder: "Search notifications by title...",
       ariaLabel: "Search notifications by title",

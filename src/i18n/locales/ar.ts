@@ -119,6 +119,13 @@ export const ar: I18nDictionary = {
       delete: "حذف",
       deleteError: "تعذر حذف هذا الإشعار.",
     },
+    deleteDialog: {
+      title: "حذف الإشعار؟",
+      message:
+        'هل أنت متأكد من رغبتك في حذف "{{title}}"؟ لا يمكن التراجع عن هذا الإجراء.',
+      confirm: "حذف الإشعار",
+      deleting: "جارٍ الحذف...",
+    },
     search: {
       placeholder: "البحث في الإشعارات حسب العنوان...",
       ariaLabel: "البحث في الإشعارات حسب العنوان",

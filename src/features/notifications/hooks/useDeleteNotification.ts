@@ -84,8 +84,12 @@ export function useDeleteNotification({
     },
     [errorFallback, onSuccess],
   );
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
 
   return {
+    clearError,
     deleteNotification,
     deletingNotificationId,
     error,

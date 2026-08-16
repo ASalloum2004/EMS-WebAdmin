@@ -384,6 +384,25 @@ test("opens notification details, marks a notification as read, and deletes it f
 
   fireEvent.click(view.getByRole("button", { name: "Delete" }));
 
+  const deleteDialog = await view.findByRole("alertdialog", {
+    name: "Delete notification?",
+  });
+  assert.equal(
+    requests.some(
+      (request) =>
+        request.method === "DELETE" &&
+        request.pathname ===
+          `/api/v1/admin/notifications/${unreadNotification.id}`,
+    ),
+    false,
+  );
+
+  fireEvent.click(
+    within(deleteDialog).getByRole("button", {
+      name: "Delete notification",
+    }),
+  );
+
   await waitFor(() => {
     assert.equal(view.queryByRole("dialog"), null);
     assert.ok(view.getByText("No notifications are available."));

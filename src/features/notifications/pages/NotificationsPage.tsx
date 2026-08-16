@@ -11,6 +11,7 @@ import { ManagementLayout } from "../../../layouts";
 import {
   NotificationFiltersPanel,
   NotificationDetailsModal,
+  NotificationDeleteConfirmModal,
   NotificationListSkeleton,
   NotificationStatsSkeleton,
   NotificationTable,
@@ -50,6 +51,8 @@ export function NotificationsPage() {
   const [activeView, setActiveView] =
     useState<NotificationView>("all");
   const [selectedNotification, setSelectedNotification] =
+    useState<NotificationItem | null>(null);
+  const [pendingDeletion, setPendingDeletion] =
     useState<NotificationItem | null>(null);
   const [ui, setUi] = useState(initialUiState);
   const notificationStatistics = useNotificationStatistics(
@@ -198,22 +201,36 @@ export function NotificationsPage() {
     },
     [markNotificationRead.markAsRead],
   );
-  const handleDeleteNotification = useCallback(
-    async (notification: NotificationItem) => {
-      const response = await deleteNotification.deleteNotification(
-        notification.id,
-      );
-
-      if (response !== null) {
-        setSelectedNotification((currentNotification) =>
-          currentNotification?.id === notification.id
-            ? null
-            : currentNotification,
-        );
-      }
+  const handleOpenDeleteConfirmation = useCallback(
+    (notification: NotificationItem) => {
+      deleteNotification.clearError();
+      setPendingDeletion(notification);
     },
-    [deleteNotification.deleteNotification],
+    [deleteNotification.clearError],
   );
+  const handleCloseDeleteConfirmation = useCallback(() => {
+    if (deleteNotification.deletingNotificationId !== null) {
+      return;
+    }
+
+    deleteNotification.clearError();
+    setPendingDeletion(null);
+  }, [deleteNotification.clearError, deleteNotification.deletingNotificationId]);
+  const handleConfirmDeleteNotification = useCallback(async () => {
+    if (!pendingDeletion) {
+      return;
+    }
+
+    const notificationId = pendingDeletion.id;
+    const response = await deleteNotification.deleteNotification(notificationId);
+
+    if (response !== null) {
+      setPendingDeletion(null);
+      setSelectedNotification((currentNotification) =>
+        currentNotification?.id === notificationId ? null : currentNotification,
+      );
+    }
+  }, [deleteNotification.deleteNotification, pendingDeletion]);
 
   return (
     <ManagementLayout>
@@ -399,9 +416,7 @@ export function NotificationsPage() {
                     deleteNotification.deletingNotificationId !== null
                   }
                   items={activeNotifications.notifications}
-                  onDelete={(notification) =>
-                    void handleDeleteNotification(notification)
-                  }
+                  onDelete={handleOpenDeleteConfirmation}
                   onMarkAsRead={(notification) =>
                     void handleMarkNotificationAsRead(notification)
                   }
@@ -431,6 +446,7 @@ export function NotificationsPage() {
       {selectedNotification ? (
         <NotificationDetailsModal
           error={deleteNotification.error || markNotificationRead.error}
+          isDeleteConfirmationOpen={Boolean(pendingDeletion)}
           isDeleting={
             deleteNotification.deletingNotificationId === selectedNotification.id
           }
@@ -439,12 +455,22 @@ export function NotificationsPage() {
           }
           notification={selectedNotification}
           onClose={() => setSelectedNotification(null)}
-          onDelete={(notification) =>
-            void handleDeleteNotification(notification)
-          }
+          onDelete={handleOpenDeleteConfirmation}
           onMarkAsRead={(notification) =>
             void handleMarkNotificationAsRead(notification)
           }
+        />
+      ) : null}
+
+      {pendingDeletion ? (
+        <NotificationDeleteConfirmModal
+          error={deleteNotification.error}
+          isPending={
+            deleteNotification.deletingNotificationId === pendingDeletion.id
+          }
+          notification={pendingDeletion}
+          onCancel={handleCloseDeleteConfirmation}
+          onConfirm={() => void handleConfirmDeleteNotification()}
         />
       ) : null}
     </ManagementLayout>

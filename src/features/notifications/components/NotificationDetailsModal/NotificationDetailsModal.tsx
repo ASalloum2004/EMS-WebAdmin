@@ -14,6 +14,7 @@ import "./NotificationDetailsModal.scss";
 
 interface NotificationDetailsModalProps {
   error: string;
+  isDeleteConfirmationOpen: boolean;
   isDeleting: boolean;
   isMarkingAsRead: boolean;
   notification: NotificationItem;
@@ -24,6 +25,7 @@ interface NotificationDetailsModalProps {
 
 export function NotificationDetailsModal({
   error,
+  isDeleteConfirmationOpen,
   isDeleting,
   isMarkingAsRead,
   notification,
@@ -36,7 +38,8 @@ export function NotificationDetailsModal({
   const target = getNotificationTarget(notification);
   const targetId =
     notification.targetId === null ? null : String(notification.targetId);
-  const isSubmitting = isMarkingAsRead || isDeleting;
+  const isSubmitting =
+    isMarkingAsRead || isDeleting || isDeleteConfirmationOpen;
 
   useEffect(() => {
     const previouslyFocusedElement =

@@ -18,6 +18,7 @@ import {
 } from "../components";
 import { emptyNotificationFilters } from "../data";
 import {
+  useDeleteNotification,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
@@ -131,6 +132,10 @@ export function NotificationsPage() {
     errorFallback: t.notifications.actions.markAsReadError,
     onSuccess: refreshNotificationData,
   });
+  const deleteNotification = useDeleteNotification({
+    errorFallback: t.notifications.actions.deleteError,
+    onSuccess: refreshNotificationData,
+  });
   const hasUnreadNotifications = Boolean(
     notificationStatistics.statistics?.unread_notifications,
   );
@@ -192,6 +197,22 @@ export function NotificationsPage() {
       }
     },
     [markNotificationRead.markAsRead],
+  );
+  const handleDeleteNotification = useCallback(
+    async (notification: NotificationItem) => {
+      const response = await deleteNotification.deleteNotification(
+        notification.id,
+      );
+
+      if (response !== null) {
+        setSelectedNotification((currentNotification) =>
+          currentNotification?.id === notification.id
+            ? null
+            : currentNotification,
+        );
+      }
+    },
+    [deleteNotification.deleteNotification],
   );
 
   return (
@@ -310,7 +331,9 @@ export function NotificationsPage() {
                 className="data-table__action-button notifications-page__mark-all"
                 disabled={
                   !hasUnreadNotifications ||
-                  markAllNotificationsRead.isMarkingAllAsRead
+                  markAllNotificationsRead.isMarkingAllAsRead ||
+                  markNotificationRead.markingNotificationId !== null ||
+                  deleteNotification.deletingNotificationId !== null
                 }
                 onClick={() => void markAllNotificationsRead.markAllAsRead()}
                 type="button"
@@ -320,9 +343,13 @@ export function NotificationsPage() {
               </button>
             </div>
 
-            {markAllNotificationsRead.error || markNotificationRead.error ? (
+            {markAllNotificationsRead.error ||
+            markNotificationRead.error ||
+            deleteNotification.error ? (
               <p className="notifications-page__action-error" role="alert">
-                {markNotificationRead.error || markAllNotificationsRead.error}
+                {deleteNotification.error ||
+                  markNotificationRead.error ||
+                  markAllNotificationsRead.error}
               </p>
             ) : null}
 
@@ -365,9 +392,16 @@ export function NotificationsPage() {
                       : t.notifications.table.empty
                   }
                   isMarkingAsRead={
-                    markNotificationRead.markingNotificationId !== null
+                    markNotificationRead.markingNotificationId !== null ||
+                    deleteNotification.deletingNotificationId !== null
+                  }
+                  isDeleting={
+                    deleteNotification.deletingNotificationId !== null
                   }
                   items={activeNotifications.notifications}
+                  onDelete={(notification) =>
+                    void handleDeleteNotification(notification)
+                  }
                   onMarkAsRead={(notification) =>
                     void handleMarkNotificationAsRead(notification)
                   }
@@ -396,12 +430,18 @@ export function NotificationsPage() {
 
       {selectedNotification ? (
         <NotificationDetailsModal
-          error={markNotificationRead.error}
+          error={deleteNotification.error || markNotificationRead.error}
+          isDeleting={
+            deleteNotification.deletingNotificationId === selectedNotification.id
+          }
           isMarkingAsRead={
             markNotificationRead.markingNotificationId === selectedNotification.id
           }
           notification={selectedNotification}
           onClose={() => setSelectedNotification(null)}
+          onDelete={(notification) =>
+            void handleDeleteNotification(notification)
+          }
           onMarkAsRead={(notification) =>
             void handleMarkNotificationAsRead(notification)
           }

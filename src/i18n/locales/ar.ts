@@ -116,6 +116,8 @@ export const ar: I18nDictionary = {
       markAllAsReadError: "تعذر تحديد كل الإشعارات كمقروءة.",
       markAsRead: "تحديد كمقروء",
       markAsReadError: "تعذر تحديد هذا الإشعار كمقروء.",
+      delete: "حذف",
+      deleteError: "تعذر حذف هذا الإشعار.",
     },
     search: {
       placeholder: "البحث في الإشعارات حسب العنوان...",

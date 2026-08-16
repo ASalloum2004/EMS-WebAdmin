@@ -10,6 +10,10 @@ import {
   markNotificationRead,
 } from "../src/features/notifications/api/markNotificationReadApi.js";
 import {
+  buildDeleteNotificationPath,
+  deleteNotification,
+} from "../src/features/notifications/api/deleteNotificationApi.js";
+import {
   getNotificationStatistics,
   normalizeNotificationStatisticsResponse,
 } from "../src/features/notifications/api/notificationStatisticsApi.js";
@@ -231,7 +235,7 @@ test("fetches the separate list endpoints with GET and auth", async () => {
   });
 });
 
-test("uses the verified statistics response and sends mark-all as a bodyless PATCH", async () => {
+test("uses the verified statistics response and sends notification mutations without bodies", async () => {
   const generatedToken = installGeneratedAuthSession();
   const requests: Array<{ init: RequestInit | undefined; url: string }> = [];
 
@@ -246,7 +250,9 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
 
     const response = url.endsWith("/statistics")
       ? statisticsResponse
-      : { data: null, message: "Success", status: true };
+      : init?.method === "DELETE"
+        ? {}
+        : { data: null, message: "Success", status: true };
 
     return new Response(JSON.stringify(response), {
       headers: { "Content-Type": "application/json" },
@@ -261,8 +267,9 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
   await getNotificationStatistics();
   await markAllNotificationsRead();
   await markNotificationRead(rawNotification.id);
+  await deleteNotification(rawNotification.id);
 
-  assert.equal(requests.length, 3);
+  assert.equal(requests.length, 4);
   assert.equal(
     new URL(requests[0]?.url).pathname,
     "/api/v1/admin/notifications/statistics",
@@ -275,11 +282,17 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
     new URL(requests[2]?.url).pathname,
     `/api/v1/admin/notifications/${rawNotification.id}/read`,
   );
+  assert.equal(
+    new URL(requests[3]?.url).pathname,
+    `/api/v1/admin/notifications/${rawNotification.id}`,
+  );
   assert.equal(requests[0]?.init?.method, "GET");
   assert.equal(requests[1]?.init?.method, "PATCH");
   assert.equal(requests[2]?.init?.method, "PATCH");
+  assert.equal(requests[3]?.init?.method, "DELETE");
   assert.equal(requests[1]?.init?.body, undefined);
   assert.equal(requests[2]?.init?.body, undefined);
+  assert.equal(requests[3]?.init?.body, undefined);
   assert.equal(
     new Headers(requests[1]?.init?.headers).get("Authorization"),
     `Bearer ${generatedToken}`,
@@ -288,12 +301,20 @@ test("uses the verified statistics response and sends mark-all as a bodyless PAT
     new Headers(requests[2]?.init?.headers).get("Authorization"),
     `Bearer ${generatedToken}`,
   );
+  assert.equal(
+    new Headers(requests[3]?.init?.headers).get("Authorization"),
+    `Bearer ${generatedToken}`,
+  );
 });
 
 test("builds a safe single-read path and maps only known notification targets", () => {
   assert.equal(
     buildMarkNotificationReadPath("  notification/id  "),
     "notifications/notification%2Fid/read",
+  );
+  assert.equal(
+    buildDeleteNotificationPath("  notification/id  "),
+    "notifications/notification%2Fid",
   );
 
   assert.deepEqual(

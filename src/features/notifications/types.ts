@@ -78,3 +78,5 @@ export type MarkAllNotificationsReadResponse = {
 };
 
 export type MarkNotificationReadResponse = unknown;
+
+export type DeleteNotificationResponse = Record<string, never>;

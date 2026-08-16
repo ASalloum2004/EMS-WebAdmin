@@ -101,32 +101,6 @@
   outline-offset: 3px;
 }
 
-.notification-details-modal__description {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--ems-color-border-soft);
-}
-
-.notification-details-modal__description h3,
-.notification-details-modal__description p {
-  margin: 0;
-}
-
-.notification-details-modal__description h3 {
-  color: var(--ems-color-heading);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 22px;
-}
-
-.notification-details-modal__description p {
-  margin-top: 8px;
-  color: var(--ems-color-muted);
-  font-size: 14px;
-  line-height: 22px;
-  overflow-wrap: anywhere;
-}
-
 .notification-details-modal__footer {
   min-height: 77px;
   flex-wrap: wrap;
@@ -143,6 +117,13 @@
   background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
   color: var(--ems-color-muted-light);
   cursor: not-allowed;
+}
+
+.notification-details-modal__delete {
+  gap: 7px;
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-danger-surface);
+  color: var(--ems-color-danger);
 }
 
 .notification-details-modal__read-state {
@@ -189,12 +170,8 @@
     gap: 14px;
   }
 
-  .notification-details-modal__description {
-    margin-top: 18px;
-    padding-top: 18px;
-  }
-
-  .notification-details-modal__mark-read {
+  .notification-details-modal__mark-read,
+  .notification-details-modal__delete {
     width: 100%;
   }
 }

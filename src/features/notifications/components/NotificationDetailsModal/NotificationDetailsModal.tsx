@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Check } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { MarkAllReadIcon } from "../../../../assets/icons/activityIcons";
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
@@ -14,17 +14,21 @@ import "./NotificationDetailsModal.scss";
 
 interface NotificationDetailsModalProps {
   error: string;
+  isDeleting: boolean;
   isMarkingAsRead: boolean;
   notification: NotificationItem;
   onClose: () => void;
+  onDelete: (notification: NotificationItem) => void;
   onMarkAsRead: (notification: NotificationItem) => void;
 }
 
 export function NotificationDetailsModal({
   error,
+  isDeleting,
   isMarkingAsRead,
   notification,
   onClose,
+  onDelete,
   onMarkAsRead,
 }: NotificationDetailsModalProps) {
   const { language, t } = useI18n();
@@ -32,6 +36,7 @@ export function NotificationDetailsModal({
   const target = getNotificationTarget(notification);
   const targetId =
     notification.targetId === null ? null : String(notification.targetId);
+  const isSubmitting = isMarkingAsRead || isDeleting;
 
   useEffect(() => {
     const previouslyFocusedElement =
@@ -51,7 +56,7 @@ export function NotificationDetailsModal({
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape" || isMarkingAsRead) {
+      if (event.key !== "Escape" || isSubmitting) {
         return;
       }
 
@@ -62,13 +67,13 @@ export function NotificationDetailsModal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isMarkingAsRead, onClose]);
+  }, [isSubmitting, onClose]);
 
   return (
     <div
       className="notification-details-modal"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !isMarkingAsRead) {
+        if (event.target === event.currentTarget && !isSubmitting) {
           onClose();
         }
       }}
@@ -91,7 +96,7 @@ export function NotificationDetailsModal({
           </div>
           <ModalCloseButton
             ariaLabel={t.notifications.details.closeAriaLabel}
-            disabled={isMarkingAsRead}
+            disabled={isSubmitting}
             onClick={onClose}
           />
         </header>
@@ -130,13 +135,6 @@ export function NotificationDetailsModal({
             </div>
           </dl>
 
-          <section
-            aria-label={t.notifications.details.description}
-            className="notification-details-modal__description"
-          >
-            <h3>{t.notifications.details.description}</h3>
-            <p>{notification.description}</p>
-          </section>
         </div>
 
         <footer className="notification-details-modal__footer">
@@ -146,10 +144,20 @@ export function NotificationDetailsModal({
             </p>
           ) : null}
 
+          <button
+            className="data-table__action-button notification-details-modal__delete"
+            disabled={isSubmitting}
+            onClick={() => onDelete(notification)}
+            type="button"
+          >
+            <Trash2 aria-hidden="true" size={17} strokeWidth={2} />
+            <span>{t.notifications.actions.delete}</span>
+          </button>
+
           {notification.status === "unread" ? (
             <button
               className="data-table__action-button notification-details-modal__mark-read"
-              disabled={isMarkingAsRead}
+              disabled={isSubmitting}
               onClick={() => onMarkAsRead(notification)}
               type="button"
             >

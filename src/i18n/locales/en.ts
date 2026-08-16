@@ -115,6 +115,8 @@ export const en = {
       markAllAsReadError: "Unable to mark all notifications as read.",
       markAsRead: "Mark as read",
       markAsReadError: "Unable to mark this notification as read.",
+      delete: "Delete",
+      deleteError: "Unable to delete this notification.",
     },
     search: {
       placeholder: "Search notifications by title...",

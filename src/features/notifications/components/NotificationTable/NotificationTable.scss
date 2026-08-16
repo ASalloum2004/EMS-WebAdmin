@@ -40,22 +40,6 @@
   border-inline-start-color: var(--ems-color-primary);
 }
 
-.notification-table__details-trigger {
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: inherit;
-  cursor: pointer;
-}
-
-.notification-table__details-trigger:focus-visible {
-  outline: 2px solid var(--ems-color-primary);
-  outline-offset: 3px;
-}
-
 .notification-table__copy {
   min-width: 0;
   display: flex;
@@ -114,6 +98,10 @@
   font-size: 13px;
 }
 
+.notification-table .data-table__actions {
+  gap: 14px;
+}
+
 .notification-table__mark-read:disabled {
   border-color: var(--ems-color-border-soft);
   background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
@@ -124,6 +112,13 @@
 .notification-table__mark-read--placeholder {
   visibility: hidden;
   pointer-events: none;
+}
+
+.notification-table__delete {
+  gap: 6px;
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-danger-surface);
+  color: var(--ems-color-danger);
 }
 
 .notification-table__cell--date .data-table__value {

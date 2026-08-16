@@ -177,6 +177,9 @@ test("uses server endpoints for tabs and refreshes both lists and statistics aft
   await waitFor(() => {
     assert.ok(view.getByText("New Report Received"));
     assert.ok(view.getByText("Report created"));
+    assert.ok(
+      view.getByRole("button", { name: "Delete: New Report Received" }),
+    );
     assert.ok(within(totalCard).getByText("1"));
     assert.ok(within(unreadCard).getByText("1"));
     assert.ok(within(readCard).getByText("0"));
@@ -251,8 +254,9 @@ test("uses server endpoints for tabs and refreshes both lists and statistics aft
   assert.ok(view.getByText("No notifications are available."));
 });
 
-test("opens notification details and marks a single notification as read from the API", async () => {
+test("opens notification details, marks a notification as read, and deletes it from the API", async () => {
   const requests: Array<{ method: string; pathname: string }> = [];
+  let hasDeletedNotification = false;
   let hasMarkedNotificationAsRead = false;
 
   globalThis.fetch = async (input, init) => {
@@ -265,6 +269,18 @@ test("opens notification details and marks a single notification as read from th
     );
     const method = init?.method ?? "GET";
     requests.push({ method, pathname: url.pathname });
+
+    if (
+      method === "DELETE" &&
+      url.pathname.endsWith(`/${unreadNotification.id}`)
+    ) {
+      hasDeletedNotification = true;
+
+      return new Response(JSON.stringify({}), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     if (url.pathname.endsWith(`/${unreadNotification.id}/read`)) {
       hasMarkedNotificationAsRead = true;
@@ -279,9 +295,17 @@ test("opens notification details and marks a single notification as read from th
       return new Response(
         JSON.stringify({
           data: {
-            read_notifications: hasMarkedNotificationAsRead ? 1 : 0,
-            total_notifications: 1,
-            unread_notifications: hasMarkedNotificationAsRead ? 0 : 1,
+            read_notifications: hasDeletedNotification
+              ? 0
+              : hasMarkedNotificationAsRead
+                ? 1
+                : 0,
+            total_notifications: hasDeletedNotification ? 0 : 1,
+            unread_notifications: hasDeletedNotification
+              ? 0
+              : hasMarkedNotificationAsRead
+                ? 0
+                : 1,
           },
           message: "Success",
           status: true,
@@ -313,9 +337,23 @@ test("opens notification details and marks a single notification as read from th
 
     return new Response(
       JSON.stringify(
-        createListResponse(
-          hasMarkedNotificationAsRead ? "2026-08-15T09:30:04.000000Z" : null,
-        ),
+        hasDeletedNotification
+          ? {
+              data: {
+                current_page: 1,
+                data: [],
+                last_page: 1,
+                per_page: 15,
+                total: 0,
+              },
+              message: "Success",
+              status: true,
+            }
+          : createListResponse(
+              hasMarkedNotificationAsRead
+                ? "2026-08-15T09:30:04.000000Z"
+                : null,
+            ),
       ),
       { headers: { "Content-Type": "application/json" }, status: 200 },
     );
@@ -336,11 +374,19 @@ test("opens notification details and marks a single notification as read from th
     name: "Open related item: 1",
   });
   assert.equal(targetLink.getAttribute("href"), "/reports?reportId=1");
+  assert.ok(view.getByRole("button", { name: "Delete" }));
 
   fireEvent.click(view.getByRole("button", { name: "Mark as read" }));
 
   await waitFor(() => {
     assert.ok(view.getByText("This notification has been read."));
+  });
+
+  fireEvent.click(view.getByRole("button", { name: "Delete" }));
+
+  await waitFor(() => {
+    assert.equal(view.queryByRole("dialog"), null);
+    assert.ok(view.getByText("No notifications are available."));
   });
 
   assert.ok(
@@ -352,24 +398,32 @@ test("opens notification details and marks a single notification as read from th
     ),
   );
   assert.ok(
+    requests.some(
+      (request) =>
+        request.method === "DELETE" &&
+        request.pathname ===
+          `/api/v1/admin/notifications/${unreadNotification.id}`,
+    ),
+  );
+  assert.ok(
     requests.filter(
       (request) =>
         request.method === "GET" &&
         request.pathname === "/api/v1/admin/notifications",
-    ).length >= 2,
+    ).length >= 3,
   );
   assert.ok(
     requests.filter(
       (request) =>
         request.method === "GET" &&
         request.pathname === "/api/v1/admin/notifications/unread",
-    ).length >= 1,
+    ).length >= 2,
   );
   assert.ok(
     requests.filter(
       (request) =>
         request.method === "GET" &&
         request.pathname === "/api/v1/admin/notifications/statistics",
-    ).length >= 2,
+    ).length >= 3,
   );
 });

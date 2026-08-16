@@ -1,4 +1,5 @@
 export * from "./allNotificationsApi";
+export * from "./deleteNotificationApi";
 export * from "./markAllNotificationsReadApi";
 export * from "./markNotificationReadApi";
 export * from "./notificationApiUtils";

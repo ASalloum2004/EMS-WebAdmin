@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Trash2 } from "lucide-react";
 import { MarkAllReadIcon } from "../../../../assets/icons/activityIcons";
 import {
   DataTable,
@@ -21,19 +22,19 @@ import "./NotificationTable.scss";
 
 type NotificationTableProps = {
   emptyMessage: string;
+  isDeleting: boolean;
   isMarkingAsRead: boolean;
   items: NotificationItem[];
+  onDelete: (notification: NotificationItem) => void;
   onMarkAsRead: (notification: NotificationItem) => void;
   onSelectNotification: (notification: NotificationItem) => void;
 };
 
 function NotificationIdentity({
   item,
-  onSelect,
   t,
 }: {
   item: NotificationItem;
-  onSelect: (notification: NotificationItem) => void;
   t: I18nDictionary;
 }) {
   return (
@@ -44,24 +45,18 @@ function NotificationIdentity({
           : "notification-table__identity"
       }
     >
-      <button
-        aria-label={`${t.notifications.details.openAriaLabel}: ${item.title}`}
-        className="notification-table__copy notification-table__details-trigger"
-        onClick={() => onSelect(item)}
-        type="button"
-      >
+      <span className="notification-table__copy">
         <span className="notification-table__title">{item.title}</span>
         <span className="notification-table__type-label">
           {getNotificationTypeLabel(item.type, t)}
         </span>
-      </button>
+      </span>
     </span>
   );
 }
 
 function createNotificationColumns(
   language: SupportedLanguage,
-  onSelectNotification: (notification: NotificationItem) => void,
   t: I18nDictionary,
 ): Array<DataTableColumn<NotificationItem>> {
   const statusLabels: Record<NotificationStatus, string> = {
@@ -77,7 +72,6 @@ function createNotificationColumns(
       render: (item) => (
         <NotificationIdentity
           item={item}
-          onSelect={onSelectNotification}
           t={t}
         />
       ),
@@ -106,15 +100,17 @@ function createNotificationColumns(
 
 export function NotificationTable({
   emptyMessage,
+  isDeleting,
   isMarkingAsRead,
   items,
+  onDelete,
   onMarkAsRead,
   onSelectNotification,
 }: NotificationTableProps) {
   const { language, t } = useI18n();
   const columns = useMemo(
-    () => createNotificationColumns(language, onSelectNotification, t),
-    [language, onSelectNotification, t],
+    () => createNotificationColumns(language, t),
+    [language, t],
   );
 
   return (
@@ -123,30 +119,54 @@ export function NotificationTable({
       className="notification-table"
       columns={columns}
       emptyMessage={emptyMessage}
+      getItemAriaLabel={(item) =>
+        `${t.notifications.details.openAriaLabel}: ${item.title}`
+      }
       getItemKey={(item) => item.id}
       items={items}
-      actions={(item) =>
-        item.status === "unread" ? (
+      onItemClick={onSelectNotification}
+      actions={(item) => (
+        <>
+          {item.status === "unread" ? (
+            <button
+              aria-label={`${t.notifications.actions.markAsRead}: ${item.title}`}
+              className="data-table__action-button notification-table__mark-read"
+              disabled={isMarkingAsRead || isDeleting}
+              onClick={(event) => {
+                event.stopPropagation();
+                onMarkAsRead(item);
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+              type="button"
+            >
+              <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
+              <span>{t.notifications.actions.markAsRead}</span>
+            </button>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="data-table__action-button notification-table__mark-read notification-table__mark-read--placeholder"
+            >
+              <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
+              <span>{t.notifications.actions.markAsRead}</span>
+            </span>
+          )}
           <button
-            aria-label={`${t.notifications.actions.markAsRead}: ${item.title}`}
-            className="data-table__action-button notification-table__mark-read"
-            disabled={isMarkingAsRead}
-            onClick={() => onMarkAsRead(item)}
+            aria-label={`${t.notifications.actions.delete}: ${item.title}`}
+            className="data-table__action-button notification-table__delete"
+            disabled={isMarkingAsRead || isDeleting}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(item);
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
             type="button"
           >
-            <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
-            <span>{t.notifications.actions.markAsRead}</span>
+            <Trash2 aria-hidden="true" size={16} strokeWidth={2} />
+            <span>{t.notifications.actions.delete}</span>
           </button>
-        ) : (
-          <span
-            aria-hidden="true"
-            className="data-table__action-button notification-table__mark-read notification-table__mark-read--placeholder"
-          >
-            <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
-            <span>{t.notifications.actions.markAsRead}</span>
-          </span>
-        )
-      }
+        </>
+      )}
     />
   );
 }

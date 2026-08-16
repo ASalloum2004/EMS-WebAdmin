@@ -19,6 +19,7 @@ import { RejectBoothRequestConfirmModal } from "../src/features/order/components
 import { normalizeBoothRequestDetailsResponse } from "../src/features/order/api/boothRequestDetailsApi.js";
 import { useBoothRequestDetails } from "../src/features/order/hooks/useBoothRequestDetails.js";
 import { useBoothRequestActions } from "../src/features/order/hooks/useBoothRequestActions/index.js";
+import { API_BASE_URL } from "../src/api/index.js";
 import type {
   BoothRequestActionResponse,
   BoothRequestApiData,
@@ -749,6 +750,74 @@ test("normalizes relative booth company logos through the shared media resolver"
   fireEvent.error(image);
   assert.equal(view.container.querySelector("img"), null);
   assert.ok(view.getByText("DA"));
+});
+
+test("normalizes and displays booth company gallery images", () => {
+  const response: BoothRequestDetailsResponse = {
+    status: true,
+    message: "booth request retrieved successfully",
+    data: {
+      ...firstDetails,
+      company: {
+        ...firstDetails.company,
+        gallery: [
+          "/storage/companies/booth-one.png",
+          { image_url: "storage/companies/booth-two.png" },
+          { original_url: "https://cdn.example.com/booth-three.webp" },
+          { image: "javascript:alert(1)" },
+        ],
+      },
+    },
+  };
+  const details = normalizeBoothRequestDetailsResponse(response);
+
+  assert.deepEqual(details.company.gallery, [
+    `${new URL(API_BASE_URL).origin}/storage/companies/booth-one.png`,
+    `${new URL(API_BASE_URL).origin}/storage/companies/booth-two.png`,
+    "https://cdn.example.com/booth-three.webp",
+  ]);
+
+  const view = render(
+    <I18nProvider>
+      <BoothRequestDetailsModal
+        approveConflict={null}
+        approveConflictError=""
+        approveError=""
+        details={details}
+        error=""
+        isApproving={false}
+        isLoading={false}
+        isLoadingApproveConflicts={false}
+        isRejecting={false}
+        onApprove={() => null}
+        onApproveAnyway={() => null}
+        onApproveConflictPageChange={() => null}
+        onClearApproveError={() => undefined}
+        onClearRejectError={() => undefined}
+        onClose={() => undefined}
+        onCloseApproveConflict={() => undefined}
+        onReject={() => null}
+        onRetry={() => undefined}
+        rejectError=""
+      />
+    </I18nProvider>,
+  );
+  const galleryImages = view.container.querySelectorAll(
+    ".booth-request-details-modal__gallery-images img",
+  );
+
+  assert.equal(galleryImages.length, 3);
+  assert.equal(galleryImages[0]?.getAttribute("src"), details.company.gallery[0]);
+  assert.equal(galleryImages[1]?.getAttribute("src"), details.company.gallery[1]);
+  assert.equal(galleryImages[2]?.getAttribute("src"), details.company.gallery[2]);
+
+  fireEvent.error(galleryImages[0] as HTMLImageElement);
+  assert.equal(
+    view.container.querySelectorAll(
+      ".booth-request-details-modal__gallery-images img",
+    ).length,
+    2,
+  );
 });
 
 test("normalizes requested service names from the details response shapes", () => {

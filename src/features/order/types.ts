@@ -257,7 +257,7 @@ export type BoothRequestCompanySocialLinksResponse = {
 export type BoothRequestCompanyDetails = {
   business_sector: string;
   description: string;
-  gallery: unknown[];
+  gallery: string[];
   headquarters_lat: number;
   headquarters_lng: number;
   id: number;
@@ -273,6 +273,7 @@ export type BoothRequestCompanyDetailsResponse = Omit<
   BoothRequestCompanyDetails,
   | "business_sector"
   | "description"
+  | "gallery"
   | "logo"
   | "name"
   | "phone"
@@ -281,6 +282,7 @@ export type BoothRequestCompanyDetailsResponse = Omit<
 > & {
   business_sector?: string | null;
   description?: string | null;
+  gallery?: unknown[] | null;
   logo?: string | null;
   name?: string | null;
   phone?: string | null;

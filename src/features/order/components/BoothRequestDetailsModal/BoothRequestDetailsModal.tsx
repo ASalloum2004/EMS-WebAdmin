@@ -1,9 +1,6 @@
 import "./BoothRequestDetailsModal.scss";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  CompanyIcon,
-  GalleryIcon,
-} from "../../../../assets/icons/orderIcons";
+import { CompanyIcon } from "../../../../assets/icons/orderIcons";
 import { ModalCloseButton } from "../../../../components";
 import { useI18n } from "../../../../i18n";
 import type {
@@ -18,6 +15,7 @@ import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmMo
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
 import { BoothRequestDetailsSkeleton } from "../skeletons";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
+import { BoothRequestGallery } from "./BoothRequestGallery";
 import { BoothRequestDetailsMainColumn } from "./BoothRequestDetailsMainColumn";
 import {
   BoothRequestDetailsSideColumn,
@@ -379,17 +377,11 @@ export function BoothRequestDetailsModal({
             <BoothRequestDetailsSkeleton />
           ) : (
           <>
-          <div
-            aria-label={t.order.details.gallery.title}
-            className="booth-request-details-modal__gallery"
-            role="img"
-          >
-            <GalleryIcon aria-hidden="true" size={30} strokeWidth={1.6} />
-            <span>
-              <strong>{t.order.details.gallery.title}</strong>
-              <small>{t.order.details.gallery.description}</small>
-            </span>
-          </div>
+          <BoothRequestGallery
+            images={details?.company.gallery ?? []}
+            language={language}
+            t={t}
+          />
 
           {details ? (
             <div className="booth-request-details-modal__content-grid">

@@ -711,6 +711,7 @@ export const ar: I18nDictionary = {
       gallery: {
         title: "معرض الشركة",
         description: "ستظهر هنا صور العلامة التجارية وتصاميم الجناح.",
+        imageAlt: "صورة المعرض {{number}}",
       },
       overview: {
         title: "نظرة عامة على الطلب",

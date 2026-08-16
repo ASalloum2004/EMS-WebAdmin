@@ -49,6 +49,18 @@ const SERVICE_CONTAINER_KEYS = [
   "details",
   "data",
 ];
+const GALLERY_MEDIA_KEYS = [
+  "url",
+  "image_url",
+  "image_path",
+  "original_url",
+  "full_url",
+  "path",
+  "image",
+  "file",
+  "src",
+];
+const GALLERY_MEDIA_CONTAINER_KEYS = ["media", "attachment", "data"];
 
 function getServiceName(value: unknown, depth = 0): string {
   const stringValue = getTrimmedString(value);
@@ -136,6 +148,58 @@ function normalizeBoothRequestServices(
   });
 }
 
+function getGalleryImageUrl(value: unknown, depth = 0): string | null {
+  if (typeof value === "string") {
+    return resolveApiMediaUrl(value);
+  }
+
+  if (depth > 2 || !isRecord(value)) {
+    return null;
+  }
+
+  for (const key of GALLERY_MEDIA_KEYS) {
+    const url = getGalleryImageUrl(value[key], depth + 1);
+
+    if (url) {
+      return url;
+    }
+  }
+
+  for (const key of GALLERY_MEDIA_CONTAINER_KEYS) {
+    const nestedValue = value[key];
+
+    if (Array.isArray(nestedValue)) {
+      for (const item of nestedValue) {
+        const url = getGalleryImageUrl(item, depth + 1);
+
+        if (url) {
+          return url;
+        }
+      }
+    } else {
+      const url = getGalleryImageUrl(nestedValue, depth + 1);
+
+      if (url) {
+        return url;
+      }
+    }
+  }
+
+  return null;
+}
+
+function normalizeCompanyGallery(gallery: unknown): string[] {
+  if (!Array.isArray(gallery)) {
+    return [];
+  }
+
+  const imageUrls = gallery
+    .map((item) => getGalleryImageUrl(item))
+    .filter((url): url is string => Boolean(url));
+
+  return [...new Set(imageUrls)];
+}
+
 export function buildBoothRequestDetailsPath(boothRequestId: number) {
   if (
     !Number.isFinite(boothRequestId) ||
@@ -156,8 +220,7 @@ export function normalizeBoothRequestDetailsResponse(
   if (
     !isRecord(details) ||
     !Array.isArray(details.services) ||
-    !isRecord(details.company) ||
-    !Array.isArray(details.company.gallery)
+    !isRecord(details.company)
   ) {
     throw new Error("Unexpected booth request details response format.");
   }
@@ -168,6 +231,7 @@ export function normalizeBoothRequestDetailsResponse(
       ...details.company,
       business_sector: getTrimmedString(details.company.business_sector),
       description: getTrimmedString(details.company.description),
+      gallery: normalizeCompanyGallery(details.company.gallery),
       logo: resolveApiMediaUrl(details.company.logo) ?? "",
       name: getTrimmedString(details.company.name),
       phone: getTrimmedString(details.company.phone),

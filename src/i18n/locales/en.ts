@@ -714,6 +714,7 @@ export const en = {
       gallery: {
         title: "Company gallery",
         description: "Brand artwork and booth visuals will appear here.",
+        imageAlt: "Gallery image {{number}}",
       },
       overview: {
         title: "Request Overview",

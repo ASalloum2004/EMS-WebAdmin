@@ -1,11 +1,5 @@
 import { useMemo } from "react";
-import {
-  ErrorNotificationIcon,
-  InformationNotificationIcon,
-  MarkAllReadIcon,
-  SuccessNotificationIcon,
-  WarningNotificationIcon,
-} from "../../../../assets/icons/activityIcons";
+import { MarkAllReadIcon } from "../../../../assets/icons/activityIcons";
 import {
   DataTable,
   type DataTableColumn,
@@ -22,7 +16,6 @@ import {
 import type {
   NotificationItem,
   NotificationStatus,
-  NotificationType,
 } from "../../types";
 import "./NotificationTable.scss";
 
@@ -34,46 +27,6 @@ type NotificationTableProps = {
   onSelectNotification: (notification: NotificationItem) => void;
 };
 
-type NotificationVisualType = "success" | "warning" | "error" | "info";
-
-function getNotificationVisualType(
-  type: NotificationType,
-): NotificationVisualType {
-  if (
-    type === "success" ||
-    type === "warning" ||
-    type === "error" ||
-    type === "info"
-  ) {
-    return type;
-  }
-
-  return "info";
-}
-
-function NotificationIcon({ type }: { type: NotificationType }) {
-  const iconProps = {
-    "aria-hidden": true,
-    size: 20,
-    strokeWidth: 1.9,
-  } as const;
-  const visualType = getNotificationVisualType(type);
-
-  if (visualType === "success") {
-    return <SuccessNotificationIcon {...iconProps} />;
-  }
-
-  if (visualType === "warning") {
-    return <WarningNotificationIcon {...iconProps} />;
-  }
-
-  if (visualType === "error") {
-    return <ErrorNotificationIcon {...iconProps} />;
-  }
-
-  return <InformationNotificationIcon {...iconProps} />;
-}
-
 function NotificationIdentity({
   item,
   onSelect,
@@ -83,8 +36,6 @@ function NotificationIdentity({
   onSelect: (notification: NotificationItem) => void;
   t: I18nDictionary;
 }) {
-  const visualType = getNotificationVisualType(item.type);
-
   return (
     <span
       className={
@@ -93,12 +44,6 @@ function NotificationIdentity({
           : "notification-table__identity"
       }
     >
-      <span
-        aria-hidden="true"
-        className={`notification-table__icon notification-table__icon--${visualType}`}
-      >
-        <NotificationIcon type={item.type} />
-      </span>
       <button
         aria-label={`${t.notifications.details.openAriaLabel}: ${item.title}`}
         className="notification-table__copy notification-table__details-trigger"
@@ -192,7 +137,15 @@ export function NotificationTable({
             <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
             <span>{t.notifications.actions.markAsRead}</span>
           </button>
-        ) : null
+        ) : (
+          <span
+            aria-hidden="true"
+            className="data-table__action-button notification-table__mark-read notification-table__mark-read--placeholder"
+          >
+            <MarkAllReadIcon aria-hidden="true" size={16} strokeWidth={2} />
+            <span>{t.notifications.actions.markAsRead}</span>
+          </span>
+        )
       }
     />
   );

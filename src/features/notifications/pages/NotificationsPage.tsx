@@ -3,7 +3,6 @@ import { Bell, BellRing, CheckCheck } from "lucide-react";
 import { MarkAllReadIcon } from "../../../assets/icons/activityIcons";
 import {
   Card,
-  filterBySearchQuery,
   SearchFilterBar,
   TableFooter,
 } from "../../../components";
@@ -43,7 +42,6 @@ const initialUiState = {
   appliedFilters: emptyNotificationFilters,
   draftFilters: emptyNotificationFilters,
   isFilterPanelOpen: false,
-  searchQuery: "",
 };
 
 export function NotificationsPage() {
@@ -74,18 +72,8 @@ export function NotificationsPage() {
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
   );
-  const visibleNotifications = useMemo(
-    () =>
-      filterBySearchQuery(
-        activeNotifications.notifications,
-        ui.searchQuery,
-        (item) => [item.title, item.description],
-      ),
-    [activeNotifications.notifications, ui.searchQuery],
-  );
   const hasActiveFilters = Boolean(ui.appliedFilters.type.trim());
-  const hasActiveCriteria =
-    Boolean(ui.searchQuery.trim()) || hasActiveFilters;
+  const hasActiveCriteria = hasActiveFilters;
   const isNotificationListLoading =
     activeNotifications.isLoading || activeNotifications.isRefreshing;
   const summaryCards: NotificationSummaryCard[] = [
@@ -146,13 +134,6 @@ export function NotificationsPage() {
   const hasUnreadNotifications = Boolean(
     notificationStatistics.statistics?.unread_notifications,
   );
-
-  function handleSearchChange(value: string) {
-    setUi((state) => ({
-      ...state,
-      searchQuery: value,
-    }));
-  }
 
   function handleToggleFilters() {
     setUi((state) => ({
@@ -317,16 +298,13 @@ export function NotificationsPage() {
           <div aria-busy={isNotificationListLoading}>
             <div className="notifications-page__toolbar">
               <SearchFilterBar
-                className="notifications-page__search"
+                className="notifications-page__filter"
                 filterAriaLabel={t.notifications.filters.filterAriaLabel}
                 filterLabel={t.common.filter}
-                inputAriaLabel={t.notifications.search.ariaLabel}
                 isFilterActive={hasActiveFilters}
-                onChange={handleSearchChange}
                 onFilterClick={handleToggleFilters}
-                placeholder={t.notifications.search.placeholder}
                 showFilterButton
-                value={ui.searchQuery}
+                showSearch={false}
               />
               <button
                 className="data-table__action-button notifications-page__mark-all"
@@ -389,7 +367,7 @@ export function NotificationsPage() {
                   isMarkingAsRead={
                     markNotificationRead.markingNotificationId !== null
                   }
-                  items={visibleNotifications}
+                  items={activeNotifications.notifications}
                   onMarkAsRead={(notification) =>
                     void handleMarkNotificationAsRead(notification)
                   }
@@ -398,7 +376,6 @@ export function NotificationsPage() {
               ) : null}
 
               {!isNotificationListLoading &&
-              !ui.searchQuery.trim() &&
               activeNotifications.notifications.length ? (
                 <TableFooter
                   className="notifications-page__footer"

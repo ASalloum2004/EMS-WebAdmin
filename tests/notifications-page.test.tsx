@@ -169,6 +169,10 @@ test("uses server endpoints for tabs and refreshes both lists and statistics aft
   assert.ok(totalCard);
   assert.ok(unreadCard);
   assert.ok(readCard);
+  assert.equal(view.queryByRole("searchbox"), null);
+  assert.ok(
+    view.getByRole("button", { name: "Open notification filters" }),
+  );
 
   await waitFor(() => {
     assert.ok(view.getByText("New Report Received"));

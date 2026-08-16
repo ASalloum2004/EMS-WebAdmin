@@ -24,7 +24,6 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
   padding-inline-start: 11px;
   padding-block: 0;
   padding-inline-end: 0;
@@ -55,30 +54,6 @@
 .notification-table__details-trigger:focus-visible {
   outline: 2px solid var(--ems-color-primary);
   outline-offset: 3px;
-}
-
-.notification-table__icon {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--ems-radius-md);
-  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
-  color: var(--ems-color-primary);
-}
-
-.notification-table__icon--success {
-  color: var(--ems-color-status-positive-text);
-}
-
-.notification-table__icon--warning {
-  color: var(--ems-color-purple);
-}
-
-.notification-table__icon--error {
-  color: var(--ems-color-danger);
 }
 
 .notification-table__copy {
@@ -146,6 +121,11 @@
   cursor: not-allowed;
 }
 
+.notification-table__mark-read--placeholder {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .notification-table__cell--date .data-table__value {
   font-variant-numeric: tabular-nums;
 }
@@ -167,13 +147,11 @@
     flex: 1 1 100%;
   }
 
-  .notification-table__identity {
-    align-items: flex-start;
-    flex-direction: column;
-    padding-inline-start: 9px;
-  }
-
   .notification-table__status {
     white-space: normal;
+  }
+
+  .notification-table__mark-read--placeholder {
+    display: none;
   }
 }

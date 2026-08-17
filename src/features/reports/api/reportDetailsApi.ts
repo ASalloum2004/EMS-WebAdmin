@@ -41,6 +41,25 @@ function normalizeReportable(value: unknown) {
   };
 }
 
+function normalizeReporter(value: unknown) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (
+    !isRecord(value) ||
+    !isPositiveInteger(value.id) ||
+    typeof value.name !== "string"
+  ) {
+    throw new Error(unexpectedResponseMessage);
+  }
+
+  return {
+    id: value.id,
+    name: value.name,
+  };
+}
+
 export function buildReportDetailsPath(reportId: number) {
   if (!isPositiveInteger(reportId)) {
     throw new Error("A valid Report ID is required.");
@@ -68,6 +87,7 @@ export function normalizeReportDetailsResponse(
   }
 
   const reportable = normalizeReportable(details.reportable);
+  const reporter = normalizeReporter(details.reporter);
 
   return {
     admin_notes: details.admin_notes,
@@ -75,6 +95,7 @@ export function normalizeReportDetailsResponse(
     description: details.description,
     id: details.id,
     reportable,
+    reporter,
     status: details.status,
     title: details.title,
   };

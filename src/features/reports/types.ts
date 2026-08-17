@@ -20,13 +20,20 @@ export interface Reportable {
   title?: string;
 }
 
+export interface ReportReporter {
+  id: number;
+  name: string;
+}
+
 export type ReportDetails = ReportApiData & {
   reportable: Reportable | null;
+  reporter: ReportReporter | null;
 };
 
 export type ReportDetailsResponse = {
   data: ReportApiData & {
     reportable?: Reportable | null;
+    reporter?: ReportReporter | null;
   };
   message: string;
   status: boolean;

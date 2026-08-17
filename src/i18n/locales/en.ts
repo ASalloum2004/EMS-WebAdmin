@@ -216,6 +216,7 @@ export const en = {
       loadError: "Unable to load report details.",
       information: "Report Information",
       boothNumber: "Booth Number",
+      reportedBy: "Reported By",
       emptyValue: "Not available",
       invalidDate: "Invalid date",
       description: "Description",

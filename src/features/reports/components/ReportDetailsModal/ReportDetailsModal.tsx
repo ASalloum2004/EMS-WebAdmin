@@ -465,6 +465,15 @@ export function ReportDetailsModal({
                       )}
                     </dd>
                   </div>
+                  <div>
+                    <dt>{t.reports.details.reportedBy}</dt>
+                    <dd>
+                      {getDisplayValue(
+                        details.reporter?.name ?? null,
+                        t.reports.details.emptyValue,
+                      )}
+                    </dd>
+                  </div>
                 </dl>
               </section>
 

@@ -201,6 +201,7 @@ export const ar: I18nDictionary = {
       loadError: "تعذر تحميل الإشعارات.",
       empty: "لا توجد إشعارات متاحة.",
       noResults: "لا توجد إشعارات تطابق البحث أو عوامل التصفية.",
+      openTargetAriaLabel: "فتح العنصر المرتبط",
     },
     notificationTypes: {
       success: "نجاح",
@@ -214,16 +215,6 @@ export const ar: I18nDictionary = {
     notificationStatuses: {
       unread: "غير مقروء",
       read: "مقروء",
-    },
-    details: {
-      title: "تفاصيل الإشعار",
-      openAriaLabel: "فتح تفاصيل الإشعار",
-      closeAriaLabel: "إغلاق تفاصيل الإشعار",
-      targetId: "معرّف الهدف",
-      openTarget: "فتح العنصر المرتبط",
-      targetUnavailable: "لا يوجد عنصر مرتبط متاح.",
-      description: "الوصف",
-      readConfirmation: "تمت قراءة هذا الإشعار.",
     },
   },
   reports: {

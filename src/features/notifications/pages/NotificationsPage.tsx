@@ -8,16 +8,16 @@ import {
 } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
+import { navigateToAppRoute } from "../../../router";
 import {
   NotificationFiltersPanel,
-  NotificationDetailsModal,
   NotificationDeleteConfirmModal,
   NotificationListSkeleton,
   NotificationStatsSkeleton,
   NotificationTable,
   type NotificationFilterOption,
 } from "../components";
-import { emptyNotificationFilters } from "../data";
+import { emptyNotificationFilters, getNotificationTarget } from "../data";
 import {
   useDeleteNotification,
   useMarkAllNotificationsRead,
@@ -50,8 +50,6 @@ export function NotificationsPage() {
   const { language, t } = useI18n();
   const [activeView, setActiveView] =
     useState<NotificationView>("all");
-  const [selectedNotification, setSelectedNotification] =
-    useState<NotificationItem | null>(null);
   const [pendingDeletion, setPendingDeletion] =
     useState<NotificationItem | null>(null);
   const [ui, setUi] = useState(initialUiState);
@@ -191,15 +189,19 @@ export function NotificationsPage() {
     async (notification: NotificationItem) => {
       const response = await markNotificationRead.markAsRead(notification.id);
 
-      if (response !== null) {
-        setSelectedNotification((currentNotification) =>
-          currentNotification?.id === notification.id
-            ? { ...currentNotification, status: "read" }
-            : currentNotification,
-        );
-      }
+      return response;
     },
     [markNotificationRead.markAsRead],
+  );
+  const handleOpenNotificationTarget = useCallback(
+    (notification: NotificationItem) => {
+      const target = getNotificationTarget(notification);
+
+      if (target) {
+        navigateToAppRoute(target.href);
+      }
+    },
+    [],
   );
   const handleOpenDeleteConfirmation = useCallback(
     (notification: NotificationItem) => {
@@ -226,9 +228,6 @@ export function NotificationsPage() {
 
     if (response !== null) {
       setPendingDeletion(null);
-      setSelectedNotification((currentNotification) =>
-        currentNotification?.id === notificationId ? null : currentNotification,
-      );
     }
   }, [deleteNotification.deleteNotification, pendingDeletion]);
 
@@ -420,7 +419,7 @@ export function NotificationsPage() {
                   onMarkAsRead={(notification) =>
                     void handleMarkNotificationAsRead(notification)
                   }
-                  onSelectNotification={setSelectedNotification}
+                  onOpenTarget={handleOpenNotificationTarget}
                 />
               ) : null}
 
@@ -442,26 +441,6 @@ export function NotificationsPage() {
           </div>
         </Card>
       </div>
-
-      {selectedNotification ? (
-        <NotificationDetailsModal
-          error={deleteNotification.error || markNotificationRead.error}
-          isDeleteConfirmationOpen={Boolean(pendingDeletion)}
-          isDeleting={
-            deleteNotification.deletingNotificationId === selectedNotification.id
-          }
-          isMarkingAsRead={
-            markNotificationRead.markingNotificationId === selectedNotification.id
-          }
-          notification={selectedNotification}
-          onClose={() => setSelectedNotification(null)}
-          onDelete={handleOpenDeleteConfirmation}
-          onMarkAsRead={(notification) =>
-            void handleMarkNotificationAsRead(notification)
-          }
-        />
-      ) : null}
-
       {pendingDeletion ? (
         <NotificationDeleteConfirmModal
           error={deleteNotification.error}

@@ -5,6 +5,25 @@ import type {
 
 type AppLinkProps = AnchorHTMLAttributes<HTMLAnchorElement>;
 
+export function navigateToAppRoute(href: string) {
+  const nextUrl = new URL(href, window.location.href);
+
+  if (nextUrl.origin !== window.location.origin) {
+    return false;
+  }
+
+  const currentLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  const nextLocation = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+
+  if (currentLocation === nextLocation) {
+    return true;
+  }
+
+  window.history.pushState(null, "", nextLocation);
+  window.dispatchEvent(new window.PopStateEvent("popstate"));
+  return true;
+}
+
 function shouldUseNativeNavigation(
   event: ReactMouseEvent<HTMLAnchorElement>,
   download: string | boolean | undefined,
@@ -36,23 +55,9 @@ export function AppLink({
       return;
     }
 
-    const nextUrl = new URL(href, window.location.href);
-
-    if (nextUrl.origin !== window.location.origin) {
-      return;
+    if (navigateToAppRoute(href)) {
+      event.preventDefault();
     }
-
-    event.preventDefault();
-
-    const currentLocation = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const nextLocation = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
-
-    if (currentLocation === nextLocation) {
-      return;
-    }
-
-    window.history.pushState(null, "", nextLocation);
-    window.dispatchEvent(new window.PopStateEvent("popstate"));
   }
 
   return (

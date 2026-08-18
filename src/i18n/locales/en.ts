@@ -200,6 +200,7 @@ export const en = {
       loadError: "Unable to load notifications.",
       empty: "No notifications are available.",
       noResults: "No notifications match your search or filters.",
+      openTargetAriaLabel: "Open related item",
     },
     notificationTypes: {
       success: "Success",
@@ -213,16 +214,6 @@ export const en = {
     notificationStatuses: {
       unread: "Unread",
       read: "Read",
-    },
-    details: {
-      title: "Notification details",
-      openAriaLabel: "Open notification details",
-      closeAriaLabel: "Close notification details",
-      targetId: "Target ID",
-      openTarget: "Open related item",
-      targetUnavailable: "No related item is available.",
-      description: "Description",
-      readConfirmation: "This notification has been read.",
     },
   },
   reports: {

@@ -18,6 +18,7 @@ export type DataTableProps<T> = {
   emptyMessage?: string;
   getItemAriaLabel?: (item: T) => string;
   getItemKey: (item: T) => string | number;
+  isItemInteractive?: (item: T) => boolean;
   items: T[];
   onItemClick?: (item: T) => void;
 };
@@ -47,6 +48,7 @@ export function DataTable<T>({
   emptyMessage = "No items found.",
   getItemAriaLabel,
   getItemKey,
+  isItemInteractive,
   items,
   onItemClick,
 }: DataTableProps<T>) {
@@ -65,6 +67,8 @@ export function DataTable<T>({
     >
       {items.map((item) => {
         const itemKey = getItemKey(item);
+        const isInteractive =
+          Boolean(onItemClick) && (isItemInteractive?.(item) ?? true);
 
         return (
           <article
@@ -72,18 +76,18 @@ export function DataTable<T>({
             className={classNames(
               "data-table__row",
               actions && "data-table__row--has-actions",
-              onItemClick && "data-table__row--interactive",
+              isInteractive && "data-table__row--interactive",
             )}
             key={itemKey}
-            onClick={onItemClick ? () => onItemClick(item) : undefined}
+            onClick={isInteractive ? () => onItemClick?.(item) : undefined}
             onKeyDown={
-              onItemClick
+              isInteractive && onItemClick
                 ? (event) =>
                     handleDataTableRowKeyDown(event, item, onItemClick)
                 : undefined
             }
-            role={onItemClick ? "button" : undefined}
-            tabIndex={onItemClick ? 0 : undefined}
+            role={isInteractive ? "button" : undefined}
+            tabIndex={isInteractive ? 0 : undefined}
           >
             {columns.map((column, index) => {
               const variant =

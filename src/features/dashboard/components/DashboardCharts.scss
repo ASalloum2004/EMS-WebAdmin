@@ -41,15 +41,6 @@
   fill: var(--ems-color-primary);
 }
 
-.dashboard-chart__bars rect {
-  fill: var(--ems-color-primary);
-  transition: opacity 160ms ease;
-}
-
-.dashboard-chart__bars rect:hover {
-  opacity: 0.76;
-}
-
 @media (max-width: 640px) {
   .dashboard-chart {
     min-height: 190px;

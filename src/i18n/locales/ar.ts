@@ -98,7 +98,6 @@ export const ar: I18nDictionary = {
     },
   },
   dashboard: {
-    title: "لوحة تحكم المسؤول",
     fallbackAdminName: "المسؤول",
     welcomeBack: "مرحبًا بعودتك",
     platformUpdate: "إليك ما يحدث في منصتك.",
@@ -113,7 +112,6 @@ export const ar: I18nDictionary = {
       ariaLabel: "ملخص لوحة التحكم",
       totalVisitors: "إجمالي الزوار",
       companies: "الشركات",
-      availableBooths: "الأجنحة المتاحة",
       openReports: "التقارير المفتوحة",
       thisWeek: "هذا الأسبوع",
       allocated: "مخصص",
@@ -141,9 +139,6 @@ export const ar: I18nDictionary = {
       waitingForReview: "بانتظار المراجعة",
       requiresAttention: "يتطلب اهتمامًا",
     },
-    weeklyActivity: "النشاط الأسبوعي",
-    weeklyActivityTabsAriaLabel: "مقياس النشاط الأسبوعي",
-    weeklyActivityChartAriaLabel: "مخطط النشاط الأسبوعي",
     tabs: {
       visitors: "الزوار",
       companies: "الشركات",

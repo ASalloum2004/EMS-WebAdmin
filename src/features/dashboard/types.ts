@@ -3,12 +3,10 @@ export type DashboardDateRange = "last7Days" | "last30Days" | "thisMonth";
 export type DashboardSummaryCardKey =
   | "visitors"
   | "companies"
-  | "booths"
+  | "pendingBoothRequests"
   | "reports";
 
 export type DashboardSummaryCard = {
-  allocatedValue?: number;
-  availableRatio?: number;
   key: DashboardSummaryCardKey;
   periodValue?: number;
   value: number;
@@ -18,12 +16,8 @@ export type DashboardActivityTab =
   | "visitors"
   | "companies"
   | "boothRequests"
-  | "leads";
-
-export type DashboardWeeklyActivityTab =
   | "leads"
-  | "events"
-  | "boothRequests";
+  | "events";
 
 export type DashboardChartPoint = {
   day: number;

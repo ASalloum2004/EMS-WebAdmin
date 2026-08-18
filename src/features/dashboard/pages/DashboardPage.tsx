@@ -1,11 +1,17 @@
-import { useMemo, useState, type ChangeEvent, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import {
   Building2,
   CalendarDays,
   ChevronRight,
   ClipboardList,
   Flag,
-  Store,
   Users,
 } from "lucide-react";
 import { Card } from "../../../components";
@@ -20,10 +26,8 @@ import {
   dashboardQuickOverview,
   dashboardRequestsOverview,
   dashboardSummaryCards,
-  dashboardWeeklyActivity,
 } from "../data";
 import {
-  DashboardBarChart,
   DashboardLineChart,
   DashboardTabs,
 } from "../components";
@@ -33,7 +37,6 @@ import type {
   DashboardQuickOverviewKey,
   DashboardRequestStatus,
   DashboardSummaryCardKey,
-  DashboardWeeklyActivityTab,
 } from "../types";
 import "./DashboardPage.scss";
 
@@ -46,16 +49,19 @@ const platformTabs: readonly DashboardActivityTab[] = [
   "companies",
   "boothRequests",
   "leads",
-];
-
-const weeklyTabs: readonly DashboardWeeklyActivityTab[] = [
-  "leads",
   "events",
-  "boothRequests",
 ];
 
 function getAdminName(name: string | undefined, fallbackName: string) {
   return name?.trim() || fallbackName;
+}
+
+function getPlatformActivityTabFromLocation(): DashboardActivityTab {
+  const selectedTab = new URLSearchParams(window.location.search).get(
+    "activity",
+  );
+
+  return platformTabs.find((tab) => tab === selectedTab) ?? "visitors";
 }
 
 export function DashboardPage() {
@@ -64,9 +70,16 @@ export function DashboardPage() {
   const [dateRange, setDateRange] =
     useState<DashboardDateRange>("last7Days");
   const [activePlatformTab, setActivePlatformTab] =
-    useState<DashboardActivityTab>("visitors");
-  const [activeWeeklyTab, setActiveWeeklyTab] =
-    useState<DashboardWeeklyActivityTab>("leads");
+    useState<DashboardActivityTab>(getPlatformActivityTabFromLocation);
+
+  useEffect(() => {
+    function syncPlatformActivityTab() {
+      setActivePlatformTab(getPlatformActivityTabFromLocation());
+    }
+
+    window.addEventListener("popstate", syncPlatformActivityTab);
+    return () => window.removeEventListener("popstate", syncPlatformActivityTab);
+  }, []);
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
@@ -93,19 +106,17 @@ export function DashboardPage() {
     id: tab,
     label: t.dashboard.tabs[tab],
   }));
-  const weeklyTabOptions = weeklyTabs.map((tab) => ({
-    id: tab,
-    label: t.dashboard.tabs[tab],
-  }));
   const summaryLabels: Record<DashboardSummaryCardKey, string> = {
-    booths: t.dashboard.summary.availableBooths,
     companies: t.dashboard.summary.companies,
+    pendingBoothRequests: t.dashboard.quickOverview.pendingBoothRequests,
     reports: t.dashboard.summary.openReports,
     visitors: t.dashboard.summary.totalVisitors,
   };
-  const summaryIcons: Record<DashboardSummaryCardKey, JSX.Element> = {
-    booths: <Store aria-hidden="true" size={22} strokeWidth={1.8} />,
+  const summaryIcons: Record<DashboardSummaryCardKey, ReactNode> = {
     companies: <Building2 aria-hidden="true" size={22} strokeWidth={1.8} />,
+    pendingBoothRequests: (
+      <ClipboardList aria-hidden="true" size={22} strokeWidth={1.8} />
+    ),
     reports: <Flag aria-hidden="true" size={22} strokeWidth={1.8} />,
     visitors: <Users aria-hidden="true" size={22} strokeWidth={1.8} />,
   };
@@ -116,19 +127,22 @@ export function DashboardPage() {
   };
   const quickOverviewLabels: Record<
     DashboardQuickOverviewKey,
-    { icon: JSX.Element; subtitle: string; title: string }
+    { href: string; icon: ReactNode; subtitle: string; title: string }
   > = {
     openReports: {
+      href: "/reports",
       icon: <Flag aria-hidden="true" size={20} strokeWidth={1.8} />,
       subtitle: t.dashboard.quickOverview.requiresAttention,
       title: t.dashboard.summary.openReports,
     },
     pendingBoothRequests: {
+      href: "/orders",
       icon: <ClipboardList aria-hidden="true" size={20} strokeWidth={1.8} />,
       subtitle: t.dashboard.quickOverview.waitingForReview,
       title: t.dashboard.quickOverview.pendingBoothRequests,
     },
     upcomingEvents: {
+      href: "/dashboard?activity=events",
       icon: <CalendarDays aria-hidden="true" size={20} strokeWidth={1.8} />,
       subtitle: t.dashboard.quickOverview.next30Days,
       title: t.dashboard.quickOverview.upcomingEvents,
@@ -164,10 +178,6 @@ export function DashboardPage() {
   return (
     <ManagementLayout>
       <div className="dashboard-page">
-        <header className="dashboard-page__header">
-          <h1>{t.dashboard.title}</h1>
-        </header>
-
         <section className="dashboard-page__welcome" aria-label={t.dashboard.welcomeSectionAriaLabel}>
           <div>
             <p className="dashboard-page__welcome-title">
@@ -198,9 +208,6 @@ export function DashboardPage() {
           className="dashboard-page__summary"
         >
           {dashboardSummaryCards.map((summaryCard) => {
-            const hasWeeklyValue = summaryCard.periodValue !== undefined;
-            const hasAvailability = summaryCard.availableRatio !== undefined;
-
             return (
               <Card
                 className={`dashboard-page__summary-card dashboard-page__summary-card--${summaryCard.key}`}
@@ -214,41 +221,21 @@ export function DashboardPage() {
                   {numberFormatter.format(summaryCard.value)}
                 </strong>
 
-                {hasWeeklyValue ? (
+                {summaryCard.periodValue !== undefined ? (
                   <p className="dashboard-page__summary-detail">
                     {numberFormatter.format(summaryCard.periodValue)} {t.dashboard.summary.thisWeek}
                   </p>
                 ) : null}
 
-                {hasAvailability ? (
-                  <div className="dashboard-page__availability">
-                    <p className="dashboard-page__summary-detail">
-                      {numberFormatter.format(summaryCard.allocatedValue ?? 0)} {t.dashboard.summary.allocated}
-                    </p>
-                    <div
-                      aria-label={`${percentageFormatter.format(summaryCard.availableRatio)} ${t.dashboard.summary.available}`}
-                      className="dashboard-page__progress-track"
-                      role="progressbar"
-                      aria-valuemax={1}
-                      aria-valuemin={0}
-                      aria-valuenow={summaryCard.availableRatio}
-                    >
-                      <span
-                        className="dashboard-page__progress-value dashboard-page__progress-value--available"
-                        style={{
-                          "--dashboard-progress": `${summaryCard.availableRatio * 100}%`,
-                        } as ProgressStyle}
-                      />
-                    </div>
-                    <p className="dashboard-page__summary-detail">
-                      {percentageFormatter.format(summaryCard.availableRatio)} {t.dashboard.summary.available}
-                    </p>
-                  </div>
-                ) : null}
-
                 {summaryCard.key === "reports" ? (
                   <p className="dashboard-page__summary-detail dashboard-page__summary-detail--attention">
                     {t.dashboard.summary.needsAttention}
+                  </p>
+                ) : null}
+
+                {summaryCard.key === "pendingBoothRequests" ? (
+                  <p className="dashboard-page__summary-detail">
+                    {t.dashboard.quickOverview.waitingForReview}
                   </p>
                 ) : null}
               </Card>
@@ -389,7 +376,11 @@ export function DashboardPage() {
                 const overview = quickOverviewLabels[item.key];
 
                 return (
-                  <div className="dashboard-page__quick-overview-row" key={item.key}>
+                  <AppLink
+                    className="dashboard-page__quick-overview-row"
+                    href={overview.href}
+                    key={item.key}
+                  >
                     <span className="dashboard-page__quick-overview-icon">
                       {overview.icon}
                     </span>
@@ -406,41 +397,13 @@ export function DashboardPage() {
                       size={18}
                       strokeWidth={1.8}
                     />
-                  </div>
+                  </AppLink>
                 );
               })}
             </div>
           </Card>
         </section>
 
-        <Card
-          actions={
-            <DashboardTabs
-              activeTab={activeWeeklyTab}
-              ariaLabel={t.dashboard.weeklyActivityTabsAriaLabel}
-              idPrefix="dashboard-weekly"
-              onTabChange={setActiveWeeklyTab}
-              tabs={weeklyTabOptions}
-            />
-          }
-          bodyClassName="dashboard-page__chart-body"
-          className="dashboard-page__weekly-card"
-          title={t.dashboard.weeklyActivity}
-        >
-          <div
-            aria-labelledby={`dashboard-weekly-${activeWeeklyTab}-tab`}
-            className="dashboard-page__tabpanel"
-            id={`dashboard-weekly-${activeWeeklyTab}-panel`}
-            role="tabpanel"
-          >
-            <DashboardBarChart
-              ariaLabel={t.dashboard.weeklyActivityChartAriaLabel}
-              formatLabel={formatDate}
-              formatPointLabel={formatPointLabel}
-              series={dashboardWeeklyActivity[activeWeeklyTab]}
-            />
-          </div>
-        </Card>
       </div>
     </ManagementLayout>
   );

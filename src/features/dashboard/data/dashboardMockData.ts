@@ -6,7 +6,6 @@ import type {
   DashboardQuickOverviewItem,
   DashboardRequestOverviewItem,
   DashboardSummaryCard,
-  DashboardWeeklyActivityTab,
 } from "../types";
 
 export const dashboardDateRanges: readonly DashboardDateRange[] = [
@@ -27,10 +26,8 @@ export const dashboardSummaryCards: readonly DashboardSummaryCard[] = [
     value: 11,
   },
   {
-    allocatedValue: 10,
-    availableRatio: 451 / 461,
-    key: "booths",
-    value: 451,
+    key: "pendingBoothRequests",
+    value: 5,
   },
   {
     key: "reports",
@@ -85,6 +82,17 @@ export const dashboardPlatformActivity: Readonly<
       { day: 18, value: 6 },
     ],
   },
+  events: {
+    points: [
+      { day: 12, value: 1 },
+      { day: 13, value: 2 },
+      { day: 14, value: 1 },
+      { day: 15, value: 3 },
+      { day: 16, value: 2 },
+      { day: 17, value: 4 },
+      { day: 18, value: 3 },
+    ],
+  },
 };
 
 export const dashboardBoothOverview: DashboardBoothOverview = {
@@ -104,41 +112,3 @@ export const dashboardQuickOverview: readonly DashboardQuickOverviewItem[] = [
   { key: "pendingBoothRequests", value: 5 },
   { key: "openReports", value: 7 },
 ];
-
-export const dashboardWeeklyActivity: Readonly<
-  Record<DashboardWeeklyActivityTab, DashboardChartSeries>
-> = {
-  leads: {
-    points: [
-      { day: 12, value: 2 },
-      { day: 13, value: 4 },
-      { day: 14, value: 3 },
-      { day: 15, value: 6 },
-      { day: 16, value: 4 },
-      { day: 17, value: 8 },
-      { day: 18, value: 5 },
-    ],
-  },
-  events: {
-    points: [
-      { day: 12, value: 1 },
-      { day: 13, value: 3 },
-      { day: 14, value: 2 },
-      { day: 15, value: 5 },
-      { day: 16, value: 3 },
-      { day: 17, value: 4 },
-      { day: 18, value: 6 },
-    ],
-  },
-  boothRequests: {
-    points: [
-      { day: 12, value: 3 },
-      { day: 13, value: 2 },
-      { day: 14, value: 5 },
-      { day: 15, value: 4 },
-      { day: 16, value: 7 },
-      { day: 17, value: 3 },
-      { day: 18, value: 5 },
-    ],
-  },
-};

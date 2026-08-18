@@ -97,7 +97,6 @@ export const en = {
     },
   },
   dashboard: {
-    title: "Admin Dashboard",
     fallbackAdminName: "Admin",
     welcomeBack: "Welcome back",
     platformUpdate: "Here's what's happening with your platform.",
@@ -112,7 +111,6 @@ export const en = {
       ariaLabel: "Dashboard summary",
       totalVisitors: "Total Visitors",
       companies: "Companies",
-      availableBooths: "Available Booths",
       openReports: "Open Reports",
       thisWeek: "this week",
       allocated: "allocated",
@@ -140,9 +138,6 @@ export const en = {
       waitingForReview: "Waiting for review",
       requiresAttention: "Requires attention",
     },
-    weeklyActivity: "Weekly Activity",
-    weeklyActivityTabsAriaLabel: "Weekly activity metric",
-    weeklyActivityChartAriaLabel: "Weekly activity chart",
     tabs: {
       visitors: "Visitors",
       companies: "Companies",

@@ -34,7 +34,10 @@ export function getNotificationTarget(
     return { href: `/reports?reportId=${targetId}`, id: targetId };
   }
 
-  if (notification.type === "booth_booking_request_created") {
+  if (
+    notification.type === "booth_booking_request_created" ||
+    notification.type === "booth_booth_conflict"
+  ) {
     return {
       href: `/orders?tab=booth&boothRequestId=${targetId}`,
       id: targetId,

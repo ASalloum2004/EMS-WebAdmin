@@ -1,0 +1,61 @@
+.dashboard-chart {
+  width: 100%;
+  min-height: 220px;
+  display: block;
+  overflow: visible;
+}
+
+.dashboard-chart__grid line {
+  stroke: var(--ems-color-border-soft);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
+.dashboard-chart__labels text {
+  fill: var(--ems-color-muted-light);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  text-anchor: middle;
+}
+
+.dashboard-chart__area {
+  fill: url(#dashboard-line-area);
+}
+
+.dashboard-chart__line {
+  fill: none;
+  stroke: var(--ems-color-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.dashboard-chart__points circle {
+  fill: var(--ems-color-card-background, var(--ems-color-white));
+  stroke: var(--ems-color-primary);
+  stroke-width: 3;
+}
+
+.dashboard-chart__points circle:hover {
+  fill: var(--ems-color-primary);
+}
+
+.dashboard-chart__bars rect {
+  fill: var(--ems-color-primary);
+  transition: opacity 160ms ease;
+}
+
+.dashboard-chart__bars rect:hover {
+  opacity: 0.76;
+}
+
+@media (max-width: 640px) {
+  .dashboard-chart {
+    min-height: 190px;
+  }
+
+  .dashboard-chart__labels text {
+    font-size: 10px;
+  }
+}

@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useAuth } from "../context";
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { AnnouncementsPage } from "../features/announcements";
 import { CompanyPage } from "../features/company";
+import { DashboardPage } from "../features/dashboard";
 import { ManagementPage } from "../features/management";
 import { NotificationsPage } from "../features/notifications";
 import { OrderPage } from "../features/order";
@@ -14,6 +16,7 @@ import { AuthGuard } from "./AuthGuard";
 const adminRoutes: Record<string, ReactNode> = {
   "/announcements": <AnnouncementsPage />,
   "/companies": <CompanyPage />,
+  "/dashboard": <DashboardPage />,
   "/management": <ManagementPage />,
   "/notifications": <NotificationsPage />,
   "/orders": <OrderPage />,
@@ -23,6 +26,7 @@ const adminRoutes: Record<string, ReactNode> = {
 };
 
 export function AppRouter() {
+  const { isAuthenticated } = useAuth();
   const [path, setPath] = useState(() => window.location.pathname);
 
   useEffect(() => {
@@ -34,6 +38,15 @@ export function AppRouter() {
 
   if (path === "/reset-password") {
     return <ResetPasswordPage />;
+  }
+
+  if (path === "/") {
+    if (!isAuthenticated) {
+      return <LoginPage />;
+    }
+
+    window.location.replace("/dashboard");
+    return null;
   }
 
   const adminPage = adminRoutes[path];

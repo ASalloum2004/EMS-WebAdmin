@@ -16,6 +16,10 @@ export const dashboardDateRanges: readonly DashboardDateRange[] = [
 
 export const dashboardSummaryCards: readonly DashboardSummaryCard[] = [
   {
+    genderBreakdown: {
+      men: 2,
+      women: 1,
+    },
     key: "visitors",
     periodValue: 3,
     value: 3,

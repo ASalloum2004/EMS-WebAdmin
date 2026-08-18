@@ -12,7 +12,9 @@ import {
   ChevronRight,
   ClipboardList,
   Flag,
+  Mars,
   Users,
+  Venus,
 } from "lucide-react";
 import { Card } from "../../../components";
 import { useOptionalProfileContext } from "../../profile/hooks";
@@ -225,6 +227,34 @@ export function DashboardPage() {
                   <p className="dashboard-page__summary-detail">
                     {numberFormatter.format(summaryCard.periodValue)} {t.dashboard.summary.thisWeek}
                   </p>
+                ) : null}
+
+                {summaryCard.key === "visitors" &&
+                summaryCard.genderBreakdown ? (
+                  <dl className="dashboard-page__visitor-breakdown">
+                    <div>
+                      <dt>
+                        <Venus aria-hidden="true" size={15} strokeWidth={2} />
+                        {t.dashboard.summary.women}
+                      </dt>
+                      <dd>
+                        {numberFormatter.format(
+                          summaryCard.genderBreakdown.women,
+                        )}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <Mars aria-hidden="true" size={15} strokeWidth={2} />
+                        {t.dashboard.summary.men}
+                      </dt>
+                      <dd>
+                        {numberFormatter.format(
+                          summaryCard.genderBreakdown.men,
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
                 ) : null}
 
                 {summaryCard.key === "reports" ? (

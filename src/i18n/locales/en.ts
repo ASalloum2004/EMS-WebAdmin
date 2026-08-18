@@ -115,6 +115,8 @@ export const en = {
       thisWeek: "this week",
       allocated: "allocated",
       available: "available",
+      women: "Women",
+      men: "Men",
       needsAttention: "Needs attention",
     },
     platformActivity: "Platform Activity",

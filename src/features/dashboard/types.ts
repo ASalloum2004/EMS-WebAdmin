@@ -7,6 +7,10 @@ export type DashboardSummaryCardKey =
   | "reports";
 
 export type DashboardSummaryCard = {
+  genderBreakdown?: {
+    men: number;
+    women: number;
+  };
   key: DashboardSummaryCardKey;
   periodValue?: number;
   value: number;

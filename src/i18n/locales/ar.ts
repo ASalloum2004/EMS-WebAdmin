@@ -116,6 +116,8 @@ export const ar: I18nDictionary = {
       thisWeek: "هذا الأسبوع",
       allocated: "مخصص",
       available: "متاح",
+      women: "نساء",
+      men: "رجال",
       needsAttention: "يحتاج إلى اهتمام",
     },
     platformActivity: "نشاط المنصة",

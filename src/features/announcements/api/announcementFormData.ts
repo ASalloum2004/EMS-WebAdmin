@@ -14,7 +14,7 @@ function appendAnnouncementFields(
     "receiver",
     getAnnouncementApiReceiver(values.receiver),
   );
-  formData.append("is_active", values.isDraft ? "1" : "0");
+  formData.append("is_active", values.isDraft ? "0" : "1");
 }
 
 export function buildCreateAnnouncementFormData(

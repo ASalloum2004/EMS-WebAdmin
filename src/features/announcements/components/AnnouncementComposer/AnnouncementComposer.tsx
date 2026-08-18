@@ -54,7 +54,7 @@ export function AnnouncementComposer({
   const [description, setDescription] = useState("");
   const [receiver, setReceiver] =
     useState<AnnouncementFormReceiver>("all");
-  const [isDraft, setIsDraft] = useState(true);
+  const [isDraft, setIsDraft] = useState(false);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState("");
@@ -142,7 +142,7 @@ export function AnnouncementComposer({
     setTitle("");
     setDescription("");
     setReceiver("all");
-    setIsDraft(true);
+    setIsDraft(false);
     clearMedia();
   }
 

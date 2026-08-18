@@ -62,11 +62,11 @@ function getDraftFilterValue(
   draftStatus: AnnouncementFilters["draftStatus"],
 ) {
   if (draftStatus === "draft") {
-    return true;
+    return false;
   }
 
   if (draftStatus === "published") {
-    return false;
+    return true;
   }
 
   return undefined;
@@ -123,7 +123,7 @@ export function useAnnouncements(errorFallback: string) {
 
   const requestParams = useMemo<GetAnnouncementsParams>(
     () => ({
-      isDraft: getDraftFilterValue(appliedFilters.draftStatus),
+      isActive: getDraftFilterValue(appliedFilters.draftStatus),
       page: pagination.currentPage,
       perPage: pagination.perPage,
       receiver: appliedFilters.receiver || undefined,

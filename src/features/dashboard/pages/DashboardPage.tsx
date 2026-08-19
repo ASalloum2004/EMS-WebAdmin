@@ -15,22 +15,14 @@ import {
   Users,
   Venus,
 } from "lucide-react";
-import { Card } from "../../../components";
-import { useOptionalProfileContext } from "../../profile/hooks";
+import { Card, Skeleton } from "../../../components";
 import { useI18n } from "../../../i18n";
 import { ManagementLayout } from "../../../layouts";
+import { useOptionalProfileContext } from "../../profile/hooks";
 import { AppLink } from "../../../router";
-import {
-  dashboardBoothOverview,
-  dashboardPlatformActivity,
-  dashboardQuickOverview,
-  dashboardRequestsOverview,
-  dashboardSummaryCards,
-} from "../data";
-import {
-  DashboardLineChart,
-  DashboardTabs,
-} from "../components";
+import { DashboardLineChart, DashboardTabs } from "../components";
+import { getDashboardViewModel } from "../data";
+import { useDashboard } from "../hooks";
 import type {
   DashboardActivityTab,
   DashboardQuickOverviewKey,
@@ -63,9 +55,48 @@ function getPlatformActivityTabFromLocation(): DashboardActivityTab {
   return platformTabs.find((tab) => tab === selectedTab) ?? "visitors";
 }
 
+function DashboardContentSkeleton({ loadingLabel }: { loadingLabel: string }) {
+  return (
+    <div aria-busy="true" aria-label={loadingLabel} className="dashboard-page">
+      <section className="dashboard-page__summary">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Card className="dashboard-page__summary-card" key={index}>
+            <Skeleton height="2rem" width="42%" />
+            <Skeleton height="2.5rem" width="58%" />
+            <Skeleton height="1rem" width="72%" />
+          </Card>
+        ))}
+      </section>
+
+      <section className="dashboard-page__primary-grid">
+        <Card className="dashboard-page__chart-card">
+          <Skeleton height="15rem" width="100%" />
+        </Card>
+        <Card className="dashboard-page__booth-card">
+          <Skeleton borderRadius="50%" height="12rem" width="12rem" />
+        </Card>
+      </section>
+
+      <section className="dashboard-page__secondary-grid">
+        <Card className="dashboard-page__requests-card">
+          <Skeleton height="1rem" width="100%" />
+          <Skeleton height="1rem" width="100%" />
+          <Skeleton height="1rem" width="100%" />
+        </Card>
+        <Card className="dashboard-page__quick-overview-card">
+          <Skeleton height="4rem" width="100%" />
+          <Skeleton height="4rem" width="100%" />
+          <Skeleton height="4rem" width="100%" />
+        </Card>
+      </section>
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const { language, t } = useI18n();
   const profile = useOptionalProfileContext()?.profile;
+  const dashboard = useDashboard();
   const [activePlatformTab, setActivePlatformTab] =
     useState<DashboardActivityTab>(getPlatformActivityTabFromLocation);
 
@@ -77,6 +108,7 @@ export function DashboardPage() {
     window.addEventListener("popstate", syncPlatformActivityTab);
     return () => window.removeEventListener("popstate", syncPlatformActivityTab);
   }, []);
+
   const numberFormatter = useMemo(
     () => new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US"),
     [language],
@@ -86,6 +118,15 @@ export function DashboardPage() {
       new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US", {
         maximumFractionDigits: 1,
         style: "percent",
+      }),
+    [language],
+  );
+  const periodFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US", {
+        style: "unit",
+        unit: "day",
+        unitDisplay: "long",
       }),
     [language],
   );
@@ -145,25 +186,59 @@ export function DashboardPage() {
       title: t.dashboard.quickOverview.upcomingEvents,
     },
   };
-  const requestTotal = dashboardRequestsOverview.reduce(
+
+  function formatDate(date: string) {
+    return dateFormatter.format(new Date(`${date}T00:00:00Z`));
+  }
+
+  function formatPointLabel(date: string, value: number) {
+    return `${formatDate(date)}: ${numberFormatter.format(value)}`;
+  }
+
+  if (dashboard.isInitialLoading) {
+    return (
+      <ManagementLayout>
+        <DashboardContentSkeleton loadingLabel={t.common.loading} />
+      </ManagementLayout>
+    );
+  }
+
+  if (!dashboard.dashboard) {
+    return (
+      <ManagementLayout>
+        <div className="dashboard-page">
+          <div role="alert">
+            <p>{dashboard.error}</p>
+            <button onClick={() => void dashboard.refetch()} type="button">
+              {t.common.tryAgain}
+            </button>
+          </div>
+        </div>
+      </ManagementLayout>
+    );
+  }
+
+  const dashboardViewModel = getDashboardViewModel(dashboard.dashboard);
+  const requestTotal = dashboardViewModel.requestsOverview.reduce(
     (total, item) => total + item.value,
     0,
   );
   const boothAvailableRatio =
-    dashboardBoothOverview.available / dashboardBoothOverview.total;
-
-  function formatDate(day: number) {
-    return dateFormatter.format(new Date(Date.UTC(2026, 7, day)));
-  }
-
-  function formatPointLabel(day: number, value: number) {
-    return `${formatDate(day)}: ${numberFormatter.format(value)}`;
-  }
+    dashboardViewModel.boothOverview.total > 0
+      ? dashboardViewModel.boothOverview.available /
+        dashboardViewModel.boothOverview.total
+      : 0;
 
   return (
     <ManagementLayout>
-      <div className="dashboard-page">
-        <section className="dashboard-page__welcome" aria-label={t.dashboard.welcomeSectionAriaLabel}>
+      <div
+        aria-busy={dashboard.isRefreshing}
+        className="dashboard-page"
+      >
+        <section
+          aria-label={t.dashboard.welcomeSectionAriaLabel}
+          className="dashboard-page__welcome"
+        >
           <div>
             <p className="dashboard-page__welcome-title">
               {t.dashboard.welcomeBack}, {adminName}
@@ -172,14 +247,13 @@ export function DashboardPage() {
               {t.dashboard.platformUpdate}
             </p>
           </div>
-
         </section>
 
         <section
           aria-label={t.dashboard.summary.ariaLabel}
           className="dashboard-page__summary"
         >
-          {dashboardSummaryCards.map((summaryCard) => {
+          {dashboardViewModel.summaryCards.map((summaryCard) => {
             return (
               <Card
                 className={`dashboard-page__summary-card dashboard-page__summary-card--${summaryCard.key}`}
@@ -193,9 +267,10 @@ export function DashboardPage() {
                   {numberFormatter.format(summaryCard.value)}
                 </strong>
 
-                {summaryCard.periodValue !== undefined ? (
+                {summaryCard.periodValue !== undefined &&
+                summaryCard.periodDays !== undefined ? (
                   <p className="dashboard-page__summary-detail">
-                    {numberFormatter.format(summaryCard.periodValue)} {t.dashboard.summary.thisDay}
+                    {numberFormatter.format(summaryCard.periodValue)} · {periodFormatter.format(summaryCard.periodDays)}
                   </p>
                 ) : null}
 
@@ -268,7 +343,7 @@ export function DashboardPage() {
                 ariaLabel={t.dashboard.platformActivityChartAriaLabel}
                 formatLabel={formatDate}
                 formatPointLabel={formatPointLabel}
-                series={dashboardPlatformActivity[activePlatformTab]}
+                series={dashboardViewModel.platformActivity[activePlatformTab]}
               />
             </div>
           </Card>
@@ -306,7 +381,9 @@ export function DashboardPage() {
                 />
               </svg>
               <div className="dashboard-page__donut-content">
-                <strong>{numberFormatter.format(dashboardBoothOverview.total)}</strong>
+                <strong>
+                  {numberFormatter.format(dashboardViewModel.boothOverview.total)}
+                </strong>
                 <span>{t.dashboard.totalBooths}</span>
               </div>
             </div>
@@ -314,11 +391,11 @@ export function DashboardPage() {
             <dl className="dashboard-page__booth-legend">
               <div>
                 <dt><span className="dashboard-page__legend-dot dashboard-page__legend-dot--available" />{t.dashboard.summary.available}</dt>
-                <dd>{numberFormatter.format(dashboardBoothOverview.available)}</dd>
+                <dd>{numberFormatter.format(dashboardViewModel.boothOverview.available)}</dd>
               </div>
               <div>
                 <dt><span className="dashboard-page__legend-dot dashboard-page__legend-dot--allocated" />{t.dashboard.summary.allocated}</dt>
-                <dd>{numberFormatter.format(dashboardBoothOverview.allocated)}</dd>
+                <dd>{numberFormatter.format(dashboardViewModel.boothOverview.allocated)}</dd>
               </div>
             </dl>
           </Card>
@@ -331,8 +408,8 @@ export function DashboardPage() {
             title={t.dashboard.requestsOverview}
           >
             <div className="dashboard-page__request-list">
-              {dashboardRequestsOverview.map((request) => {
-                const ratio = request.value / requestTotal;
+              {dashboardViewModel.requestsOverview.map((request) => {
+                const ratio = requestTotal > 0 ? request.value / requestTotal : 0;
 
                 return (
                   <div className="dashboard-page__request-row" key={request.status}>
@@ -372,7 +449,7 @@ export function DashboardPage() {
             title={t.dashboard.quickOverview.title}
           >
             <div className="dashboard-page__quick-overview-list">
-              {dashboardQuickOverview.map((item) => {
+              {dashboardViewModel.quickOverview.map((item) => {
                 const overview = quickOverviewLabels[item.key];
 
                 return (
@@ -403,7 +480,6 @@ export function DashboardPage() {
             </div>
           </Card>
         </section>
-
       </div>
     </ManagementLayout>
   );

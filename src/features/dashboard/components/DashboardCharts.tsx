@@ -8,8 +8,8 @@ type ChartPoint = {
 
 interface DashboardChartProps {
   ariaLabel: string;
-  formatLabel: (day: number) => string;
-  formatPointLabel: (day: number, value: number) => string;
+  formatLabel: (date: string) => string;
+  formatPointLabel: (date: string, value: number) => string;
   series: DashboardChartSeries;
 }
 
@@ -101,8 +101,8 @@ function ChartLabels({
   return (
     <g className="dashboard-chart__labels" aria-hidden="true">
       {series.points.map((point, index) => (
-        <text key={point.day} x={points[index].x} y={bounds.bottom + 26}>
-          {formatLabel(point.day)}
+        <text key={point.date} x={points[index].x} y={bounds.bottom + 26}>
+          {formatLabel(point.date)}
         </text>
       ))}
     </g>
@@ -144,10 +144,10 @@ export function DashboardLineChart({
           <circle
             cx={points[index].x}
             cy={points[index].y}
-            key={point.day}
+            key={point.date}
             r="4"
           >
-            <title>{formatPointLabel(point.day, point.value)}</title>
+            <title>{formatPointLabel(point.date, point.value)}</title>
           </circle>
         ))}
       </g>

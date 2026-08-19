@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { DashboardChartSeries } from "../types";
 import "./DashboardCharts.scss";
 
@@ -6,22 +7,32 @@ type ChartPoint = {
   y: number;
 };
 
+type ActiveChartPoint = ChartPoint & {
+  date: string;
+  value: number;
+};
+
 interface DashboardChartProps {
   ariaLabel: string;
-  formatLabel: (day: number) => string;
-  formatPointLabel: (day: number, value: number) => string;
+  formatLabel: (date: string) => string;
+  formatPointLabel: (date: string, value: number) => string;
+  formatValue: (value: number) => string;
   series: DashboardChartSeries;
+  yAxisValues?: readonly number[];
 }
 
 const CHART_WIDTH = 680;
 const CHART_HEIGHT = 240;
 const CHART_PADDING = {
   bottom: 38,
-  left: 16,
+  left: 54,
   right: 16,
   top: 16,
 };
 const GRID_LINE_COUNT = 4;
+const TOOLTIP_HEIGHT = 68;
+const TOOLTIP_OFFSET = 14;
+const TOOLTIP_WIDTH = 138;
 
 function getChartBounds() {
   return {
@@ -34,8 +45,23 @@ function getChartBounds() {
   };
 }
 
-function getMaximumValue(series: DashboardChartSeries) {
-  return Math.max(...series.points.map((point) => point.value), 1);
+function getMaximumValue(
+  series: DashboardChartSeries,
+  yAxisValues: readonly number[] | undefined,
+) {
+  const requestedMaximum = Math.max(...(yAxisValues ?? []), 0);
+
+  return Math.max(
+    ...series.points.map((point) => point.value),
+    requestedMaximum,
+    1,
+  );
+}
+
+function getValueY(value: number, maximumValue: number) {
+  const bounds = getChartBounds();
+
+  return bounds.bottom - (value / maximumValue) * bounds.height;
 }
 
 function getChartPoints(series: DashboardChartSeries, maximumValue: number) {
@@ -44,7 +70,7 @@ function getChartPoints(series: DashboardChartSeries, maximumValue: number) {
 
   return series.points.map((point, index) => ({
     x: bounds.left + (bounds.width * index) / lastIndex,
-    y: bounds.bottom - (point.value / maximumValue) * bounds.height,
+    y: getValueY(point.value, maximumValue),
   }));
 }
 
@@ -69,42 +95,117 @@ function getSmoothPath(points: readonly ChartPoint[]) {
   }, "");
 }
 
-function ChartGrid() {
+function ChartGrid({
+  maximumValue,
+  yAxisValues,
+}: Pick<DashboardChartProps, "yAxisValues"> & { maximumValue: number }) {
   const bounds = getChartBounds();
+  const gridValues = yAxisValues ?? Array.from(
+    { length: GRID_LINE_COUNT + 1 },
+    (_, index) => (maximumValue * index) / GRID_LINE_COUNT,
+  );
 
   return (
     <g className="dashboard-chart__grid" aria-hidden="true">
-      {Array.from({ length: GRID_LINE_COUNT + 1 }, (_, index) => {
-        const y = bounds.top + (bounds.height * index) / GRID_LINE_COUNT;
+      {gridValues.map((value) => (
+        <line
+          key={value}
+          x1={bounds.left}
+          x2={bounds.right}
+          y1={getValueY(value, maximumValue)}
+          y2={getValueY(value, maximumValue)}
+        />
+      ))}
+    </g>
+  );
+}
 
-        return (
-          <line
-            key={index}
-            x1={bounds.left}
-            x2={bounds.right}
-            y1={y}
-            y2={y}
-          />
-        );
-      })}
+function ChartYAxis({
+  maximumValue,
+  yAxisValues,
+}: Pick<DashboardChartProps, "yAxisValues"> & { maximumValue: number }) {
+  if (!yAxisValues?.length) {
+    return null;
+  }
+
+  const bounds = getChartBounds();
+
+  return (
+    <g className="dashboard-chart__y-axis" aria-hidden="true">
+      {yAxisValues.map((value) => (
+        <text
+          alignmentBaseline="middle"
+          key={value}
+          x={bounds.left - 12}
+          y={getValueY(value, maximumValue)}
+        >
+          {value}
+        </text>
+      ))}
     </g>
   );
 }
 
 function ChartLabels({
   formatLabel,
+  maximumValue,
   series,
-}: Pick<DashboardChartProps, "formatLabel" | "series">) {
-  const points = getChartPoints(series, getMaximumValue(series));
+}: Pick<DashboardChartProps, "formatLabel" | "series"> & {
+  maximumValue: number;
+}) {
+  const points = getChartPoints(series, maximumValue);
   const bounds = getChartBounds();
 
   return (
     <g className="dashboard-chart__labels" aria-hidden="true">
       {series.points.map((point, index) => (
-        <text key={point.day} x={points[index].x} y={bounds.bottom + 26}>
-          {formatLabel(point.day)}
+        <text key={point.date} x={points[index].x} y={bounds.bottom + 26}>
+          {formatLabel(point.date)}
         </text>
       ))}
+    </g>
+  );
+}
+
+function ChartPointTooltip({
+  formatLabel,
+  formatValue,
+  point,
+}: Pick<DashboardChartProps, "formatLabel" | "formatValue"> & {
+  point: ActiveChartPoint;
+}) {
+  const bounds = getChartBounds();
+  const x = Math.min(
+    Math.max(point.x + TOOLTIP_OFFSET, bounds.left),
+    bounds.right - TOOLTIP_WIDTH,
+  );
+  const y = Math.max(bounds.top, point.y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET);
+
+  return (
+    <g
+      aria-hidden="true"
+      className="dashboard-chart__tooltip"
+      pointerEvents="none"
+      transform={`translate(${x} ${y})`}
+    >
+      <rect
+        className="dashboard-chart__tooltip-card"
+        height={TOOLTIP_HEIGHT}
+        rx="10"
+        width={TOOLTIP_WIDTH}
+      />
+      <circle
+        className="dashboard-chart__tooltip-indicator"
+        cx="16"
+        cy="18"
+        r="4"
+      />
+      <text className="dashboard-chart__tooltip-label" x="28" y="22">
+        {formatLabel(point.date)}
+      </text>
+      <text className="dashboard-chart__tooltip-value" x="14" y="51">
+        {formatValue(point.value)}
+      </text>
     </g>
   );
 }
@@ -113,12 +214,22 @@ export function DashboardLineChart({
   ariaLabel,
   formatLabel,
   formatPointLabel,
+  formatValue,
   series,
+  yAxisValues,
 }: DashboardChartProps) {
+  const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   const bounds = getChartBounds();
-  const maximumValue = getMaximumValue(series);
+  const maximumValue = getMaximumValue(series, yAxisValues);
   const points = getChartPoints(series, maximumValue);
   const linePath = getSmoothPath(points);
+  const activePoint =
+    activePointIndex === null
+      ? null
+      : {
+          ...points[activePointIndex],
+          ...series.points[activePointIndex],
+        };
   const areaPath = points.length
     ? `${linePath} L ${points[points.length - 1].x} ${bounds.bottom} L ${points[0].x} ${bounds.bottom} Z`
     : "";
@@ -136,22 +247,51 @@ export function DashboardLineChart({
           <stop offset="100%" stopColor="var(--ems-color-primary)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <ChartGrid />
+      <ChartGrid maximumValue={maximumValue} yAxisValues={yAxisValues} />
+      <ChartYAxis maximumValue={maximumValue} yAxisValues={yAxisValues} />
       <path className="dashboard-chart__area" d={areaPath} />
       <path className="dashboard-chart__line" d={linePath} />
       <g className="dashboard-chart__points">
-        {series.points.map((point, index) => (
-          <circle
-            cx={points[index].x}
-            cy={points[index].y}
-            key={point.day}
-            r="4"
-          >
-            <title>{formatPointLabel(point.day, point.value)}</title>
-          </circle>
-        ))}
+        {series.points.map((point, index) => {
+          const isActive = index === activePointIndex;
+
+          return (
+            <g key={point.date}>
+              <circle
+                aria-hidden="true"
+                className={`dashboard-chart__point-marker${isActive ? " dashboard-chart__point-marker--active" : ""}`}
+                cx={points[index].x}
+                cy={points[index].y}
+                r="4"
+              />
+              <circle
+                aria-label={formatPointLabel(point.date, point.value)}
+                className="dashboard-chart__point-hit-area"
+                cx={points[index].x}
+                cy={points[index].y}
+                onBlur={() => setActivePointIndex(null)}
+                onFocus={() => setActivePointIndex(index)}
+                onMouseEnter={() => setActivePointIndex(index)}
+                onMouseLeave={() => setActivePointIndex(null)}
+                r="14"
+                tabIndex={0}
+              />
+            </g>
+          );
+        })}
+        {activePoint ? (
+          <ChartPointTooltip
+            formatLabel={formatLabel}
+            formatValue={formatValue}
+            point={activePoint}
+          />
+        ) : null}
       </g>
-      <ChartLabels formatLabel={formatLabel} series={series} />
+      <ChartLabels
+        formatLabel={formatLabel}
+        maximumValue={maximumValue}
+        series={series}
+      />
     </svg>
   );
 }

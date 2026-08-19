@@ -1,1 +1,1 @@
-export * from "./dashboardMockData";
+export * from "./dashboardData";

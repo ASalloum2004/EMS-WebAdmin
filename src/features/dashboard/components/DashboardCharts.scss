@@ -11,12 +11,20 @@
   stroke-dasharray: 3 4;
 }
 
-.dashboard-chart__labels text {
+.dashboard-chart__labels text,
+.dashboard-chart__y-axis text {
   fill: var(--ems-color-muted-light);
   font-family: var(--ems-font-body);
   font-size: 12px;
   font-weight: 500;
+}
+
+.dashboard-chart__labels text {
   text-anchor: middle;
+}
+
+.dashboard-chart__y-axis text {
+  text-anchor: end;
 }
 
 .dashboard-chart__area {
@@ -31,14 +39,48 @@
   stroke-width: 3;
 }
 
-.dashboard-chart__points circle {
+.dashboard-chart__point-marker {
   fill: var(--ems-color-card-background, var(--ems-color-white));
   stroke: var(--ems-color-primary);
   stroke-width: 3;
+  transition: fill 160ms ease, r 160ms ease;
 }
 
-.dashboard-chart__points circle:hover {
+.dashboard-chart__point-marker--active {
   fill: var(--ems-color-primary);
+}
+
+.dashboard-chart__point-hit-area {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.dashboard-chart__tooltip-card {
+  fill: var(--ems-color-card-background, var(--ems-color-white));
+  stroke: var(--ems-color-border-soft);
+  stroke-width: 1;
+}
+
+.dashboard-chart__tooltip-indicator {
+  fill: var(--ems-color-primary);
+}
+
+.dashboard-chart__tooltip-label,
+.dashboard-chart__tooltip-value {
+  font-family: var(--ems-font-body);
+}
+
+.dashboard-chart__tooltip-label {
+  fill: var(--ems-color-muted-light);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dashboard-chart__tooltip-value {
+  fill: var(--ems-color-heading);
+  font-size: 20px;
+  font-weight: 700;
 }
 
 @media (max-width: 640px) {
@@ -46,7 +88,8 @@
     min-height: 190px;
   }
 
-  .dashboard-chart__labels text {
+  .dashboard-chart__labels text,
+  .dashboard-chart__y-axis text {
     font-size: 10px;
   }
 }

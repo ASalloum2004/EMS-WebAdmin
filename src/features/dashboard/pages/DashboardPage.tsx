@@ -35,6 +35,8 @@ type ProgressStyle = CSSProperties & {
   "--dashboard-progress": string;
 };
 
+type BoothOverviewStatus = "available" | "allocated";
+
 const platformTabs: readonly DashboardActivityTab[] = [
   "visitors",
   "companies",
@@ -109,6 +111,8 @@ export function DashboardPage() {
   const dashboard = useDashboard();
   const [activePlatformTab, setActivePlatformTab] =
     useState<DashboardActivityTab>(getPlatformActivityTabFromLocation);
+  const [hoveredBoothStatus, setHoveredBoothStatus] =
+    useState<BoothOverviewStatus | null>(null);
 
   useEffect(() => {
     function syncPlatformActivityTab() {
@@ -238,6 +242,16 @@ export function DashboardPage() {
       ? dashboardViewModel.boothOverview.available /
         dashboardViewModel.boothOverview.total
       : 0;
+  const boothTooltip = hoveredBoothStatus
+    ? {
+        status: hoveredBoothStatus,
+        label:
+          hoveredBoothStatus === "available"
+            ? t.dashboard.summary.available
+            : t.dashboard.summary.allocated,
+        value: dashboardViewModel.boothOverview[hoveredBoothStatus],
+      }
+    : null;
 
   return (
     <ManagementLayout>
@@ -353,6 +367,7 @@ export function DashboardPage() {
                 ariaLabel={t.dashboard.platformActivityChartAriaLabel}
                 formatLabel={formatDate}
                 formatPointLabel={formatPointLabel}
+                formatValue={(value) => numberFormatter.format(value)}
                 series={dashboardViewModel.platformActivity[activePlatformTab]}
                 yAxisValues={platformActivityYAxisValues[activePlatformTab]}
               />
@@ -364,31 +379,70 @@ export function DashboardPage() {
             className="dashboard-page__booth-card"
             title={t.dashboard.boothOverview}
           >
-            <div
-              aria-label={t.dashboard.boothOverviewChartAriaLabel}
-              className="dashboard-page__booth-donut"
-              role="img"
-            >
-              <svg aria-hidden="true" viewBox="0 0 120 120">
-                <circle className="dashboard-page__donut-track" cx="60" cy="60" r="47" />
+            <div className="dashboard-page__booth-donut">
+              <svg
+                aria-label={t.dashboard.boothOverviewChartAriaLabel}
+                onPointerLeave={() => setHoveredBoothStatus(null)}
+                onPointerMove={(event) => {
+                  const bounds = event.currentTarget.getBoundingClientRect();
+                  const x = ((event.clientX - bounds.left) / bounds.width) * 120;
+                  const y = ((event.clientY - bounds.top) / bounds.height) * 120;
+                  const radius = Math.hypot(x - 60, y - 60);
+
+                  if (radius < 38 || radius > 56) {
+                    setHoveredBoothStatus(null);
+                    return;
+                  }
+
+                  const angle =
+                    (Math.atan2(x - 60, -(y - 60)) * 180) / Math.PI;
+                  const normalizedAngle = (angle + 360) % 360;
+                  const availableAngle = boothAvailableRatio * 360;
+                  const status =
+                    normalizedAngle <= availableAngle ? "available" : "allocated";
+
+                  setHoveredBoothStatus((currentStatus) =>
+                    currentStatus === status ? currentStatus : status,
+                  );
+                }}
+                role="group"
+                viewBox="0 0 120 120"
+              >
                 <circle
-                  className="dashboard-page__donut-available"
+                  aria-hidden="true"
+                  className="dashboard-page__donut-track"
                   cx="60"
                   cy="60"
                   r="47"
+                />
+                <circle
+                  aria-label={`${t.dashboard.summary.available}: ${numberFormatter.format(dashboardViewModel.boothOverview.available)}`}
+                  className={`dashboard-page__donut-available${hoveredBoothStatus === "available" ? " dashboard-page__donut-segment--active" : ""}`}
+                  cx="60"
+                  cy="60"
+                  onBlur={() => setHoveredBoothStatus(null)}
+                  onFocus={() => setHoveredBoothStatus("available")}
+                  r="47"
+                  role="img"
                   style={{
                     strokeDasharray: `${boothAvailableRatio * 295.31} 295.31`,
                   }}
+                  tabIndex={0}
                 />
                 <circle
-                  className="dashboard-page__donut-allocated"
+                  aria-label={`${t.dashboard.summary.allocated}: ${numberFormatter.format(dashboardViewModel.boothOverview.allocated)}`}
+                  className={`dashboard-page__donut-allocated${hoveredBoothStatus === "allocated" ? " dashboard-page__donut-segment--active" : ""}`}
                   cx="60"
                   cy="60"
+                  onBlur={() => setHoveredBoothStatus(null)}
+                  onFocus={() => setHoveredBoothStatus("allocated")}
                   r="47"
+                  role="img"
                   style={{
                     strokeDasharray: `${(1 - boothAvailableRatio) * 295.31} 295.31`,
                     strokeDashoffset: `${-boothAvailableRatio * 295.31}`,
                   }}
+                  tabIndex={0}
                 />
               </svg>
               <div className="dashboard-page__donut-content">
@@ -397,6 +451,22 @@ export function DashboardPage() {
                 </strong>
                 <span>{t.dashboard.totalBooths}</span>
               </div>
+              {boothTooltip ? (
+                <div
+                  aria-live="polite"
+                  className={`dashboard-page__booth-tooltip dashboard-page__booth-tooltip--${boothTooltip.status}`}
+                  role="status"
+                >
+                  <span>
+                    <i
+                      aria-hidden="true"
+                      className={`dashboard-page__booth-tooltip-indicator dashboard-page__booth-tooltip-indicator--${boothTooltip.status}`}
+                    />
+                    {boothTooltip.label}
+                  </span>
+                  <strong>{numberFormatter.format(boothTooltip.value)}</strong>
+                </div>
+              ) : null}
             </div>
 
             <dl className="dashboard-page__booth-legend">

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { DashboardChartSeries } from "../types";
 import "./DashboardCharts.scss";
 
@@ -6,10 +7,16 @@ type ChartPoint = {
   y: number;
 };
 
+type ActiveChartPoint = ChartPoint & {
+  date: string;
+  value: number;
+};
+
 interface DashboardChartProps {
   ariaLabel: string;
   formatLabel: (date: string) => string;
   formatPointLabel: (date: string, value: number) => string;
+  formatValue: (value: number) => string;
   series: DashboardChartSeries;
   yAxisValues?: readonly number[];
 }
@@ -23,6 +30,9 @@ const CHART_PADDING = {
   top: 16,
 };
 const GRID_LINE_COUNT = 4;
+const TOOLTIP_HEIGHT = 68;
+const TOOLTIP_OFFSET = 14;
+const TOOLTIP_WIDTH = 138;
 
 function getChartBounds() {
   return {
@@ -157,17 +167,69 @@ function ChartLabels({
   );
 }
 
+function ChartPointTooltip({
+  formatLabel,
+  formatValue,
+  point,
+}: Pick<DashboardChartProps, "formatLabel" | "formatValue"> & {
+  point: ActiveChartPoint;
+}) {
+  const bounds = getChartBounds();
+  const x = Math.min(
+    Math.max(point.x + TOOLTIP_OFFSET, bounds.left),
+    bounds.right - TOOLTIP_WIDTH,
+  );
+  const y = Math.max(bounds.top, point.y - TOOLTIP_HEIGHT - TOOLTIP_OFFSET);
+
+  return (
+    <g
+      aria-hidden="true"
+      className="dashboard-chart__tooltip"
+      pointerEvents="none"
+      transform={`translate(${x} ${y})`}
+    >
+      <rect
+        className="dashboard-chart__tooltip-card"
+        height={TOOLTIP_HEIGHT}
+        rx="10"
+        width={TOOLTIP_WIDTH}
+      />
+      <circle
+        className="dashboard-chart__tooltip-indicator"
+        cx="16"
+        cy="18"
+        r="4"
+      />
+      <text className="dashboard-chart__tooltip-label" x="28" y="22">
+        {formatLabel(point.date)}
+      </text>
+      <text className="dashboard-chart__tooltip-value" x="14" y="51">
+        {formatValue(point.value)}
+      </text>
+    </g>
+  );
+}
+
 export function DashboardLineChart({
   ariaLabel,
   formatLabel,
   formatPointLabel,
+  formatValue,
   series,
   yAxisValues,
 }: DashboardChartProps) {
+  const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   const bounds = getChartBounds();
   const maximumValue = getMaximumValue(series, yAxisValues);
   const points = getChartPoints(series, maximumValue);
   const linePath = getSmoothPath(points);
+  const activePoint =
+    activePointIndex === null
+      ? null
+      : {
+          ...points[activePointIndex],
+          ...series.points[activePointIndex],
+        };
   const areaPath = points.length
     ? `${linePath} L ${points[points.length - 1].x} ${bounds.bottom} L ${points[0].x} ${bounds.bottom} Z`
     : "";
@@ -190,16 +252,40 @@ export function DashboardLineChart({
       <path className="dashboard-chart__area" d={areaPath} />
       <path className="dashboard-chart__line" d={linePath} />
       <g className="dashboard-chart__points">
-        {series.points.map((point, index) => (
-          <circle
-            cx={points[index].x}
-            cy={points[index].y}
-            key={point.date}
-            r="4"
-          >
-            <title>{formatPointLabel(point.date, point.value)}</title>
-          </circle>
-        ))}
+        {series.points.map((point, index) => {
+          const isActive = index === activePointIndex;
+
+          return (
+            <g key={point.date}>
+              <circle
+                aria-hidden="true"
+                className={`dashboard-chart__point-marker${isActive ? " dashboard-chart__point-marker--active" : ""}`}
+                cx={points[index].x}
+                cy={points[index].y}
+                r="4"
+              />
+              <circle
+                aria-label={formatPointLabel(point.date, point.value)}
+                className="dashboard-chart__point-hit-area"
+                cx={points[index].x}
+                cy={points[index].y}
+                onBlur={() => setActivePointIndex(null)}
+                onFocus={() => setActivePointIndex(index)}
+                onMouseEnter={() => setActivePointIndex(index)}
+                onMouseLeave={() => setActivePointIndex(null)}
+                r="14"
+                tabIndex={0}
+              />
+            </g>
+          );
+        })}
+        {activePoint ? (
+          <ChartPointTooltip
+            formatLabel={formatLabel}
+            formatValue={formatValue}
+            point={activePoint}
+          />
+        ) : null}
       </g>
       <ChartLabels
         formatLabel={formatLabel}

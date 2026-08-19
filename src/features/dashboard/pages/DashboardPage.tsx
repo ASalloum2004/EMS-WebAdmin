@@ -43,6 +43,16 @@ const platformTabs: readonly DashboardActivityTab[] = [
   "events",
 ];
 
+const platformActivityYAxisValues: Partial<
+  Record<DashboardActivityTab, readonly number[]>
+> = {
+  boothRequests: [0, 10, 20, 40, 70],
+  companies: [0, 10, 20, 40, 70],
+  events: [0, 10, 20, 40, 70],
+  leads: [0, 100, 200, 400, 700],
+  visitors: [0, 10, 20, 40, 70],
+};
+
 function getAdminName(name: string | undefined, fallbackName: string) {
   return name?.trim() || fallbackName;
 }
@@ -344,6 +354,7 @@ export function DashboardPage() {
                 formatLabel={formatDate}
                 formatPointLabel={formatPointLabel}
                 series={dashboardViewModel.platformActivity[activePlatformTab]}
+                yAxisValues={platformActivityYAxisValues[activePlatformTab]}
               />
             </div>
           </Card>

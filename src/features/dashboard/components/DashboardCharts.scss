@@ -11,12 +11,20 @@
   stroke-dasharray: 3 4;
 }
 
-.dashboard-chart__labels text {
+.dashboard-chart__labels text,
+.dashboard-chart__y-axis text {
   fill: var(--ems-color-muted-light);
   font-family: var(--ems-font-body);
   font-size: 12px;
   font-weight: 500;
+}
+
+.dashboard-chart__labels text {
   text-anchor: middle;
+}
+
+.dashboard-chart__y-axis text {
+  text-anchor: end;
 }
 
 .dashboard-chart__area {
@@ -46,7 +54,8 @@
     min-height: 190px;
   }
 
-  .dashboard-chart__labels text {
+  .dashboard-chart__labels text,
+  .dashboard-chart__y-axis text {
     font-size: 10px;
   }
 }

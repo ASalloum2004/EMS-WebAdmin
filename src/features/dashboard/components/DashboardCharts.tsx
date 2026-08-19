@@ -11,13 +11,14 @@ interface DashboardChartProps {
   formatLabel: (date: string) => string;
   formatPointLabel: (date: string, value: number) => string;
   series: DashboardChartSeries;
+  yAxisValues?: readonly number[];
 }
 
 const CHART_WIDTH = 680;
 const CHART_HEIGHT = 240;
 const CHART_PADDING = {
   bottom: 38,
-  left: 16,
+  left: 54,
   right: 16,
   top: 16,
 };
@@ -34,8 +35,23 @@ function getChartBounds() {
   };
 }
 
-function getMaximumValue(series: DashboardChartSeries) {
-  return Math.max(...series.points.map((point) => point.value), 1);
+function getMaximumValue(
+  series: DashboardChartSeries,
+  yAxisValues: readonly number[] | undefined,
+) {
+  const requestedMaximum = Math.max(...(yAxisValues ?? []), 0);
+
+  return Math.max(
+    ...series.points.map((point) => point.value),
+    requestedMaximum,
+    1,
+  );
+}
+
+function getValueY(value: number, maximumValue: number) {
+  const bounds = getChartBounds();
+
+  return bounds.bottom - (value / maximumValue) * bounds.height;
 }
 
 function getChartPoints(series: DashboardChartSeries, maximumValue: number) {
@@ -44,7 +60,7 @@ function getChartPoints(series: DashboardChartSeries, maximumValue: number) {
 
   return series.points.map((point, index) => ({
     x: bounds.left + (bounds.width * index) / lastIndex,
-    y: bounds.bottom - (point.value / maximumValue) * bounds.height,
+    y: getValueY(point.value, maximumValue),
   }));
 }
 
@@ -69,33 +85,65 @@ function getSmoothPath(points: readonly ChartPoint[]) {
   }, "");
 }
 
-function ChartGrid() {
+function ChartGrid({
+  maximumValue,
+  yAxisValues,
+}: Pick<DashboardChartProps, "yAxisValues"> & { maximumValue: number }) {
   const bounds = getChartBounds();
+  const gridValues = yAxisValues ?? Array.from(
+    { length: GRID_LINE_COUNT + 1 },
+    (_, index) => (maximumValue * index) / GRID_LINE_COUNT,
+  );
 
   return (
     <g className="dashboard-chart__grid" aria-hidden="true">
-      {Array.from({ length: GRID_LINE_COUNT + 1 }, (_, index) => {
-        const y = bounds.top + (bounds.height * index) / GRID_LINE_COUNT;
+      {gridValues.map((value) => (
+        <line
+          key={value}
+          x1={bounds.left}
+          x2={bounds.right}
+          y1={getValueY(value, maximumValue)}
+          y2={getValueY(value, maximumValue)}
+        />
+      ))}
+    </g>
+  );
+}
 
-        return (
-          <line
-            key={index}
-            x1={bounds.left}
-            x2={bounds.right}
-            y1={y}
-            y2={y}
-          />
-        );
-      })}
+function ChartYAxis({
+  maximumValue,
+  yAxisValues,
+}: Pick<DashboardChartProps, "yAxisValues"> & { maximumValue: number }) {
+  if (!yAxisValues?.length) {
+    return null;
+  }
+
+  const bounds = getChartBounds();
+
+  return (
+    <g className="dashboard-chart__y-axis" aria-hidden="true">
+      {yAxisValues.map((value) => (
+        <text
+          alignmentBaseline="middle"
+          key={value}
+          x={bounds.left - 12}
+          y={getValueY(value, maximumValue)}
+        >
+          {value}
+        </text>
+      ))}
     </g>
   );
 }
 
 function ChartLabels({
   formatLabel,
+  maximumValue,
   series,
-}: Pick<DashboardChartProps, "formatLabel" | "series">) {
-  const points = getChartPoints(series, getMaximumValue(series));
+}: Pick<DashboardChartProps, "formatLabel" | "series"> & {
+  maximumValue: number;
+}) {
+  const points = getChartPoints(series, maximumValue);
   const bounds = getChartBounds();
 
   return (
@@ -114,9 +162,10 @@ export function DashboardLineChart({
   formatLabel,
   formatPointLabel,
   series,
+  yAxisValues,
 }: DashboardChartProps) {
   const bounds = getChartBounds();
-  const maximumValue = getMaximumValue(series);
+  const maximumValue = getMaximumValue(series, yAxisValues);
   const points = getChartPoints(series, maximumValue);
   const linePath = getSmoothPath(points);
   const areaPath = points.length
@@ -136,7 +185,8 @@ export function DashboardLineChart({
           <stop offset="100%" stopColor="var(--ems-color-primary)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <ChartGrid />
+      <ChartGrid maximumValue={maximumValue} yAxisValues={yAxisValues} />
+      <ChartYAxis maximumValue={maximumValue} yAxisValues={yAxisValues} />
       <path className="dashboard-chart__area" d={areaPath} />
       <path className="dashboard-chart__line" d={linePath} />
       <g className="dashboard-chart__points">
@@ -151,7 +201,11 @@ export function DashboardLineChart({
           </circle>
         ))}
       </g>
-      <ChartLabels formatLabel={formatLabel} series={series} />
+      <ChartLabels
+        formatLabel={formatLabel}
+        maximumValue={maximumValue}
+        series={series}
+      />
     </svg>
   );
 }

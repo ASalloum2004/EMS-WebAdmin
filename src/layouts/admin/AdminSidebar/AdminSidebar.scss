@@ -48,6 +48,11 @@
   width: 100%;
   min-height: 40px;
   display: flex;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
@@ -56,9 +61,11 @@
   font-family: var(--ems-font-body);
   font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+    line-height: 20px;
+  text-align: start;
   text-decoration: none;
   transition:
+
     background-color 160ms ease,
     color 160ms ease;
 }

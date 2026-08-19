@@ -11,7 +11,7 @@ import {
   visitorsIcon,
 } from "../../../assets/AdminSideBar";
 import { useI18n, type I18nDictionary } from "../../../i18n";
-import { AppLink } from "../../../router/AppLink";
+import { navigateToAppRoute } from "../../../router/AppLink";
 import "./AdminSidebar.scss";
 
 type AdminSidebarItem = {
@@ -100,14 +100,16 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
           const isActive = isActivePath(item.href);
 
           return (
-            <AppLink
-              key={item.href}
-              href={item.href}
+                        <button
+              aria-current={isActive ? "page" : undefined}
               className={
                 isActive
                   ? "admin-sidebar__link admin-sidebar__link--active"
                   : "admin-sidebar__link"
               }
+              key={item.href}
+              onClick={() => navigateToAppRoute(item.href)}
+              type="button"
             >
               <span
                 className="admin-sidebar__icon"
@@ -116,7 +118,8 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
               />
 
               <span>{t.layout.sidebar[item.labelKey]}</span>
-            </AppLink>
+            </button>
+
           );
         })}
       </nav>

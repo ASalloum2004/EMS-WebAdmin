@@ -26,13 +26,20 @@
   border: 1px solid var(--ems-color-border-soft);
   border-radius: var(--ems-radius-sm);
   background-color: var(--ems-color-data-row-background);
+  transition: background-color 160ms ease;
+}
+
+.data-table__row:hover {
+  background-color: var(--ems-color-admin-hover);
 }
 
 .data-table__row--interactive {
   cursor: pointer;
-  transition:
+    transition:
+    background-color 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease;
+
 }
 
 .data-table__row--interactive:hover {

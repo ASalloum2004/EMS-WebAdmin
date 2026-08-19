@@ -53,7 +53,7 @@ export interface AnnouncementPagination {
 }
 
 export interface GetAnnouncementsParams {
-  isDraft?: boolean;
+  isActive?: boolean;
   page?: number;
   perPage?: number;
   receiver?: AnnouncementFormReceiver;

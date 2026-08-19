@@ -63,7 +63,7 @@ export function mapAnnouncementApiDto(
     title: apiAnnouncement.title,
     description: apiAnnouncement.description,
     receiver: normalizeReceiver(apiAnnouncement.receiver),
-    isDraft: apiAnnouncement.is_active,
+    isDraft: !apiAnnouncement.is_active,
     media: resolveApiMediaUrl(apiAnnouncement.media),
   };
 }

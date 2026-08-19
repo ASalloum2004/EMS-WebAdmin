@@ -39,7 +39,7 @@ export function useLoginForm() {
 
     try {
       await signIn(credentials, rememberMe);
-      window.location.replace("/profile");
+      window.location.replace("/dashboard");
     } catch {
       setError("password or email inncorect.");
     } finally {

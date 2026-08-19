@@ -78,7 +78,7 @@ export function AnnouncementEditModal({
   const [description, setDescription] = useState("");
   const [receiver, setReceiver] =
     useState<AnnouncementFormReceiver>("all");
-  const [isDraft, setIsDraft] = useState(true);
+  const [isDraft, setIsDraft] = useState(false);
   const [existingMediaUrl, setExistingMediaUrl] = useState<string | null>(null);
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

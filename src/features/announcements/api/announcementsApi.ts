@@ -60,8 +60,8 @@ export function buildAnnouncementsPath(
     );
   }
 
-  if (params.isDraft !== undefined) {
-    queryParams.set("filter[is_active]", String(params.isDraft));
+  if (params.isActive !== undefined) {
+    queryParams.set("filter[is_active]", String(params.isActive));
   }
 
   queryParams.set("page", String(page));

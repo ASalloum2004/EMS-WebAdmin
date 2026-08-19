@@ -12,6 +12,7 @@ import {
 } from "../../../../i18n";
 import {
   formatNotificationDate,
+  getNotificationTarget,
   getNotificationTypeLabel,
 } from "../../data";
 import type {
@@ -27,7 +28,7 @@ type NotificationTableProps = {
   items: NotificationItem[];
   onDelete: (notification: NotificationItem) => void;
   onMarkAsRead: (notification: NotificationItem) => void;
-  onSelectNotification: (notification: NotificationItem) => void;
+  onOpenTarget: (notification: NotificationItem) => void;
 };
 
 function NotificationIdentity({
@@ -105,7 +106,7 @@ export function NotificationTable({
   items,
   onDelete,
   onMarkAsRead,
-  onSelectNotification,
+  onOpenTarget,
 }: NotificationTableProps) {
   const { language, t } = useI18n();
   const columns = useMemo(
@@ -120,11 +121,14 @@ export function NotificationTable({
       columns={columns}
       emptyMessage={emptyMessage}
       getItemAriaLabel={(item) =>
-        `${t.notifications.details.openAriaLabel}: ${item.title}`
+        getNotificationTarget(item)
+          ? `${t.notifications.table.openTargetAriaLabel}: ${item.title}`
+          : item.title
       }
       getItemKey={(item) => item.id}
+      isItemInteractive={(item) => getNotificationTarget(item) !== null}
       items={items}
-      onItemClick={onSelectNotification}
+      onItemClick={onOpenTarget}
       actions={(item) => (
         <>
           {item.status === "unread" ? (

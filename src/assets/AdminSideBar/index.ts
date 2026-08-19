@@ -1,5 +1,6 @@
 export { default as announcementsIcon } from "./announcements.svg";
 export { default as companiesIcon } from "./companies.svg";
+export { default as dashboardIcon } from "./dashboard.svg";
 export { default as managementsIcon } from "./managements.svg";
 export { default as notificationIcon } from "./notification.svg";
 export { default as ordersServicesIcon } from "./orders-services.svg";

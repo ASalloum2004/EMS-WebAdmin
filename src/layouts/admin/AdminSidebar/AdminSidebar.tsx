@@ -2,6 +2,7 @@
 import {
   announcementsIcon,
   companiesIcon,
+  dashboardIcon,
   managementsIcon,
   notificationIcon,
   ordersServicesIcon,
@@ -25,6 +26,11 @@ interface AdminSidebarProps {
 }
 
 const sidebarItems: AdminSidebarItem[] = [
+  {
+    href: "/dashboard",
+    icon: dashboardIcon,
+    labelKey: "dashboard",
+  },
   {
     href: "/orders",
     icon: ordersServicesIcon,

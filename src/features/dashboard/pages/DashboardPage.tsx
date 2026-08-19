@@ -2,7 +2,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type ChangeEvent,
   type CSSProperties,
   type ReactNode,
 } from "react";
@@ -23,7 +22,6 @@ import { ManagementLayout } from "../../../layouts";
 import { AppLink } from "../../../router";
 import {
   dashboardBoothOverview,
-  dashboardDateRanges,
   dashboardPlatformActivity,
   dashboardQuickOverview,
   dashboardRequestsOverview,
@@ -35,7 +33,6 @@ import {
 } from "../components";
 import type {
   DashboardActivityTab,
-  DashboardDateRange,
   DashboardQuickOverviewKey,
   DashboardRequestStatus,
   DashboardSummaryCardKey,
@@ -69,8 +66,6 @@ function getPlatformActivityTabFromLocation(): DashboardActivityTab {
 export function DashboardPage() {
   const { language, t } = useI18n();
   const profile = useOptionalProfileContext()?.profile;
-  const [dateRange, setDateRange] =
-    useState<DashboardDateRange>("last7Days");
   const [activePlatformTab, setActivePlatformTab] =
     useState<DashboardActivityTab>(getPlatformActivityTabFromLocation);
 
@@ -165,18 +160,6 @@ export function DashboardPage() {
     return `${formatDate(day)}: ${numberFormatter.format(value)}`;
   }
 
-  function handleDateRangeChange(event: ChangeEvent<HTMLSelectElement>) {
-    const nextDateRange = event.target.value;
-
-    if (
-      nextDateRange === "last7Days" ||
-      nextDateRange === "last30Days" ||
-      nextDateRange === "thisMonth"
-    ) {
-      setDateRange(nextDateRange);
-    }
-  }
-
   return (
     <ManagementLayout>
       <div className="dashboard-page">
@@ -190,19 +173,6 @@ export function DashboardPage() {
             </p>
           </div>
 
-          <label className="dashboard-page__date-range">
-            <span className="dashboard-page__sr-only">
-              {t.dashboard.dateRange.label}
-            </span>
-            <CalendarDays aria-hidden="true" size={18} strokeWidth={1.8} />
-            <select onChange={handleDateRangeChange} value={dateRange}>
-              {dashboardDateRanges.map((range) => (
-                <option key={range} value={range}>
-                  {t.dashboard.dateRange[range]}
-                </option>
-              ))}
-            </select>
-          </label>
         </section>
 
         <section
@@ -225,7 +195,7 @@ export function DashboardPage() {
 
                 {summaryCard.periodValue !== undefined ? (
                   <p className="dashboard-page__summary-detail">
-                    {numberFormatter.format(summaryCard.periodValue)} {t.dashboard.summary.thisWeek}
+                    {numberFormatter.format(summaryCard.periodValue)} {t.dashboard.summary.thisDay}
                   </p>
                 ) : null}
 

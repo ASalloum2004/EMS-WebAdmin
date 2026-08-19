@@ -2,17 +2,10 @@ import type {
   DashboardActivityTab,
   DashboardBoothOverview,
   DashboardChartSeries,
-  DashboardDateRange,
   DashboardQuickOverviewItem,
   DashboardRequestOverviewItem,
   DashboardSummaryCard,
 } from "../types";
-
-export const dashboardDateRanges: readonly DashboardDateRange[] = [
-  "last7Days",
-  "last30Days",
-  "thisMonth",
-];
 
 export const dashboardSummaryCards: readonly DashboardSummaryCard[] = [
   {

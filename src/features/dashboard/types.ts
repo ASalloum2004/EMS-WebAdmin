@@ -1,5 +1,3 @@
-export type DashboardDateRange = "last7Days" | "last30Days" | "thisMonth";
-
 export type DashboardSummaryCardKey =
   | "visitors"
   | "companies"

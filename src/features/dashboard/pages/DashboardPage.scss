@@ -8,13 +8,6 @@
   direction: inherit;
 }
 
-.dashboard-page__welcome {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
 .dashboard-page__welcome-title,
 .dashboard-page__welcome-description {
   margin: 0;
@@ -34,49 +27,6 @@
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-}
-
-.dashboard-page__date-range {
-  min-width: 156px;
-  height: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid var(--ems-color-border-soft);
-  border-radius: var(--ems-radius-sm);
-  background-color: var(--ems-color-card-background, var(--ems-color-white));
-  color: var(--ems-color-primary);
-  box-shadow: var(--ems-shadow-button);
-}
-
-.dashboard-page__date-range select {
-  min-width: 0;
-  flex: 1;
-  border: 0;
-  outline: 0;
-  background-color: transparent;
-  color: var(--ems-color-heading);
-  font-family: var(--ems-font-body);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  cursor: pointer;
-}
-
-.dashboard-page__date-range:focus-within {
-  border-color: var(--ems-color-primary);
-  box-shadow: 0 0 0 4px var(--ems-color-focus-ring);
-}
-
-.dashboard-page__sr-only {
-  width: 1px;
-  height: 1px;
-  position: absolute;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .dashboard-page__summary {
@@ -588,15 +538,6 @@
 @media (max-width: 640px) {
   .dashboard-page {
     gap: 24px;
-  }
-
-  .dashboard-page__welcome {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .dashboard-page__date-range {
-    width: 100%;
   }
 
   .dashboard-page__summary {

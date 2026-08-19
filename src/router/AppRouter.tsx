@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+﻿import { useEffect, useState, type ReactNode } from "react";
 import { LoginPage, ResetPasswordPage } from "../features/auth/pages";
 import { AnnouncementsPage } from "../features/announcements";
 import { CompanyPage } from "../features/company";
@@ -8,6 +8,7 @@ import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
 import { ReportsPage } from "../features/reports";
 import { VisitorPage } from "../features/visitor";
+import { VolunteerPage } from "../features/volunteer";
 import { AdminLayout } from "../layouts";
 import { AuthGuard } from "./AuthGuard";
 
@@ -20,6 +21,7 @@ const adminRoutes: Record<string, ReactNode> = {
   "/profile": <ProfilePage />,
   "/reports": <ReportsPage />,
   "/visitors": <VisitorPage />,
+  "/volunteers": <VolunteerPage />,
 };
 
 export function AppRouter() {
@@ -48,3 +50,4 @@ export function AppRouter() {
 
   return <LoginPage />;
 }
+

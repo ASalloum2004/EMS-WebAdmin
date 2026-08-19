@@ -1,7 +1,7 @@
 import { getAuthSession } from "../features/auth/utils/authStorage";
 
 export const API_BASE_URL =
-  "https://pet-board-season-anytime.trycloudflare.com/api/v1/admin/";
+  "https://easy-printable-supplies-hold.trycloudflare.com/api/v1/admin/";
 
 export const CONTENT_REQUEST_TIMEOUT_MS = 15_000;
 
@@ -216,5 +216,67 @@ export async function apiRequest<TResponse>(
     }
 
     callerSignal?.removeEventListener("abort", abortFromCaller);
+  }
+}
+
+export async function apiRequestBlob(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<Blob> {
+  const {
+    requiresAuth = false,
+    headers,
+    body,
+    signal,
+    timeoutMs,
+    ...requestOptions
+  } = options;
+  const hasFormDataBody = isFormDataBody(body);
+  const requestController =
+    typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0
+      ? new AbortController()
+      : null;
+  let didTimeout = false;
+  const timeoutId = requestController
+    ? globalThis.setTimeout(() => {
+        didTimeout = true;
+        requestController.abort();
+      }, timeoutMs)
+    : undefined;
+
+  try {
+    const response = await fetch(buildApiUrl(path), {
+      ...requestOptions,
+      body,
+      headers: buildRequestHeaders(headers, requiresAuth, hasFormDataBody),
+      signal: requestController?.signal ?? signal,
+    });
+    if (!response.ok) {
+      let message = `Request failed with status ${response.status}`;
+      let errors: Record<string, unknown> | undefined;
+      let responseMessage: string | null | undefined;
+      try {
+        const errorBody = await readJsonResponse<ApiErrorBody>(response);
+        responseMessage =
+          typeof errorBody.message === "string" || errorBody.message === null
+            ? errorBody.message
+            : undefined;
+        message = errorBody.message ?? errorBody.error ?? message;
+        errors = isJsonRecord(errorBody.errors) ? errorBody.errors : undefined;
+      } catch {
+        // Keep the fallback message when the API does not return JSON.
+      }
+      throw new ApiRequestError(message, response.status, errors, responseMessage);
+    }
+    return response.blob();
+  } catch (error) {
+    if (didTimeout) {
+      throw new ApiRequestTimeoutError();
+    }
+    throw error;
+  } finally {
+    if (timeoutId !== undefined) {
+      globalThis.clearTimeout(timeoutId);
+    }
   }
 }

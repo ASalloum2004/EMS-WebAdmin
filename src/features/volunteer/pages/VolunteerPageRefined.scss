@@ -1,0 +1,28 @@
+.volunteer-table.data-table {
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.volunteer-filters-panel__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.volunteer-filters-panel__field {
+  min-width: 0;
+}
+
+[dir="ltr"] .volunteer-filters-panel select {
+  direction: ltr;
+  text-align: left;
+}
+
+[dir="rtl"] .volunteer-filters-panel select {
+  direction: rtl;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .volunteer-filters-panel__grid {
+    grid-template-columns: 1fr;
+  }
+}

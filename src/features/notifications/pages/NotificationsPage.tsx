@@ -1,4 +1,10 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { Bell, BellRing, CheckCheck } from "lucide-react";
 import { MarkAllReadIcon } from "../../../assets/icons/activityIcons";
 import {
@@ -25,6 +31,7 @@ import {
   useNotifications,
   useNotificationStatistics,
 } from "../hooks";
+import { NOTIFICATIONS_RECEIVED_EVENT } from "../push";
 import type {
   NotificationStatisticsData,
   NotificationItem,
@@ -125,6 +132,21 @@ export function NotificationsPage() {
     notificationStatistics.refetch,
     unreadNotifications.refetch,
   ]);
+  useEffect(() => {
+    const handlePushNotification = () => {
+      void refreshNotificationData();
+    };
+
+    window.addEventListener(NOTIFICATIONS_RECEIVED_EVENT, handlePushNotification);
+
+    return () => {
+      window.removeEventListener(
+        NOTIFICATIONS_RECEIVED_EVENT,
+        handlePushNotification,
+      );
+    };
+  }, [refreshNotificationData]);
+
   const markAllNotificationsRead = useMarkAllNotificationsRead({
     errorFallback: t.notifications.actions.markAllAsReadError,
     onSuccess: refreshNotificationData,

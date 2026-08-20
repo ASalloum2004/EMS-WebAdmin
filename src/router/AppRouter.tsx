@@ -10,6 +10,7 @@ import { OrderPage } from "../features/order";
 import { ProfilePage } from "../features/profile/pages";
 import { ReportsPage } from "../features/reports";
 import { VisitorPage } from "../features/visitor";
+import { VolunteerPage } from "../features/volunteer";
 import { AdminLayout } from "../layouts";
 import { AuthGuard } from "./AuthGuard";
 
@@ -23,6 +24,7 @@ const adminRoutes: Record<string, ReactNode> = {
   "/profile": <ProfilePage />,
   "/reports": <ReportsPage />,
   "/visitors": <VisitorPage />,
+  "/volunteers": <VolunteerPage />,
 };
 
 export function AppRouter() {
@@ -61,3 +63,4 @@ export function AppRouter() {
 
   return <LoginPage />;
 }
+

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+﻿import type { CSSProperties } from "react";
 import {
   announcementsIcon,
   companiesIcon,
@@ -9,6 +9,7 @@ import {
   profileIcon,
   reportsIcon,
   visitorsIcon,
+  volunteersIcon,
 } from "../../../assets/AdminSideBar";
 import { useI18n, type I18nDictionary } from "../../../i18n";
 import { navigateToAppRoute } from "../../../router/AppLink";
@@ -44,6 +45,11 @@ const sidebarItems: AdminSidebarItem[] = [
     href: "/visitors",
     icon: visitorsIcon,
     labelKey: "visitors",
+  },
+  {
+    href: "/volunteers",
+    icon: volunteersIcon,
+    labelKey: "volunteers",
   },
   {
     href: "/notifications",
@@ -136,3 +142,4 @@ export function AdminSidebar({ adminName }: AdminSidebarProps) {
     </aside>
   );
 }
+

@@ -7,3 +7,4 @@ export { default as ordersServicesIcon } from "./orders-services.svg";
 export { default as profileIcon } from "./profile.svg";
 export { default as reportsIcon } from "./reports.svg";
 export { default as visitorsIcon } from "./visitors.svg";
+export { default as volunteersIcon } from "./volunteers.svg";

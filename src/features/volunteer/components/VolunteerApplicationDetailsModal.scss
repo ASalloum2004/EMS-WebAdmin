@@ -1,0 +1,172 @@
+.volunteer-details__heading {
+  min-width: 0;
+}
+
+.volunteer-details__heading h2,
+.volunteer-details__heading p {
+  margin: 0;
+}
+
+.volunteer-details__heading h2 {
+  color: var(--ems-color-heading);
+  font-family: var(--ems-font-heading);
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.volunteer-details__heading p {
+  color: var(--ems-color-muted);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.volunteer-details__status {
+  align-items: center;
+  border-radius: 9999px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 28px;
+  min-width: 84px;
+  padding: 5px 12px;
+}
+
+.volunteer-details__status--pending {
+  background-color: var(--ems-color-primary-soft, var(--ems-color-success-surface));
+  color: var(--ems-color-primary-dark);
+}
+
+.volunteer-details__status--approved {
+  background-color: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.volunteer-details__status--rejected {
+  background-color: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+.volunteer-details__status--unknown {
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
+.volunteer-details__wide {
+  grid-column: 1 / -1;
+}
+
+.volunteer-details__content,
+.volunteer-details__empty {
+  color: var(--ems-color-text);
+  line-height: 22px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.volunteer-details__empty {
+  color: var(--ems-color-muted);
+}
+
+.volunteer-details__cv {
+  align-items: center;
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  color: var(--ems-color-primary);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: var(--ems-font-body);
+  font-size: 14px;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 9px 14px;
+}
+
+.volunteer-details__review-note {
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  color: var(--ems-color-text);
+  font: inherit;
+  min-height: 104px;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+
+.volunteer-details__review-note:focus {
+  border-color: var(--ems-color-primary);
+  box-shadow: 0 0 0 3px var(--ems-color-focus-ring);
+  outline: none;
+}
+
+.volunteer-details__skeleton-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+@media (max-width: 640px) {
+  .volunteer-details__status {
+    min-width: 0;
+    padding-inline: 9px;
+  }
+
+  .volunteer-details__wide {
+    grid-column: auto;
+  }
+}
+
+.event-request-details-modal__actions.volunteer-details__actions--final {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.volunteer-details__cv {
+  gap: 8px;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.volunteer-details__cv:hover:not(:disabled) {
+  background-color: var(--ems-color-primary-soft, var(--ems-color-card-background));
+  border-color: var(--ems-color-primary);
+}
+
+.volunteer-details__cv:disabled {
+  cursor: progress;
+}
+
+.volunteer-details__cv--loading {
+  opacity: 0.72;
+}
+
+.volunteer-details__cv-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid var(--ems-color-border-soft);
+  border-top-color: var(--ems-color-primary);
+  border-radius: 50%;
+  animation: volunteer-details-cv-spin 700ms linear infinite;
+}
+
+@keyframes volunteer-details-cv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.volunteer-details__action-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: volunteer-details-cv-spin 700ms linear infinite;
+}

@@ -18,7 +18,7 @@
 }
 
 .booth-request-details-modal__actions--final {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .booth-request-details-modal__action {
@@ -57,7 +57,18 @@
   transform: none;
 }
 
+.booth-request-details-modal__action--cancel {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-danger);
+}
+
+.booth-request-details-modal__action--cancel:hover:not(:disabled) {
+  background-color: var(--ems-color-danger-surface);
+}
+
 .booth-request-details-modal__action--reject {
+
   border-color: var(--ems-color-danger);
   background-color: var(--ems-color-card-background, var(--ems-color-white));
   color: var(--ems-color-danger);
@@ -101,6 +112,7 @@
 
 @media (max-width: 640px) {
   .booth-request-details-modal__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 14px 16px;
   }
 }

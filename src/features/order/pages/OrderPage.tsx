@@ -600,6 +600,7 @@ export function OrderPage() {
             boothRequestActions.isLoadingApproveConflicts
           }
           isRejecting={boothRequestActions.isRejecting}
+          isCancelling={boothRequestActions.isCancelling}
           isSendingPaymentReminder={boothPaymentReminder.isSending}
           onClearPaymentReminderError={boothPaymentReminder.clearError}
           onSendPaymentReminder={boothPaymentReminder.send}
@@ -610,6 +611,8 @@ export function OrderPage() {
           }
           onClearApproveError={boothRequestActions.clearApproveError}
           onClearRejectError={boothRequestActions.clearRejectError}
+          onCancel={boothRequestActions.cancelBoothRequestById}
+          onClearCancelError={boothRequestActions.clearCancelError}
           onClose={closeRequestDetails}
           onCloseApproveConflict={boothRequestActions.closeApproveConflict}
           onReject={boothRequestActions.rejectBoothRequestById}
@@ -617,6 +620,7 @@ export function OrderPage() {
           paymentReminderError={boothPaymentReminder.error}
           paymentReminderSuccessMessage={boothPaymentReminder.successMessage}
           rejectError={boothRequestActions.rejectError}
+          cancelError={boothRequestActions.cancelError}
         />
       ) : null}
 
@@ -633,6 +637,7 @@ export function OrderPage() {
             eventRequestActions.isLoadingApproveConflicts
           }
           isRejecting={eventRequestActions.isRejecting}
+          isCancelling={eventRequestActions.isCancelling}
           isSendingPaymentReminder={eventPaymentReminder.isSending}
           onClearPaymentReminderError={eventPaymentReminder.clearError}
           onSendPaymentReminder={eventPaymentReminder.send}
@@ -643,6 +648,8 @@ export function OrderPage() {
           }
           onClearApproveError={eventRequestActions.clearApproveError}
           onClearRejectError={eventRequestActions.clearRejectError}
+          onCancel={eventRequestActions.cancelEventRequestById}
+          onClearCancelError={eventRequestActions.clearCancelError}
           onClose={closeEventRequestDetails}
           onCloseApproveConflict={eventRequestActions.closeApproveConflict}
           onReject={eventRequestActions.rejectEventRequestById}
@@ -650,6 +657,7 @@ export function OrderPage() {
           paymentReminderError={eventPaymentReminder.error}
           paymentReminderSuccessMessage={eventPaymentReminder.successMessage}
           rejectError={eventRequestActions.rejectError}
+          cancelError={eventRequestActions.cancelError}
         />
       ) : null}
     </AdminLayout>

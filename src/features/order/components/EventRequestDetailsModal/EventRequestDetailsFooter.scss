@@ -17,6 +17,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.event-request-details-modal__actions:not(.event-request-details-modal__actions--pending) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .event-request-details-modal__action,
 .event-request-details-modal__final-status {
   width: 100%;
@@ -56,7 +60,18 @@
   transform: none;
 }
 
+.event-request-details-modal__action--cancel {
+  border-color: var(--ems-color-danger);
+  background-color: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-danger);
+}
+
+.event-request-details-modal__action--cancel:hover:not(:disabled) {
+  background-color: var(--ems-color-danger-surface);
+}
+
 .event-request-details-modal__action--reject {
+
   border-color: var(--ems-color-danger);
   background-color: var(
     --ems-color-card-background,

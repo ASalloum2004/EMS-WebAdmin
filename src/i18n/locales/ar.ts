@@ -579,6 +579,15 @@ export const ar: I18nDictionary = {
         loading: "جارٍ تنفيذ الموافقة…",
         error: "تعذرت الموافقة على طلب الفعالية.",
       },
+      cancelConfirmation: {
+        title: "إلغاء طلب الفعالية؟",
+        message: "هل أنت متأكد من رغبتك في إلغاء طلب الفعالية هذا؟",
+        eventLabel: "الفعالية",
+        confirm: "إلغاء الطلب",
+        loading: "جارٍ الإلغاء…",
+        error: "تعذر إلغاء طلب الفعالية.",
+        success: "تم إلغاء طلب الفعالية بنجاح.",
+      },
       rejectConfirmation: {
         title: "رفض طلب الفعالية؟",
         message:
@@ -673,6 +682,7 @@ export const ar: I18nDictionary = {
         unknownStatus: "حالة غير معروفة",
         approve: "موافقة",
         reject: "رفض",
+        cancel: "إلغاء",
       },
     },
     summary: {
@@ -712,6 +722,15 @@ export const ar: I18nDictionary = {
       pending: "معلقة",
       approved: "موافق عليها",
       rejected: "مرفوضة",
+      cancelled: "ملغاة",
+    },
+    cancelConfirmation: {
+      title: "إلغاء طلب حجز الجناح؟",
+      message: "هل أنت متأكد من رغبتك في إلغاء طلب حجز الجناح هذا؟",
+      confirm: "إلغاء الطلب",
+      cancelling: "جارٍ الإلغاء…",
+      error: "تعذر إلغاء طلب الجناح.",
+      success: "تم إلغاء طلب الجناح بنجاح.",
     },
     rejectConfirmation: {
       title: "رفض طلب حجز الجناح؟",

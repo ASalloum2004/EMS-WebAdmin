@@ -16,6 +16,8 @@ export {
 } from "./boothRequestDetailsApi";
 export {
   approveBoothRequest,
+  cancelBoothRequest,
+  buildCancelBoothRequestPath,
   buildApproveBoothRequestPath,
   buildRejectBoothRequestPath,
   normalizeApproveBoothRequestResponse,
@@ -40,6 +42,8 @@ export {
 } from "./eventRequestDetailsApi";
 export {
   approveEventRequest,
+  cancelEventRequest,
+  buildCancelEventRequestPath,
   buildApproveEventRequestPath,
   buildRejectEventRequestPath,
   normalizeApproveEventRequestConflict,

@@ -14,7 +14,9 @@ export function EventRequestDetailsFooter({
   approveButtonRef,
   isApproving,
   isRejecting,
+  isCancelling,
   onApprove,
+  onCancel,
   onReject,
   rejectButtonRef,
   status,
@@ -55,6 +57,16 @@ export function EventRequestDetailsFooter({
 
   return (
     <footer className="event-request-details-modal__actions">
+      {statusModifier === "approved" ? (
+        <button
+          className="event-request-details-modal__action event-request-details-modal__action--cancel"
+          disabled={isCancelling}
+          onClick={onCancel}
+          type="button"
+        >
+          {isCancelling ? labels.cancel : labels.cancel}
+        </button>
+      ) : null}
       <div
         aria-disabled="true"
         aria-label={statusLabel}

@@ -19,6 +19,7 @@ export interface EventRequestDetailsModalProps {
   isLoading: boolean;
   isLoadingApproveConflicts: boolean;
   isRejecting: boolean;
+  isCancelling: boolean;
   isSendingPaymentReminder: boolean;
   onClearPaymentReminderError: () => void;
   onSendPaymentReminder: () => Promise<unknown>;
@@ -40,6 +41,8 @@ export interface EventRequestDetailsModalProps {
     | null;
   onClearApproveError: () => void;
   onClearRejectError: () => void;
+  onCancel: (eventRequestId: number) => Promise<EventRequestActionResponse | null> | EventRequestActionResponse | null;
+  onClearCancelError: () => void;
   onClose: () => void;
   onCloseApproveConflict: () => boolean | void;
   onReject: (
@@ -52,6 +55,7 @@ export interface EventRequestDetailsModalProps {
   paymentReminderError: string;
   paymentReminderSuccessMessage: string;
   rejectError: string;
+  cancelError: string;
 }
 
 export interface EventRequestDetailsHeaderProps {
@@ -90,7 +94,9 @@ export interface EventRequestDetailsFooterProps {
   approveButtonRef: RefObject<HTMLButtonElement | null>;
   isApproving: boolean;
   isRejecting: boolean;
+  isCancelling: boolean;
   onApprove: () => void;
+  onCancel: () => void;
   onReject: () => void;
   rejectButtonRef: RefObject<HTMLButtonElement | null>;
   status: string | null;

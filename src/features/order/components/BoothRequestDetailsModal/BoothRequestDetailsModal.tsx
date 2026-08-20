@@ -13,6 +13,7 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { ApproveBoothRequestConflictModal } from "../ApproveBoothRequestConflictModal";
 import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmModal";
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
+import { CancelRequestConfirmModal } from "../CancelRequestConfirmModal";
 import { BoothRequestDetailsSkeleton } from "../skeletons";
 import { PaymentReminderButton } from "../PaymentReminderButton/PaymentReminderButton";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
@@ -42,6 +43,7 @@ export interface BoothRequestDetailsModalProps {
   isLoading: boolean;
   isLoadingApproveConflicts: boolean;
     isRejecting: boolean;
+  isCancelling: boolean;
   isSendingPaymentReminder: boolean;
   onClearPaymentReminderError: () => void;
   onSendPaymentReminder: () => Promise<unknown>;
@@ -63,6 +65,8 @@ export interface BoothRequestDetailsModalProps {
     | Promise<ApproveBoothRequestResult | null>;
   onClearApproveError: () => void;
   onClearRejectError: () => void;
+  onCancel: (boothRequestId: number) => Promise<BoothRequestActionResponse | null> | BoothRequestActionResponse | null;
+  onClearCancelError: () => void;
   onClose: () => void;
   onCloseApproveConflict: () => void;
   onReject: (
@@ -75,6 +79,7 @@ export interface BoothRequestDetailsModalProps {
   paymentReminderError: string;
   paymentReminderSuccessMessage: string;
   rejectError: string;
+  cancelError: string;
 }
 
 export function BoothRequestDetailsModal({
@@ -87,6 +92,7 @@ export function BoothRequestDetailsModal({
   isLoading,
   isLoadingApproveConflicts,
   isRejecting,
+  isCancelling,
   isSendingPaymentReminder,
   onClearPaymentReminderError,
   onSendPaymentReminder,
@@ -95,6 +101,8 @@ export function BoothRequestDetailsModal({
   onApproveConflictPageChange,
   onClearApproveError,
   onClearRejectError,
+  onCancel,
+  onClearCancelError,
   onClose,
   onCloseApproveConflict,
   onReject,
@@ -102,6 +110,7 @@ export function BoothRequestDetailsModal({
   paymentReminderError,
   paymentReminderSuccessMessage,
   rejectError,
+  cancelError,
 }: BoothRequestDetailsModalProps) {
   const { language, t } = useI18n();
   const dialogRef = useRef<HTMLElement>(null);
@@ -115,7 +124,26 @@ export function BoothRequestDetailsModal({
     useState(false);
   const [rejectConfirmationRequestId, setRejectConfirmationRequestId] =
     useState<number | null>(null);
+  const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const statusLabel = details ? t.order.status[details.status] : "";
+  const openCancelConfirmation = useCallback(() => {
+    if (!details || details.status !== "approved" || isCancelling) return;
+    onClearCancelError();
+    setIsCancelConfirmationOpen(true);
+  }, [details, isCancelling, onClearCancelError]);
+
+  const closeCancelConfirmation = useCallback(() => {
+    if (!isCancelling) {
+      setIsCancelConfirmationOpen(false);
+      onClearCancelError();
+    }
+  }, [isCancelling, onClearCancelError]);
+
+  const confirmCancel = useCallback(async () => {
+    if (!details || details.status !== "approved" || isCancelling) return;
+    const response = await onCancel(details.id);
+    if (response) setIsCancelConfirmationOpen(false);
+  }, [details, isCancelling, onCancel]);
   const isApproveConflictVisible = Boolean(
     approveConflict &&
       details?.status === "pending" &&
@@ -437,11 +465,19 @@ export function BoothRequestDetailsModal({
           )}
         </div>
 
+        {cancelError ? (
+          <p className="booth-request-details-modal__action-error" role="alert">
+            {cancelError}
+          </p>
+        ) : null}
+
         {details ? (
           <BoothRequestDetailsActions
             approveButtonRef={approveButtonRef}
             isApproving={isApproving}
             isRejecting={isRejecting}
+            isCancelling={isCancelling}
+            onCancelClick={openCancelConfirmation}
             onApproveClick={openApproveConfirmation}
             onRejectClick={openRejectConfirmation}
             rejectButtonRef={rejectButtonRef}
@@ -451,6 +487,17 @@ export function BoothRequestDetailsModal({
         ) : null}
         </section>
       </div>
+
+      {isCancelConfirmationOpen && details ? (
+        <CancelRequestConfirmModal
+          error={cancelError}
+          isCancelling={isCancelling}
+          itemLabel={getTrimmedString(details.company.name) || t.order.details.title}
+          labels={t.order.cancelConfirmation}
+          onCancel={closeCancelConfirmation}
+          onConfirm={confirmCancel}
+        />
+      ) : null}
 
       {isApproveConfirmationVisible && details ? (
         <ApproveBoothRequestConfirmModal

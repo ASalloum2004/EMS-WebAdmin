@@ -4,4 +4,5 @@ export * from "./markAllNotificationsReadApi";
 export * from "./markNotificationReadApi";
 export * from "./notificationApiUtils";
 export * from "./notificationStatisticsApi";
+export * from "./registerPushTokenApi";
 export * from "./unreadNotificationsApi";

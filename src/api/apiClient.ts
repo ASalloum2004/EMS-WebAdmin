@@ -90,6 +90,14 @@ function getAuthTokenFromSession(session: unknown): string | null {
   return getAuthTokenFromSession(session.data);
 }
 
+function handleUnauthorizedResponse(requiresAuth: boolean, status: number) {
+  if (!requiresAuth || status !== 401 || typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(new Event("auth:logout"));
+}
+
 function buildRequestHeaders(
   headers: HeadersInit | undefined,
   requiresAuth: boolean,
@@ -195,6 +203,8 @@ export async function apiRequest<TResponse>(
         // Keep the fallback message when the API does not return JSON.
       }
 
+      handleUnauthorizedResponse(requiresAuth, response.status);
+
       throw new ApiRequestError(
         message,
         response.status,
@@ -266,6 +276,8 @@ export async function apiRequestBlob(
       } catch {
         // Keep the fallback message when the API does not return JSON.
       }
+      handleUnauthorizedResponse(requiresAuth, response.status);
+
       throw new ApiRequestError(message, response.status, errors, responseMessage);
     }
     return response.blob();

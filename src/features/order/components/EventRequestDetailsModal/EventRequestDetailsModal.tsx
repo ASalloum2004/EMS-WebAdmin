@@ -4,6 +4,7 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { ApproveEventRequestConflictModal } from "../ApproveEventRequestConflictModal";
 import { ApproveEventRequestConfirmModal } from "../ApproveEventRequestConfirmModal";
 import { RejectEventRequestConfirmModal } from "../RejectEventRequestConfirmModal";
+import { PaymentReminderButton } from "../PaymentReminderButton/PaymentReminderButton";
 import { EventRequestDetailsSkeleton } from "../skeletons";
 import { EventRequestDetailsFooter } from "./EventRequestDetailsFooter";
 import { EventRequestDetailsHeader } from "./EventRequestDetailsHeader";
@@ -41,6 +42,9 @@ export function EventRequestDetailsModal({
   isLoading,
   isLoadingApproveConflicts,
   isRejecting,
+  isSendingPaymentReminder,
+  onClearPaymentReminderError,
+  onSendPaymentReminder,
   onApprove,
   onApproveAnyway,
   onApproveConflictPageChange,
@@ -50,6 +54,8 @@ export function EventRequestDetailsModal({
   onCloseApproveConflict,
   onReject,
   onRetry,
+  paymentReminderError,
+  paymentReminderSuccessMessage,
   rejectError,
 }: EventRequestDetailsModalProps) {
   const { language, t } = useI18n();
@@ -286,6 +292,17 @@ export function EventRequestDetailsModal({
             {isLoading && !details ? (
               <EventRequestDetailsSkeleton />
             ) : details ? (
+              <>
+              {isPending ? (
+                <PaymentReminderButton
+                  error={paymentReminderError}
+                  isSending={isSendingPaymentReminder}
+                  onClearError={onClearPaymentReminderError}
+                  onSend={onSendPaymentReminder}
+                  successMessage={paymentReminderSuccessMessage}
+                  t={t}
+                />
+              ) : null}
               <div className="event-request-details-modal__content-grid">
                 <div className="event-request-details-modal__column">
                   <EventRequestInformationSection
@@ -312,6 +329,7 @@ export function EventRequestDetailsModal({
                   />
                 </div>
               </div>
+              </>
             ) : (
               <EventRequestDetailsStates
                 error={error}

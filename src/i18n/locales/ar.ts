@@ -796,6 +796,15 @@ export const ar: I18nDictionary = {
         approve: "الموافقة على الطلب",
       },
     },
+    paymentReminder: {
+      button: "إرسال تذكير بالدفع",
+      sending: "جارٍ الإرسال…",
+      confirmationTitle: "إرسال تذكير بالدفع",
+      confirmationMessage: "هل تريد إرسال بريد إلكتروني يطلب من هذا الشخص إكمال الدفع؟",
+      confirm: "إرسال البريد",
+      cancel: "إلغاء",
+      error: "تعذّر إرسال تذكير الدفع.",
+    },
   },
   management: {
     title: "إدارة القاعات والأجنحة",

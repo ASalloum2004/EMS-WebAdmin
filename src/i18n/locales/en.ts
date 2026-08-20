@@ -799,6 +799,15 @@ export const en = {
         approve: "Approve Request",
       },
     },
+    paymentReminder: {
+      button: "Send payment reminder",
+      sending: "Sending…",
+      confirmationTitle: "Send payment reminder",
+      confirmationMessage: "Send an email asking this person to complete payment?",
+      confirm: "Send email",
+      cancel: "Cancel",
+      error: "Unable to send payment reminder.",
+    },
   },
   management: {
     title: "Halls & Booth Management",

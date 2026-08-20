@@ -14,3 +14,4 @@ export {
   getBoothRequestCompanyDisplayName,
 } from "./orderTableColumns";
 export * from "./skeletons";
+export { PaymentReminderButton } from "./PaymentReminderButton/PaymentReminderButton";

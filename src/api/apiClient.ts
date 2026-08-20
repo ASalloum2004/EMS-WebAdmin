@@ -1,7 +1,7 @@
 import { getAuthSession } from "../features/auth/utils/authStorage";
 
 export const API_BASE_URL =
-  "https://easy-printable-supplies-hold.trycloudflare.com/api/v1/admin/";
+  "http://127.0.0.1:8000/api/v1/admin/";
 
 export const CONTENT_REQUEST_TIMEOUT_MS = 15_000;
 

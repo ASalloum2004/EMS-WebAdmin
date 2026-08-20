@@ -34,6 +34,7 @@ import {
   useEventRequestDetails,
   useEventRequests,
   useEventRequestStatistics,
+  usePaymentReminder,
 } from "../hooks";
 import {
   getEventRequestSummaryStatistics,
@@ -169,6 +170,18 @@ export function OrderPage() {
     eventRequests.refetch,
     eventRequestStatistics.refetch,
   ]);
+  const boothPaymentReminder = usePaymentReminder({
+    fallbackMessage: t.order.paymentReminder.error,
+    requestId: selectedBoothRequestId,
+    requestKind: "booth",
+    requestStatus: boothRequestDetails.details?.status,
+  });
+  const eventPaymentReminder = usePaymentReminder({
+    fallbackMessage: t.order.paymentReminder.error,
+    requestId: selectedEventRequestId,
+    requestKind: "event",
+    requestStatus: eventRequestDetails.details?.status,
+  });
   const eventRequestActions = useEventRequestActions({
     approveConflictFallbackMessage:
       t.order.eventRequests.approveConflict.loadError,
@@ -587,6 +600,9 @@ export function OrderPage() {
             boothRequestActions.isLoadingApproveConflicts
           }
           isRejecting={boothRequestActions.isRejecting}
+          isSendingPaymentReminder={boothPaymentReminder.isSending}
+          onClearPaymentReminderError={boothPaymentReminder.clearError}
+          onSendPaymentReminder={boothPaymentReminder.send}
           onApprove={boothRequestActions.approveBoothRequestById}
           onApproveAnyway={boothRequestActions.approveBoothRequestAnyway}
           onApproveConflictPageChange={
@@ -598,6 +614,8 @@ export function OrderPage() {
           onCloseApproveConflict={boothRequestActions.closeApproveConflict}
           onReject={boothRequestActions.rejectBoothRequestById}
           onRetry={() => void boothRequestDetails.refetch()}
+          paymentReminderError={boothPaymentReminder.error}
+          paymentReminderSuccessMessage={boothPaymentReminder.successMessage}
           rejectError={boothRequestActions.rejectError}
         />
       ) : null}
@@ -615,6 +633,9 @@ export function OrderPage() {
             eventRequestActions.isLoadingApproveConflicts
           }
           isRejecting={eventRequestActions.isRejecting}
+          isSendingPaymentReminder={eventPaymentReminder.isSending}
+          onClearPaymentReminderError={eventPaymentReminder.clearError}
+          onSendPaymentReminder={eventPaymentReminder.send}
           onApprove={eventRequestActions.approveEventRequestById}
           onApproveAnyway={eventRequestActions.approveEventRequestAnyway}
           onApproveConflictPageChange={
@@ -626,6 +647,8 @@ export function OrderPage() {
           onCloseApproveConflict={eventRequestActions.closeApproveConflict}
           onReject={eventRequestActions.rejectEventRequestById}
           onRetry={() => void eventRequestDetails.refetch()}
+          paymentReminderError={eventPaymentReminder.error}
+          paymentReminderSuccessMessage={eventPaymentReminder.successMessage}
           rejectError={eventRequestActions.rejectError}
         />
       ) : null}

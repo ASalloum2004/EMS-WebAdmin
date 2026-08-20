@@ -46,3 +46,9 @@ export {
   normalizeEventRequestActionResponse,
   rejectEventRequest,
 } from "./eventRequestActionsApi";
+export {
+  buildBoothPaymentReminderPath,
+  buildEventPaymentReminderPath,
+  sendBoothPaymentReminder,
+  sendEventPaymentReminder,
+} from "./paymentReminderApi";

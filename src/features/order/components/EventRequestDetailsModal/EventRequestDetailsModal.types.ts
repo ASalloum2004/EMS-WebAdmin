@@ -19,6 +19,9 @@ export interface EventRequestDetailsModalProps {
   isLoading: boolean;
   isLoadingApproveConflicts: boolean;
   isRejecting: boolean;
+  isSendingPaymentReminder: boolean;
+  onClearPaymentReminderError: () => void;
+  onSendPaymentReminder: () => Promise<unknown>;
   onApprove: (
     eventRequestId: number,
   ) =>
@@ -46,6 +49,8 @@ export interface EventRequestDetailsModalProps {
     | EventRequestActionResponse
     | null;
   onRetry: () => void;
+  paymentReminderError: string;
+  paymentReminderSuccessMessage: string;
   rejectError: string;
 }
 

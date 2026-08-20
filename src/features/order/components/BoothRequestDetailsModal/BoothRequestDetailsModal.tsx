@@ -14,6 +14,7 @@ import { ApproveBoothRequestConflictModal } from "../ApproveBoothRequestConflict
 import { ApproveBoothRequestConfirmModal } from "../ApproveBoothRequestConfirmModal";
 import { RejectBoothRequestConfirmModal } from "../RejectBoothRequestConfirmModal";
 import { BoothRequestDetailsSkeleton } from "../skeletons";
+import { PaymentReminderButton } from "../PaymentReminderButton/PaymentReminderButton";
 import { BoothRequestDetailsActions } from "./BoothRequestDetailsActions";
 import { BoothRequestGallery } from "./BoothRequestGallery";
 import { BoothRequestDetailsMainColumn } from "./BoothRequestDetailsMainColumn";
@@ -40,7 +41,10 @@ export interface BoothRequestDetailsModalProps {
   isApproving: boolean;
   isLoading: boolean;
   isLoadingApproveConflicts: boolean;
-  isRejecting: boolean;
+    isRejecting: boolean;
+  isSendingPaymentReminder: boolean;
+  onClearPaymentReminderError: () => void;
+  onSendPaymentReminder: () => Promise<unknown>;
   onApprove: (
     boothRequestId: number,
   ) =>
@@ -68,6 +72,8 @@ export interface BoothRequestDetailsModalProps {
     | null
     | Promise<BoothRequestActionResponse | null>;
   onRetry: () => void;
+  paymentReminderError: string;
+  paymentReminderSuccessMessage: string;
   rejectError: string;
 }
 
@@ -81,6 +87,9 @@ export function BoothRequestDetailsModal({
   isLoading,
   isLoadingApproveConflicts,
   isRejecting,
+  isSendingPaymentReminder,
+  onClearPaymentReminderError,
+  onSendPaymentReminder,
   onApprove,
   onApproveAnyway,
   onApproveConflictPageChange,
@@ -90,6 +99,8 @@ export function BoothRequestDetailsModal({
   onCloseApproveConflict,
   onReject,
   onRetry,
+  paymentReminderError,
+  paymentReminderSuccessMessage,
   rejectError,
 }: BoothRequestDetailsModalProps) {
   const { language, t } = useI18n();
@@ -377,6 +388,16 @@ export function BoothRequestDetailsModal({
             <BoothRequestDetailsSkeleton />
           ) : (
           <>
+          {details?.status === "pending" ? (
+            <PaymentReminderButton
+              error={paymentReminderError}
+              isSending={isSendingPaymentReminder}
+              onClearError={onClearPaymentReminderError}
+              onSend={onSendPaymentReminder}
+              successMessage={paymentReminderSuccessMessage}
+              t={t}
+            />
+          ) : null}
           <BoothRequestGallery
             images={details?.company.gallery ?? []}
             language={language}

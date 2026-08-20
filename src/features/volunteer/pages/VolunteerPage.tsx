@@ -30,6 +30,7 @@ export function VolunteerPage() {
   const actions = useVolunteerApplicationActions();
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [cvError, setCvError] = useState<string | null>(null);
+  const [isViewingCv, setIsViewingCv] = useState(false);
 
   const columns = useMemo(() => getVolunteerApplicationColumns({
     createdAt: t.volunteers.table.createdAt,
@@ -46,6 +47,7 @@ export function VolunteerPage() {
   const closeDetails = useCallback(() => {
     actions.clearError();
     setCvError(null);
+    setIsViewingCv(false);
     setSelectedApplicationId(null);
   }, [actions]);
 
@@ -59,8 +61,10 @@ export function VolunteerPage() {
   }, [actions, applications, details, selectedApplicationId, statistics]);
 
   const viewCv = useCallback(async () => {
-    if (selectedApplicationId === null || !details.application?.cv) return;
+    if (isViewingCv || selectedApplicationId === null || !details.application?.cv) return;
+
     setCvError(null);
+    setIsViewingCv(true);
     try {
       const file = await getVolunteerApplicationCv(selectedApplicationId);
       const url = URL.createObjectURL(file);
@@ -75,8 +79,10 @@ export function VolunteerPage() {
       globalThis.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
       setCvError(t.volunteers.details.cvError);
+    } finally {
+      setIsViewingCv(false);
     }
-  }, [details.application, selectedApplicationId, t.volunteers.details.cvError]);
+  }, [details.application, isViewingCv, selectedApplicationId, t.volunteers.details.cvError]);
 
   const modalError = details.error
     ? t.volunteers.loadDetailsError
@@ -94,7 +100,7 @@ export function VolunteerPage() {
     <main className="order-page volunteer-page">
       <div className="order-page__container">
         <header className="order-page__header"><h1>{t.volunteers.title}</h1><p>{t.volunteers.description}</p></header>
-        {statistics.isLoading ? <VolunteerStatsSkeleton /> : <section aria-busy="false" aria-label={t.volunteers.summary.ariaLabel} className="order-page__summary">{summaryCards.map((card) => <Card className={`order-page__summary-card order-page__summary-card--${card.key}`} icon={card.icon} iconClassName={`order-page__summary-icon order-page__summary-icon--${card.key}`} key={card.key} title={card.label} titleClassName="order-page__summary-label"><strong className="order-page__summary-value">{card.value ?? t.volunteers.summary.unavailable}</strong></Card>)}</section>}
+        {statistics.isLoading ? <VolunteerStatsSkeleton /> : <section aria-busy="false" aria-label={t.volunteers.summary.ariaLabel} className="order-page__summary">{summaryCards.map((card) => <Card className={`order-page__summary-card order-page__summary-card--${card.key}`} icon={card.icon} iconClassName={`order-page__summary-icon order-page__summary-icon--${card.key}`} key={card.key} title={card.label} titleClassName="order-page__summary-label"><strong className="order-page__summary-value">{card.value ?? "—"}</strong></Card>)}</section>}
         {statistics.error ? <div className="order-page__state" role="alert"><p>{t.volunteers.summary.loadError}</p><button type="button" onClick={statistics.refresh}>{t.common.tryAgain}</button></div> : null}
         <Card aria-label={t.volunteers.table.ariaLabel} bodyClassName="order-page__panel-body" className="order-page__panel">
           <SearchFilterBar filterAriaLabel={t.volunteers.filters.filterAriaLabel} filterLabel={t.volunteers.filters.filterLabel} inputAriaLabel={t.volunteers.filters.searchAriaLabel} isFilterActive={applications.status !== "all" || applications.sort !== "-created_at"} onChange={applications.setSearch} onFilterClick={() => setIsFilterPanelOpen((isOpen) => !isOpen)} placeholder={t.volunteers.filters.searchPlaceholder} value={applications.search} />
@@ -105,7 +111,7 @@ export function VolunteerPage() {
           {!applications.isLoading && !applications.error && applications.applications.length ? <TableFooter className="order-page__footer" currentPage={applications.pagination.currentPage} onPageChange={applications.setPage} perPage={applications.pagination.perPage} showSinglePage totalItems={applications.pagination.totalItems} totalPages={applications.pagination.totalPages} /> : null}
         </Card>
       </div>
-      {selectedApplicationId !== null ? <VolunteerApplicationDetailsModal application={details.application} error={modalError} isLoading={details.isLoading} isSubmitting={actions.isSubmitting} onApprove={(reviewNote) => void completeReview("approve", reviewNote)} onClose={closeDetails} onReject={(reviewNote) => void completeReview("reject", reviewNote)} onViewCv={() => void viewCv()} /> : null}
+      {selectedApplicationId !== null ? <VolunteerApplicationDetailsModal application={details.application} error={modalError} isLoading={details.isLoading} isSubmitting={actions.isSubmitting} isViewingCv={isViewingCv} onApprove={(reviewNote) => void completeReview("approve", reviewNote)} onClose={closeDetails} onReject={(reviewNote) => void completeReview("reject", reviewNote)} onViewCv={() => void viewCv()} /> : null}
     </main>
   );
 }

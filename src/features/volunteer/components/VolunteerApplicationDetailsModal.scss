@@ -119,3 +119,44 @@
     grid-column: auto;
   }
 }
+
+.event-request-details-modal__actions.volunteer-details__actions--final {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.volunteer-details__cv {
+  gap: 8px;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.volunteer-details__cv:hover:not(:disabled) {
+  background-color: var(--ems-color-primary-soft, var(--ems-color-card-background));
+  border-color: var(--ems-color-primary);
+}
+
+.volunteer-details__cv:disabled {
+  cursor: progress;
+}
+
+.volunteer-details__cv--loading {
+  opacity: 0.72;
+}
+
+.volunteer-details__cv-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid var(--ems-color-border-soft);
+  border-top-color: var(--ems-color-primary);
+  border-radius: 50%;
+  animation: volunteer-details-cv-spin 700ms linear infinite;
+}
+
+@keyframes volunteer-details-cv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

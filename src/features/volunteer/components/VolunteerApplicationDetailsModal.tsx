@@ -20,13 +20,14 @@ type VolunteerApplicationDetailsModalProps = {
   error: string | null;
   isLoading: boolean;
   isSubmitting: boolean;
+  isViewingCv: boolean;
   onApprove: (reviewNote: string) => void;
   onClose: () => void;
   onReject: (reviewNote: string) => void;
   onViewCv: () => void;
 };
 
-export function VolunteerApplicationDetailsModal({ application, error, isLoading, isSubmitting, onApprove, onClose, onReject, onViewCv }: VolunteerApplicationDetailsModalProps) {
+export function VolunteerApplicationDetailsModal({ application, error, isLoading, isSubmitting, isViewingCv, onApprove, onClose, onReject, onViewCv }: VolunteerApplicationDetailsModalProps) {
   const { t } = useI18n();
   const [reviewNote, setReviewNote] = useState("");
 
@@ -73,18 +74,18 @@ export function VolunteerApplicationDetailsModal({ application, error, isLoading
               </div>
               <div className="event-request-details-modal__column">
                 <Card className="event-request-details-modal__card" title={details.cvTitle} titleClassName="event-request-details-modal__card-title">
-                  {application.cv ? <button className="volunteer-details__cv" type="button" onClick={onViewCv}>{details.viewCv}</button> : <p className="volunteer-details__empty">{details.noCv}</p>}
+                  {application.cv ? <button aria-busy={isViewingCv} className={`volunteer-details__cv ${isViewingCv ? "volunteer-details__cv--loading" : ""}`} disabled={isViewingCv} type="button" onClick={onViewCv}>{isViewingCv ? <span aria-hidden="true" className="volunteer-details__cv-spinner" /> : null}{details.viewCv}</button> : <p className="volunteer-details__empty">{details.noCv}</p>}
                 </Card>
-                <Card className="event-request-details-modal__card" title={details.reviewInformation} titleClassName="event-request-details-modal__card-title">
-                  {application.reviewedAt ? <dl className="event-request-details-modal__facts volunteer-details__facts"><div><dt>{details.reviewedAt}</dt><dd>{formatDate(application.reviewedAt)}</dd></div><div><dt>{details.reviewer}</dt><dd>{application.reviewer?.name || "—"}</dd></div><div className="volunteer-details__wide"><dt>{details.review}</dt><dd>{application.reviewNote || "—"}</dd></div></dl> : <p className="volunteer-details__empty">{details.pendingReview}</p>}
-                </Card>
+                {application.reviewedAt ? <Card className="event-request-details-modal__card" title={details.reviewInformation} titleClassName="event-request-details-modal__card-title">
+                  <dl className="event-request-details-modal__facts volunteer-details__facts"><div><dt>{details.reviewedAt}</dt><dd>{formatDate(application.reviewedAt)}</dd></div><div><dt>{details.reviewer}</dt><dd>{application.reviewer?.name || "—"}</dd></div><div className="volunteer-details__wide"><dt>{details.review}</dt><dd>{application.reviewNote || "—"}</dd></div></dl>
+                </Card> : null}
                 {application.status === "pending" ? <Card className="event-request-details-modal__card" title={details.reviewNote} titleClassName="event-request-details-modal__card-title"><textarea aria-label={details.reviewNote} className="volunteer-details__review-note" maxLength={2000} value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} /></Card> : null}
               </div>
             </div>
           ) : null}
         </div>
         {error && application ? <p className="event-request-details-modal__action-error" role="alert">{error}</p> : null}
-        {application ? <footer className={`event-request-details-modal__actions ${application.status === "pending" ? "event-request-details-modal__actions--pending" : ""}`}>
+        {application ? <footer className={`event-request-details-modal__actions ${application.status === "pending" ? "event-request-details-modal__actions--pending" : "volunteer-details__actions--final"}`}>
           {application.status === "pending" ? <><button className="event-request-details-modal__action event-request-details-modal__action--reject" disabled={isSubmitting} type="button" onClick={() => onReject(reviewNote)}>{details.reject}</button><button className="event-request-details-modal__action event-request-details-modal__action--approve" disabled={isSubmitting} type="button" onClick={() => onApprove(reviewNote)}>{details.approve}</button></> : <span className={`event-request-details-modal__final-status event-request-details-modal__final-status--${application.status ?? "unknown"}`}>{statusLabel}</span>}
         </footer> : null}
       </section>

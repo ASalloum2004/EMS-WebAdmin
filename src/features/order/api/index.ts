@@ -16,6 +16,8 @@ export {
 } from "./boothRequestDetailsApi";
 export {
   approveBoothRequest,
+  cancelBoothRequest,
+  buildCancelBoothRequestPath,
   buildApproveBoothRequestPath,
   buildRejectBoothRequestPath,
   normalizeApproveBoothRequestResponse,
@@ -40,9 +42,17 @@ export {
 } from "./eventRequestDetailsApi";
 export {
   approveEventRequest,
+  cancelEventRequest,
+  buildCancelEventRequestPath,
   buildApproveEventRequestPath,
   buildRejectEventRequestPath,
   normalizeApproveEventRequestConflict,
   normalizeEventRequestActionResponse,
   rejectEventRequest,
 } from "./eventRequestActionsApi";
+export {
+  buildBoothPaymentReminderPath,
+  buildEventPaymentReminderPath,
+  sendBoothPaymentReminder,
+  sendEventPaymentReminder,
+} from "./paymentReminderApi";

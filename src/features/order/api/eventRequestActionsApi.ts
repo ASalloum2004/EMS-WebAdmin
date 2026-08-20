@@ -48,6 +48,12 @@ export function buildRejectEventRequestPath(eventRequestId: number) {
   return `events/requests/${eventRequestId}/reject`;
 }
 
+export function buildCancelEventRequestPath(eventRequestId: number) {
+  validateEventRequestId(eventRequestId);
+
+  return `events/requests/${eventRequestId}/cancel`;
+}
+
 function isJsonRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -248,6 +254,17 @@ export async function rejectEventRequest(
       method: "PATCH",
       requiresAuth: true,
     },
+  );
+
+  return normalizeEventRequestActionResponse(response);
+}
+
+export async function cancelEventRequest(
+  eventRequestId: number,
+): Promise<EventRequestActionResponse> {
+  const response = await apiRequest<EventRequestActionResponse>(
+    buildCancelEventRequestPath(eventRequestId),
+    { method: "PATCH", requiresAuth: true },
   );
 
   return normalizeEventRequestActionResponse(response);

@@ -26,6 +26,12 @@ export function buildRejectBoothRequestPath(boothRequestId: number) {
   return `booths/requests/reject/${boothRequestId}`;
 }
 
+export function buildCancelBoothRequestPath(boothRequestId: number) {
+  validateBoothRequestId(boothRequestId);
+
+  return `booths/${boothRequestId}/cancel`;
+}
+
 function validatePage(page: number) {
   if (!Number.isFinite(page) || page < 1 || !Number.isInteger(page)) {
     throw new Error("A valid conflict page is required.");
@@ -201,6 +207,17 @@ export async function rejectBoothRequest(
       method: "PATCH",
       requiresAuth: true,
     },
+  );
+
+  return normalizeBoothRequestActionResponse(response);
+}
+
+export async function cancelBoothRequest(
+  boothRequestId: number,
+): Promise<BoothRequestActionResponse> {
+  const response = await apiRequest<BoothRequestActionResponse>(
+    buildCancelBoothRequestPath(boothRequestId),
+    { method: "PATCH", requiresAuth: true },
   );
 
   return normalizeBoothRequestActionResponse(response);

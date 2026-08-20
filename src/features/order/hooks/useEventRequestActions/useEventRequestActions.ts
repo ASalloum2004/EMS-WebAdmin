@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiRequestError } from "../../../../api";
 import type {
   ApproveEventRequestConflictState,
@@ -9,6 +9,7 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { useApproveEventRequest } from "./useApproveEventRequest";
 import { useEventRequestApprovalConflicts } from "./useEventRequestApprovalConflicts";
 import { useRejectEventRequest } from "./useRejectEventRequest";
+import { useCancelEventRequest } from "./useCancelEventRequest";
 
 type ActionRefreshCallback = (
   eventRequestId: number,
@@ -21,6 +22,8 @@ export interface UseEventRequestActionsOptions {
   onApproveSuccess?: ActionRefreshCallback;
   onInvalidStatus?: ActionRefreshCallback;
   onRejectSuccess?: ActionRefreshCallback;
+  onCancelSuccess?: ActionRefreshCallback;
+  cancelFallbackMessage?: string;
   rejectFallbackMessage?: string;
   selectedRequestId: number | null;
   selectedRequestStatus: string | null;
@@ -36,15 +39,21 @@ export interface UseEventRequestActionsResult {
   ) => Promise<ApproveEventRequestResult | null>;
   clearApproveError: () => void;
   clearRejectError: () => void;
+  clearCancelError: () => void;
   closeApproveConflict: () => boolean;
   isApproving: boolean;
   isLoadingApproveConflicts: boolean;
-  isRejecting: boolean;
+    isRejecting: boolean;
+  isCancelling: boolean;
   loadApproveConflictPage: (
     page: number,
   ) => Promise<ApproveEventRequestResult | null>;
   mutatingRequestId: number | null;
   rejectError: string;
+  cancelError: string;
+  cancelEventRequestById: (
+    eventRequestId: number,
+  ) => Promise<EventRequestActionResponse | null>;
   rejectEventRequestById: (
     eventRequestId: number,
   ) => Promise<EventRequestActionResponse | null>;
@@ -80,13 +89,19 @@ function isPendingStatus(status: unknown) {
   return getTrimmedString(status).toLowerCase() === "pending";
 }
 
+function isApprovedStatus(status: unknown) {
+  return getTrimmedString(status).toLowerCase() === "approved";
+}
+
 export function useEventRequestActions({
   approveConflictFallbackMessage = "Unable to load conflicting Event Requests.",
   approveFallbackMessage = "Unable to approve Event Request.",
   invalidStatusMessage = "",
   onApproveSuccess,
-  onInvalidStatus,
+    onInvalidStatus,
   onRejectSuccess,
+  onCancelSuccess,
+  cancelFallbackMessage = "Unable to cancel Event Request.",
   rejectFallbackMessage = "Unable to reject Event Request.",
   selectedRequestId,
   selectedRequestStatus,
@@ -98,6 +113,7 @@ export function useEventRequestActions({
     onApproveSuccess,
     onInvalidStatus,
     onRejectSuccess,
+    onCancelSuccess,
   });
   const isMountedRef = useRef(false);
   const isMutationActiveRef = useRef(false);
@@ -110,6 +126,7 @@ export function useEventRequestActions({
     onApproveSuccess,
     onInvalidStatus,
     onRejectSuccess,
+    onCancelSuccess,
   };
   selectionRef.current = {
     id: selectedRequestId,
@@ -153,6 +170,22 @@ export function useEventRequestActions({
     },
     [isCurrentPendingRequest],
   );
+
+  const acquireCancelMutation = useCallback(() => {
+    const eventRequestId = selectionRef.current.id;
+    if (
+      !isMountedRef.current ||
+      eventRequestId === null ||
+      isMutationActiveRef.current ||
+      !isApprovedStatus(selectionRef.current.status)
+    ) {
+      return false;
+    }
+
+    isMutationActiveRef.current = true;
+    setMutatingRequestId(eventRequestId);
+    return true;
+  }, []);
 
   const releaseMutation = useCallback(() => {
     isMutationActiveRef.current = false;
@@ -239,14 +272,27 @@ export function useEventRequestActions({
     refreshInvalidStatus,
     releaseMutation,
   });
+  const cancellation = useCancelEventRequest({
+    acquireMutation: acquireCancelMutation,
+    fallbackMessage: cancelFallbackMessage,
+    onCancelSuccess: () => {
+      const eventRequestId = selectionRef.current.id;
+      if (eventRequestId !== null) {
+        return callbacksRef.current.onCancelSuccess?.(eventRequestId);
+      }
+    },
+    releaseMutation,
+  });
 
   useEffect(() => {
     approval.clearApproveError();
     rejection.clearRejectError();
+    cancellation.clearCancelError();
   }, [
     approval.clearApproveError,
     conflicts.approveConflict,
     rejection.clearRejectError,
+    cancellation.clearCancelError,
     selectedRequestId,
   ]);
 
@@ -309,9 +355,13 @@ export function useEventRequestActions({
     isApproving: approval.isApproving,
     isLoadingApproveConflicts: conflicts.isLoadingApproveConflicts,
     isRejecting: rejection.isRejecting,
+    isCancelling: cancellation.isCancelling,
     loadApproveConflictPage,
     mutatingRequestId,
     rejectError: rejection.rejectError,
+    cancelError: cancellation.cancelError,
+    clearCancelError: cancellation.clearCancelError,
+    cancelEventRequestById: cancellation.cancelEventRequestById,
     rejectEventRequestById: rejection.rejectEventRequestById,
   };
 }

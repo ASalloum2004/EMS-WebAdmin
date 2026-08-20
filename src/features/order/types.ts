@@ -1,4 +1,4 @@
-export type BoothRequestStatus = "pending" | "approved" | "rejected";
+export type BoothRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export type BoothRequestSort = "" | "-created_at" | "created_at";
 
@@ -38,7 +38,7 @@ export type BoothRequestApiData = BoothRequestBaseApiData & {
   company?: BoothRequestListCompanyApiData | null;
 };
 
-export type EventRequestStatus = "pending" | "approved" | "rejected";
+export type EventRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export type EventRequestSort = "" | "-created_at" | "created_at";
 

@@ -4,6 +4,8 @@ import { getTrimmedString } from "../../utils/getTrimmedString";
 import { ApproveEventRequestConflictModal } from "../ApproveEventRequestConflictModal";
 import { ApproveEventRequestConfirmModal } from "../ApproveEventRequestConfirmModal";
 import { RejectEventRequestConfirmModal } from "../RejectEventRequestConfirmModal";
+import { CancelRequestConfirmModal } from "../CancelRequestConfirmModal";
+import { PaymentReminderButton } from "../PaymentReminderButton/PaymentReminderButton";
 import { EventRequestDetailsSkeleton } from "../skeletons";
 import { EventRequestDetailsFooter } from "./EventRequestDetailsFooter";
 import { EventRequestDetailsHeader } from "./EventRequestDetailsHeader";
@@ -41,16 +43,25 @@ export function EventRequestDetailsModal({
   isLoading,
   isLoadingApproveConflicts,
   isRejecting,
+  isCancelling,
+  isSendingPaymentReminder,
+  onClearPaymentReminderError,
+  onSendPaymentReminder,
   onApprove,
   onApproveAnyway,
   onApproveConflictPageChange,
   onClearApproveError,
   onClearRejectError,
+  onCancel,
+  onClearCancelError,
   onClose,
   onCloseApproveConflict,
   onReject,
   onRetry,
+  paymentReminderError,
+  paymentReminderSuccessMessage,
   rejectError,
+  cancelError,
 }: EventRequestDetailsModalProps) {
   const { language, t } = useI18n();
   const approveButtonRef = useRef<HTMLButtonElement>(null);
@@ -61,6 +72,7 @@ export function EventRequestDetailsModal({
     useState<ConfirmationTarget | null>(null);
   const [rejectConfirmation, setRejectConfirmation] =
     useState<ConfirmationTarget | null>(null);
+  const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
   const isPending =
     getTrimmedString(details?.status).toLowerCase() === "pending";
   const isApproveConflictVisible = Boolean(
@@ -80,8 +92,27 @@ export function EventRequestDetailsModal({
   const isChildModalVisible =
     isApproveConflictVisible ||
     isApproveConfirmationVisible ||
-    isRejectConfirmationVisible;
-  const terminalActionError = !isPending ? approveError || rejectError : "";
+    isRejectConfirmationVisible ||
+    isCancelConfirmationOpen;
+  const terminalActionError = !isPending ? approveError || rejectError || cancelError : "";
+  const openCancelConfirmation = useCallback(() => {
+    if (!details || getTrimmedString(details.status).toLowerCase() !== "approved" || isCancelling) return;
+    onClearCancelError();
+    setIsCancelConfirmationOpen(true);
+  }, [details, isCancelling, onClearCancelError]);
+
+  const closeCancelConfirmation = useCallback(() => {
+    if (!isCancelling) {
+      setIsCancelConfirmationOpen(false);
+      onClearCancelError();
+    }
+  }, [isCancelling, onClearCancelError]);
+
+  const confirmCancel = useCallback(async () => {
+    if (!details || getTrimmedString(details.status).toLowerCase() !== "approved" || isCancelling) return;
+    const response = await onCancel(details.id);
+    if (response) setIsCancelConfirmationOpen(false);
+  }, [details, isCancelling, onCancel]);
 
   const closeApproveConfirmation = useCallback(() => {
     if (isApproving || isRejecting) {
@@ -286,6 +317,17 @@ export function EventRequestDetailsModal({
             {isLoading && !details ? (
               <EventRequestDetailsSkeleton />
             ) : details ? (
+              <>
+              {isPending ? (
+                <PaymentReminderButton
+                  error={paymentReminderError}
+                  isSending={isSendingPaymentReminder}
+                  onClearError={onClearPaymentReminderError}
+                  onSend={onSendPaymentReminder}
+                  successMessage={paymentReminderSuccessMessage}
+                  t={t}
+                />
+              ) : null}
               <div className="event-request-details-modal__content-grid">
                 <div className="event-request-details-modal__column">
                   <EventRequestInformationSection
@@ -312,6 +354,7 @@ export function EventRequestDetailsModal({
                   />
                 </div>
               </div>
+              </>
             ) : (
               <EventRequestDetailsStates
                 error={error}
@@ -333,7 +376,9 @@ export function EventRequestDetailsModal({
               approveButtonRef={approveButtonRef}
               isApproving={isApproving}
               isRejecting={isRejecting}
+              isCancelling={isCancelling}
               onApprove={openApproveConfirmation}
+              onCancel={openCancelConfirmation}
               onReject={openRejectConfirmation}
               rejectButtonRef={rejectButtonRef}
               status={details.status}
@@ -342,6 +387,20 @@ export function EventRequestDetailsModal({
           ) : null}
         </section>
       </div>
+
+      {isCancelConfirmationOpen && details ? (
+        <CancelRequestConfirmModal
+          error={cancelError}
+          isCancelling={isCancelling}
+          itemLabel={details.title || t.order.eventRequests.details.title}
+          labels={{
+            ...t.order.eventRequests.cancelConfirmation,
+            cancelling: t.order.eventRequests.cancelConfirmation.loading,
+          }}
+          onCancel={closeCancelConfirmation}
+          onConfirm={confirmCancel}
+        />
+      ) : null}
 
       {isApproveConfirmationVisible && approveConfirmation ? (
         <ApproveEventRequestConfirmModal

@@ -1,0 +1,131 @@
+.payment-reminder {
+  position: relative;
+  z-index: 3;
+  padding: 0 24px 14px;
+}
+
+.payment-reminder__control {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.payment-reminder__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 13px;
+  border: 1px solid var(--ems-color-status-positive-text);
+  border-radius: var(--ems-radius-sm);
+  background: var(--ems-color-card-background, var(--ems-color-white));
+  color: var(--ems-color-status-positive-text);
+  font-family: var(--ems-font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 18px;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+}
+
+.payment-reminder__button:hover,
+.payment-reminder__button:focus-visible {
+  background: var(--ems-color-status-positive-surface);
+  outline: none;
+}
+
+.payment-reminder__button:active {
+  transform: scale(0.98);
+}
+
+.payment-reminder__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.payment-reminder__confirm {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  width: min(280px, calc(100vw - 48px));
+  padding: 12px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background: var(--ems-color-card-background, var(--ems-color-white));
+  box-shadow: var(--ems-shadow-md);
+}
+
+.payment-reminder__confirm p {
+  margin: 0 0 10px;
+  color: var(--ems-color-text-primary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.payment-reminder__confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.payment-reminder__confirm-actions button {
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--ems-color-border-soft);
+  border-radius: var(--ems-radius-sm);
+  background: transparent;
+  color: var(--ems-color-text-primary);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.payment-reminder__confirm-actions button:last-child {
+  border-color: var(--ems-color-status-positive-text);
+  background: var(--ems-color-status-positive-text);
+  color: var(--ems-color-white);
+}
+
+.payment-reminder__confirm-actions button:hover {
+  background: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.payment-reminder__confirm-actions button:last-child:hover {
+  background: var(--ems-color-primary-dark);
+  color: var(--ems-color-primary-text);
+}
+
+.payment-reminder__notice {
+  position: fixed;
+  top: 20px;
+  inset-inline-start: 50%;
+  z-index: 20;
+  max-width: min(420px, calc(100vw - 32px));
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid;
+  border-radius: var(--ems-radius-sm);
+  transform: translateX(-50%);
+  box-shadow: var(--ems-shadow-md);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.payment-reminder__notice--success {
+  border-color: var(--ems-color-status-positive-text);
+  background: var(--ems-color-status-positive-surface);
+  color: var(--ems-color-status-positive-text);
+}
+
+.payment-reminder__notice--error {
+  border-color: var(--ems-color-status-negative-text);
+  background: var(--ems-color-status-negative-surface);
+  color: var(--ems-color-status-negative-text);
+}
+
+@media (max-width: 640px) {
+  .payment-reminder {
+    padding-inline: 16px;
+  }
+}

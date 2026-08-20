@@ -6,7 +6,7 @@ import {
 } from "../eventRequestTableColumns";
 
 const knownEventTypes = ["conference", "lecture", "workshop", "other"] as const;
-const knownStatuses = ["approved", "pending", "rejected"] as const;
+const knownStatuses = ["approved", "pending", "rejected", "cancelled"] as const;
 
 type KnownEventType = (typeof knownEventTypes)[number];
 type KnownStatus = (typeof knownStatuses)[number];

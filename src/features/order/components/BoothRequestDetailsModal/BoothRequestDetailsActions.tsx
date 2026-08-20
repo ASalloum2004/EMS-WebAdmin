@@ -31,6 +31,8 @@ export function BoothRequestDetailsActions({
   approveButtonRef,
   isApproving,
   isRejecting,
+  isCancelling,
+  onCancelClick,
   onApproveClick,
   onRejectClick,
   rejectButtonRef,
@@ -40,6 +42,8 @@ export function BoothRequestDetailsActions({
   approveButtonRef?: Ref<HTMLButtonElement>;
   isApproving: boolean;
   isRejecting: boolean;
+  isCancelling: boolean;
+  onCancelClick: () => void;
   onApproveClick: () => void;
   onRejectClick: () => void;
   rejectButtonRef?: Ref<HTMLButtonElement>;
@@ -54,6 +58,16 @@ export function BoothRequestDetailsActions({
 
     return (
       <footer className="booth-request-details-modal__actions booth-request-details-modal__actions--final">
+        {isApproved ? (
+          <button
+            className="booth-request-details-modal__action booth-request-details-modal__action--cancel"
+            disabled={isCancelling}
+            onClick={onCancelClick}
+            type="button"
+          >
+            {t.order.cancelConfirmation.confirm}
+          </button>
+        ) : null}
         <div
           aria-disabled="true"
           aria-label={statusLabel}

@@ -600,6 +600,15 @@ export const en = {
         loading: "Approving…",
         error: "Unable to approve Event Request.",
       },
+      cancelConfirmation: {
+        title: "Cancel Event Request?",
+        message: "Are you sure you want to cancel this Event Request?",
+        eventLabel: "Event",
+        confirm: "Cancel Request",
+        loading: "Cancelling…",
+        error: "Unable to cancel Event Request.",
+        success: "Event Request cancelled successfully.",
+      },
       rejectConfirmation: {
         title: "Reject Event Request?",
         message:
@@ -694,6 +703,7 @@ export const en = {
         unknownStatus: "Unknown status",
         approve: "Approve",
         reject: "Reject",
+        cancel: "Cancel",
       },
     },
     summary: {
@@ -733,6 +743,15 @@ export const en = {
       pending: "Pending",
       approved: "Approved",
       rejected: "Rejected",
+      cancelled: "Cancelled",
+    },
+    cancelConfirmation: {
+      title: "Cancel booth request?",
+      message: "Are you sure you want to cancel this booth request?",
+      confirm: "Cancel Request",
+      cancelling: "Cancelling…",
+      error: "Unable to cancel booth request.",
+      success: "Booth request cancelled successfully.",
     },
     rejectConfirmation: {
       title: "Reject booth request?",
@@ -816,6 +835,15 @@ export const en = {
         rejectFailure: "Unable to reject booth request.",
         approve: "Approve Request",
       },
+    },
+    paymentReminder: {
+      button: "Send payment reminder",
+      sending: "Sending…",
+      confirmationTitle: "Send payment reminder",
+      confirmationMessage: "Send an email asking this person to complete payment?",
+      confirm: "Send email",
+      cancel: "Cancel",
+      error: "Unable to send payment reminder.",
     },
   },
   management: {

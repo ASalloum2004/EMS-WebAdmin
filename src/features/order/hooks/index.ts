@@ -43,3 +43,4 @@ export {
   useEventRequestDetails,
 } from "./useEventRequestDetails";
 export * from "./useEventRequestActions";
+export { usePaymentReminder } from "./usePaymentReminder";

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, DataTable, SearchFilterBar, TableFooter } from "../../../components";
 import { useI18n } from "../../../i18n";
 import {
@@ -31,6 +31,8 @@ export function VolunteerPage() {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [cvError, setCvError] = useState<string | null>(null);
   const [isViewingCv, setIsViewingCv] = useState(false);
+  const [isReviewUpdating, setIsReviewUpdating] = useState(false);
+  const isReviewUpdatingRef = useRef(false);
 
   const columns = useMemo(() => getVolunteerApplicationColumns({
     createdAt: t.volunteers.table.createdAt,
@@ -48,17 +50,35 @@ export function VolunteerPage() {
     actions.clearError();
     setCvError(null);
     setIsViewingCv(false);
+    isReviewUpdatingRef.current = false;
+    setIsReviewUpdating(false);
     setSelectedApplicationId(null);
   }, [actions]);
 
   const completeReview = useCallback(async (decision: "approve" | "reject", reviewNote: string) => {
-    if (selectedApplicationId === null) return;
+    if (isReviewUpdatingRef.current || selectedApplicationId === null) return;
+
+    isReviewUpdatingRef.current = true;
+    setIsReviewUpdating(true);
     const didSucceed = await actions.review(selectedApplicationId, decision, reviewNote);
-    if (!didSucceed) return;
+    if (!didSucceed) {
+      isReviewUpdatingRef.current = false;
+      setIsReviewUpdating(false);
+      return;
+    }
+
     applications.refresh();
     statistics.refresh();
     details.refresh();
   }, [actions, applications, details, selectedApplicationId, statistics]);
+
+  useEffect(() => {
+    if (!isReviewUpdating || actions.isSubmitting || details.isLoading) return;
+    if (details.error || details.application?.status !== "pending") {
+      isReviewUpdatingRef.current = false;
+      setIsReviewUpdating(false);
+    }
+  }, [actions.isSubmitting, details.application?.status, details.error, details.isLoading, isReviewUpdating]);
 
   const viewCv = useCallback(async () => {
     if (isViewingCv || selectedApplicationId === null || !details.application?.cv) return;
@@ -111,7 +131,7 @@ export function VolunteerPage() {
           {!applications.isLoading && !applications.error && applications.applications.length ? <TableFooter className="order-page__footer" currentPage={applications.pagination.currentPage} onPageChange={applications.setPage} perPage={applications.pagination.perPage} showSinglePage totalItems={applications.pagination.totalItems} totalPages={applications.pagination.totalPages} /> : null}
         </Card>
       </div>
-      {selectedApplicationId !== null ? <VolunteerApplicationDetailsModal application={details.application} error={modalError} isLoading={details.isLoading} isSubmitting={actions.isSubmitting} isViewingCv={isViewingCv} onApprove={(reviewNote) => void completeReview("approve", reviewNote)} onClose={closeDetails} onReject={(reviewNote) => void completeReview("reject", reviewNote)} onViewCv={() => void viewCv()} /> : null}
+      {selectedApplicationId !== null ? <VolunteerApplicationDetailsModal application={details.application} error={modalError} isLoading={details.isLoading} isSubmitting={actions.isSubmitting || isReviewUpdating} isViewingCv={isViewingCv} onApprove={(reviewNote) => void completeReview("approve", reviewNote)} onClose={closeDetails} onReject={(reviewNote) => void completeReview("reject", reviewNote)} onViewCv={() => void viewCv()} /> : null}
     </main>
   );
 }

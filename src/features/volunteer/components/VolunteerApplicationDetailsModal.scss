@@ -160,3 +160,13 @@
     transform: rotate(360deg);
   }
 }
+
+.volunteer-details__action-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: volunteer-details-cv-spin 700ms linear infinite;
+}

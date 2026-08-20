@@ -119,11 +119,15 @@ export function useVolunteerApplicationDetails(applicationId: number | null) {
 export function useVolunteerApplicationActions() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
   const review = useCallback(async (applicationId: number, decision: "approve" | "reject", reviewNote: string) => {
+    if (isSubmittingRef.current) return false;
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true); setError(null);
     try { await reviewVolunteerApplication(applicationId, decision, reviewNote); return true; }
     catch (requestError) { setError(requestError instanceof Error ? requestError.message : ""); return false; }
-    finally { setIsSubmitting(false); }
+    finally { isSubmittingRef.current = false; setIsSubmitting(false); }
   }, []);
   const clearError = useCallback(() => setError(null), []);
   return { clearError, error, isSubmitting, review };

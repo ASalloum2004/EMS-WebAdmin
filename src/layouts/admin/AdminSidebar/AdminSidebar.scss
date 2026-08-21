@@ -44,12 +44,12 @@
   overflow-y: auto;
 }
 
-[data-theme="dark"] .admin-sidebar__nav {
+.admin-sidebar__nav {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-[data-theme="dark"] .admin-sidebar__nav::-webkit-scrollbar {
+.admin-sidebar__nav::-webkit-scrollbar {
   display: none;
 }
 

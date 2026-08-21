@@ -1,5 +1,7 @@
 import { useI18n } from "../../../../i18n";
+import { JobFilterCombobox } from "./JobFilterCombobox";
 import type {
+
   VisitorFilters,
   VisitorGenderFilter,
 } from "../../types";
@@ -46,12 +48,8 @@ export function VisitorFiltersPanel({
 
         <label className="visitor-filters-panel__field">
           <span>{t.visitor.filters.job}</span>
-          <input
-            onChange={(event) =>
-              onChange({ ...filters, job: event.target.value })
-            }
-            placeholder={t.visitor.filters.jobPlaceholder}
-            type="text"
+          <JobFilterCombobox
+            onChange={(job) => onChange({ ...filters, job })}
             value={filters.job}
           />
         </label>

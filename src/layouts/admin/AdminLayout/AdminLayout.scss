@@ -26,12 +26,12 @@
   overflow-x: hidden;
 }
 
-[data-theme="dark"] .admin-layout__main {
+.admin-layout__main {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-[data-theme="dark"] .admin-layout__main::-webkit-scrollbar {
+.admin-layout__main::-webkit-scrollbar {
   display: none;
 }
 

@@ -21,6 +21,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.booth-request-details-modal__actions--final-rejected {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .booth-request-details-modal__action {
   width: 100%;
   min-width: 0;
@@ -114,6 +118,10 @@
   .booth-request-details-modal__actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 14px 16px;
+  }
+
+  .booth-request-details-modal__actions--final-rejected {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

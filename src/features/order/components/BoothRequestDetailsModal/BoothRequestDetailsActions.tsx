@@ -57,7 +57,9 @@ export function BoothRequestDetailsActions({
     const statusLabel = t.order.status[requestStatus];
 
     return (
-      <footer className="booth-request-details-modal__actions booth-request-details-modal__actions--final">
+      <footer
+        className={`booth-request-details-modal__actions booth-request-details-modal__actions--final booth-request-details-modal__actions--final-${requestStatus}`}
+      >
         {isApproved ? (
           <button
             className="booth-request-details-modal__action booth-request-details-modal__action--cancel"

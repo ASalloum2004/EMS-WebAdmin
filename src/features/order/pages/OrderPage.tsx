@@ -155,9 +155,11 @@ export function OrderPage() {
   const boothRequestActions = useBoothRequestActions({
     approveConflictFallbackMessage: t.order.approveConflict.loadError,
     approveFallbackMessage: t.order.approveConfirmation.error,
-    onApproveSuccess: refreshAfterRequestAction,
+        onApproveSuccess: refreshAfterRequestAction,
     onRejectSuccess: refreshAfterRequestAction,
+    onCancelSuccess: refreshAfterRequestAction,
     rejectFallbackMessage: t.order.rejectConfirmation.error,
+
   });
   const refreshAfterEventRequestAction = useCallback(async () => {
     await Promise.all([
@@ -188,9 +190,11 @@ export function OrderPage() {
     approveFallbackMessage: t.order.eventRequests.approveConfirmation.error,
     invalidStatusMessage: t.order.eventRequests.actions.invalidStatus,
     onApproveSuccess: refreshAfterEventRequestAction,
-    onInvalidStatus: refreshAfterEventRequestAction,
+        onInvalidStatus: refreshAfterEventRequestAction,
     onRejectSuccess: refreshAfterEventRequestAction,
+    onCancelSuccess: refreshAfterEventRequestAction,
     rejectFallbackMessage: t.order.eventRequests.rejectConfirmation.error,
+
     selectedRequestId: selectedEventRequestId,
     selectedRequestStatus: eventRequestDetails.details?.status ?? null,
   });

@@ -21,6 +21,10 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.event-request-details-modal__actions.event-request-details-modal__actions--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .event-request-details-modal__action,
 .event-request-details-modal__final-status {
   width: 100%;
@@ -112,7 +116,14 @@
   color: var(--ems-color-status-negative-text);
 }
 
+.event-request-details-modal__final-status--cancelled {
+  border-color: var(--ems-color-border-soft);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
 .event-request-details-modal__final-status--unknown {
+
   border-color: var(--ems-color-border-soft);
   background-color: var(
     --ems-color-surface-strong,

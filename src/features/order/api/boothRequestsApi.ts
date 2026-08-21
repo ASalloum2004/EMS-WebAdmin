@@ -50,8 +50,10 @@ export function buildBoothRequestsPath(
 
   if (
     params.status === "pending" ||
-    params.status === "approved" ||
-    params.status === "rejected"
+        params.status === "approved" ||
+    params.status === "rejected" ||
+    params.status === "cancelled"
+
   ) {
     queryParams.set("filter[status]", params.status);
   }

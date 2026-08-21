@@ -56,7 +56,8 @@ export function EventRequestDetailsFooter({
   const statusModifier = getStatusModifier(status);
 
   return (
-    <footer className="event-request-details-modal__actions">
+        <footer className={`event-request-details-modal__actions ${statusModifier === "approved" ? "" : "event-request-details-modal__actions--single"}`}>
+
       {statusModifier === "approved" ? (
         <button
           className="event-request-details-modal__action event-request-details-modal__action--cancel"

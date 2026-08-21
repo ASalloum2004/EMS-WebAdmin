@@ -4,9 +4,11 @@ import {
   resolveApiMediaUrl,
 } from "../../../api";
 import type {
-  BoothRequestDetailsApiData,
+    BoothRequestDetailsApiData,
   BoothRequestDetailsResponse,
   BoothRequestService,
+  BoothRequestStatus,
+
 } from "../types";
 import { getTrimmedString } from "../utils/getTrimmedString";
 
@@ -188,7 +190,18 @@ function getGalleryImageUrl(value: unknown, depth = 0): string | null {
   return null;
 }
 
+function normalizeBoothRequestStatus(value: unknown): BoothRequestStatus {
+  const status = getTrimmedString(value).toLowerCase();
+
+  if (status === "cancelled") {
+    return "cancelled";
+  }
+
+  return status as BoothRequestStatus;
+}
+
 function normalizeCompanyGallery(gallery: unknown): string[] {
+
   if (!Array.isArray(gallery)) {
     return [];
   }
@@ -226,8 +239,10 @@ export function normalizeBoothRequestDetailsResponse(
   }
 
   return {
-    ...details,
+        ...details,
+    status: normalizeBoothRequestStatus(details.status),
     company: {
+
       ...details.company,
       business_sector: getTrimmedString(details.company.business_sector),
       description: getTrimmedString(details.company.description),

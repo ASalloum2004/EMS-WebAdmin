@@ -19,7 +19,9 @@ function normalizeBoothRequestStatus(
   if (
     normalizedStatus === "pending" ||
     normalizedStatus === "approved" ||
-    normalizedStatus === "rejected"
+    normalizedStatus === "rejected" ||
+    normalizedStatus === "cancelled"
+
   ) {
     return normalizedStatus;
   }
@@ -52,12 +54,14 @@ export function BoothRequestDetailsActions({
 }) {
   const requestStatus = normalizeBoothRequestStatus(requestDetails.status);
 
-  if (requestStatus === "approved" || requestStatus === "rejected") {
+    if (requestStatus === "approved" || requestStatus === "rejected" || requestStatus === "cancelled") {
+
     const isApproved = requestStatus === "approved";
     const statusLabel = t.order.status[requestStatus];
 
     return (
-      <footer className="booth-request-details-modal__actions booth-request-details-modal__actions--final">
+            <footer className={`booth-request-details-modal__actions ${isApproved ? "booth-request-details-modal__actions--final" : ""}`}>
+
         {isApproved ? (
           <button
             className="booth-request-details-modal__action booth-request-details-modal__action--cancel"
@@ -74,11 +78,8 @@ export function BoothRequestDetailsActions({
           className={`booth-request-details-modal__action booth-request-details-modal__action--state booth-request-details-modal__action--state-${requestStatus}`}
           role="status"
         >
-          {isApproved ? (
-            <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
-          ) : (
-            <RejectRequestIcon aria-hidden="true" size={18} strokeWidth={2} />
-          )}
+                    {isApproved ? <ApproveRequestIcon aria-hidden="true" size={18} strokeWidth={2} /> : requestStatus === "rejected" ? <RejectRequestIcon aria-hidden="true" size={18} strokeWidth={2} /> : null}
+
           {statusLabel}
         </div>
       </footer>

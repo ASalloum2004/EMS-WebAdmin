@@ -26,10 +26,16 @@ export function buildRejectBoothRequestPath(boothRequestId: number) {
   return `booths/requests/reject/${boothRequestId}`;
 }
 
-export function buildCancelBoothRequestPath(boothRequestId: number) {
-  validateBoothRequestId(boothRequestId);
+function validateBoothId(boothId: number) {
+  if (!Number.isFinite(boothId) || boothId < 1 || !Number.isInteger(boothId)) {
+    throw new Error("A valid booth ID is required.");
+  }
+}
 
-  return `booths/${boothRequestId}/cancel`;
+export function buildCancelBoothRequestPath(boothId: number) {
+  validateBoothId(boothId);
+
+  return `booths/${boothId}/cancel`;
 }
 
 function validatePage(page: number) {
@@ -213,10 +219,11 @@ export async function rejectBoothRequest(
 }
 
 export async function cancelBoothRequest(
-  boothRequestId: number,
+  boothId: number,
 ): Promise<BoothRequestActionResponse> {
   const response = await apiRequest<BoothRequestActionResponse>(
-    buildCancelBoothRequestPath(boothRequestId),
+    buildCancelBoothRequestPath(boothId),
+
     { method: "PATCH", requiresAuth: true },
   );
 

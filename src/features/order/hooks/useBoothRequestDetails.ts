@@ -58,12 +58,15 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
     latestRequestIdRef.current = requestId;
     activeRequestRef.current = controller;
 
-    setState({
+    setState((currentState) => ({
       boothRequestId: requestedId,
-      details: null,
+      details:
+        currentState.boothRequestId === requestedId
+          ? currentState.details
+          : null,
       error: "",
       isLoading: true,
-    });
+    }));
 
     try {
       const details = await getBoothRequestDetails(
@@ -101,15 +104,19 @@ export function useBoothRequestDetails(boothRequestId: number | null) {
           latestRequestIdRef.current,
         )
       ) {
-        setState({
+                setState((currentState) => ({
           boothRequestId: requestedId,
-          details: null,
+          details:
+            currentState.boothRequestId === requestedId
+              ? currentState.details
+              : null,
           error: getErrorMessage(
             requestError,
             "Unable to load booth request details.",
           ),
           isLoading: false,
-        });
+        }));
+
       }
 
       return null;

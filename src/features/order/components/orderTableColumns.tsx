@@ -7,7 +7,8 @@ import type {
 import { getTrimmedString } from "../utils/getTrimmedString";
 
 function isBoothRequestStatus(value: string): value is BoothRequestStatus {
-  return value === "pending" || value === "approved" || value === "rejected";
+    return value === "pending" || value === "approved" || value === "rejected" || value === "cancelled";
+
 }
 
 function renderStatus(request: BoothRequestApiData, t: I18nDictionary) {

@@ -4,7 +4,8 @@ import type { EventRequestUiItem } from "../../types";
 import { formatRequestDate } from "../orderTableColumns";
 import "./eventRequestTableColumns.scss";
 
-const knownStatuses = ["approved", "pending", "rejected"] as const;
+const knownStatuses = ["approved", "pending", "rejected", "cancelled"] as const;
+
 const knownTypes = ["conference", "lecture", "workshop", "other"] as const;
 
 type KnownStatus = (typeof knownStatuses)[number];

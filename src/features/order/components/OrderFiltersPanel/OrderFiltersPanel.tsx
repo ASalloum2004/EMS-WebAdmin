@@ -47,7 +47,9 @@ export function OrderFiltersPanel({
             <option value="">{t.order.filters.allStatuses}</option>
             <option value="pending">{t.order.status.pending}</option>
             <option value="approved">{t.order.status.approved}</option>
-            <option value="rejected">{t.order.status.rejected}</option>
+                        <option value="rejected">{t.order.status.rejected}</option>
+            <option value="cancelled">{t.order.status.cancelled}</option>
+
           </select>
         </label>
 

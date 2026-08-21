@@ -65,7 +65,8 @@ export interface BoothRequestDetailsModalProps {
     | Promise<ApproveBoothRequestResult | null>;
   onClearApproveError: () => void;
   onClearRejectError: () => void;
-  onCancel: (boothRequestId: number) => Promise<BoothRequestActionResponse | null> | BoothRequestActionResponse | null;
+    onCancel: (boothId: number) => Promise<BoothRequestActionResponse | null> | BoothRequestActionResponse | null;
+
   onClearCancelError: () => void;
   onClose: () => void;
   onCloseApproveConflict: () => void;
@@ -141,7 +142,8 @@ export function BoothRequestDetailsModal({
 
   const confirmCancel = useCallback(async () => {
     if (!details || details.status !== "approved" || isCancelling) return;
-    const response = await onCancel(details.id);
+        const response = await onCancel(details.booth_id);
+
     if (response) setIsCancelConfirmationOpen(false);
   }, [details, isCancelling, onCancel]);
   const isApproveConflictVisible = Boolean(

@@ -10,7 +10,8 @@ export interface UseCancelBoothRequestOptions {
 }
 
 export interface UseCancelBoothRequestResult {
-  cancelBoothRequestById: (boothRequestId: number) => Promise<BoothRequestActionResponse | null>;
+    cancelBoothRequestById: (boothId: number) => Promise<BoothRequestActionResponse | null>;
+
   cancelError: string;
   clearCancelError: () => void;
   isCancelling: boolean;
@@ -35,13 +36,14 @@ export function useCancelBoothRequest({
     };
   }, []);
 
-  const cancelBoothRequestById = useCallback(async (boothRequestId: number) => {
+    const cancelBoothRequestById = useCallback(async (boothId: number) => {
     if (!isMountedRef.current || isCancellingRef.current || !acquireMutation()) return null;
     isCancellingRef.current = true;
     setCancelError("");
     setIsCancelling(true);
     try {
-      const response = await cancelBoothRequest(boothRequestId);
+      const response = await cancelBoothRequest(boothId);
+
       if (!isMountedRef.current) return null;
       await onCancelSuccess?.();
       return isMountedRef.current ? response : null;

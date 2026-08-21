@@ -110,11 +110,22 @@
   color: var(--ems-color-status-negative-text);
 }
 
+.booth-request-details-modal__action--state-cancelled {
+  border-color: var(--ems-color-border-soft);
+  background-color: var(--ems-color-surface-strong, var(--ems-color-surface));
+  color: var(--ems-color-muted);
+}
+
 @media (max-width: 640px) {
-  .booth-request-details-modal__actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    .booth-request-details-modal__actions {
     padding: 14px 16px;
   }
+
+  .booth-request-details-modal__actions--pending,
+  .booth-request-details-modal__actions--final {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
 }
 
 [dir="rtl"] .booth-request-details-modal__action {

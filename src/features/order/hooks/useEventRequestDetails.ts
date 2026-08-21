@@ -64,12 +64,15 @@ export function useEventRequestDetails(
       latestRequestIdRef.current = requestId;
       activeRequestRef.current = controller;
 
-      setState({
-        details: null,
+      setState((currentState) => ({
+        details:
+          currentState.eventRequestId === requestedId
+            ? currentState.details
+            : null,
         error: "",
         eventRequestId: requestedId,
         isLoading: true,
-      });
+      }));
 
       try {
         const details = await getEventRequestDetails(
@@ -107,12 +110,16 @@ export function useEventRequestDetails(
             latestRequestIdRef.current,
           )
         ) {
-          setState({
-            details: null,
+                    setState((currentState) => ({
+            details:
+              currentState.eventRequestId === requestedId
+                ? currentState.details
+                : null,
             error: getErrorMessage(requestError, errorFallback),
             eventRequestId: requestedId,
             isLoading: false,
-          });
+          }));
+
         }
 
         return null;

@@ -30,7 +30,7 @@ export function CompanyPage() {
   const companyDetails = useCompanyDetails(t.company.details.loadError);
   const managerDirectory = useManagerDirectory(
     t.company.manager.summary.loadError,
-    activeView === "manager",
+    true,
   );
   const selectedCompany = companiesState.companies.find(
     (company) => company.id === companyDetails.selectedCompanyId,
@@ -78,28 +78,23 @@ export function CompanyPage() {
           <p>{t.company.description}</p>
         </header>
 
-        {activeView === "manager" ? (
-          <>
-            <ManagerSummaryCards
-              directory={managerDirectory.directory}
-              isLoading={managerDirectory.isLoading}
-            />
+        <ManagerSummaryCards
+          directory={managerDirectory.directory}
+          isLoading={managerDirectory.isLoading}
+        />
 
-            {managerDirectory.error ? (
-              <div className="company-page__state" role="alert">
-                <p>
-                  {managerDirectory.error ||
-                    t.company.manager.summary.loadError}
-                </p>
-                <button
-                  onClick={() => void managerDirectory.refetch()}
-                  type="button"
-                >
-                  {t.common.tryAgain}
-                </button>
-              </div>
-            ) : null}
-          </>
+        {activeView === "manager" && managerDirectory.error ? (
+          <div className="company-page__state" role="alert">
+            <p>
+              {managerDirectory.error || t.company.manager.summary.loadError}
+            </p>
+            <button
+              onClick={() => void managerDirectory.refetch()}
+              type="button"
+            >
+              {t.common.tryAgain}
+            </button>
+          </div>
         ) : null}
 
         <CompanyViewTabs

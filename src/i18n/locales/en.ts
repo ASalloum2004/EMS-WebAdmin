@@ -1162,6 +1162,7 @@ export const en = {
       totalVisitors: "Total Visitors",
       companies: "Companies",
       openReports: "Open Reports",
+      thisDay: "this day",
       thisWeek: "this week",
       allocated: "allocated",
       available: "available",

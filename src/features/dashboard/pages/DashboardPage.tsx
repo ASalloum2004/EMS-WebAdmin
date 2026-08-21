@@ -135,15 +135,7 @@ export function DashboardPage() {
       }),
     [language],
   );
-  const periodFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(language === "ar" ? "ar-SY" : "en-US", {
-        style: "unit",
-        unit: "day",
-        unitDisplay: "long",
-      }),
-    [language],
-  );
+  
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(language === "ar" ? "ar-SY" : "en-US", {
@@ -294,7 +286,7 @@ export function DashboardPage() {
                 {summaryCard.periodValue !== undefined &&
                 summaryCard.periodDays !== undefined ? (
                   <p className="dashboard-page__summary-detail">
-                    {numberFormatter.format(summaryCard.periodValue)} · {periodFormatter.format(summaryCard.periodDays)}
+                    {numberFormatter.format(summaryCard.periodValue)} · {t.dashboard.summary.thisDay}
                   </p>
                 ) : null}
 

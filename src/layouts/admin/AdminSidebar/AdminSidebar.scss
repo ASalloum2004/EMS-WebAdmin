@@ -6,7 +6,7 @@
   flex: 0 0 240px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   background-color: var(--ems-color-sidebar-background, var(--ems-color-white));
   border-inline-end: 1px solid var(--ems-color-admin-sidebar-border);
 }
@@ -44,7 +44,17 @@
   overflow-y: auto;
 }
 
+[data-theme="dark"] .admin-sidebar__nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-theme="dark"] .admin-sidebar__nav::-webkit-scrollbar {
+  display: none;
+}
+
 .admin-sidebar__link {
+
   width: 100%;
   min-height: 40px;
   display: flex;

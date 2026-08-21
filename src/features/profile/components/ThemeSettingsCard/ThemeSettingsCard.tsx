@@ -1,5 +1,6 @@
 import { Card } from "../../../../components";
 import { useTheme } from "../../../../context";
+import { useI18n } from "../../../../i18n";
 import { darkModeIcon, lightModeIcon } from "../../../../assets/Profile";
 import "./ThemeSettingsCard.scss";
 
@@ -10,14 +11,15 @@ function getOptionClassName(isActive: boolean) {
 }
 
 export function ThemeSettingsCard() {
+  const { t } = useI18n();
   const { isDarkMode, setTheme, theme } = useTheme();
 
   return (
-    <Card className="theme-settings-card" title="Choose Theme">
+    <Card className="theme-settings-card" title={t.profile.theme}>
       <div
         className="theme-settings-card__toggle"
         role="group"
-        aria-label="Choose theme"
+        aria-label={t.profile.theme}
       >
         <button
           type="button"
@@ -31,7 +33,7 @@ export function ThemeSettingsCard() {
             alt=""
             aria-hidden="true"
           />
-          <span>Light</span>
+          <span>{t.profile.lightTheme}</span>
         </button>
 
         <button
@@ -46,7 +48,7 @@ export function ThemeSettingsCard() {
             alt=""
             aria-hidden="true"
           />
-          <span>Dark</span>
+          <span>{t.profile.darkTheme}</span>
         </button>
       </div>
     </Card>

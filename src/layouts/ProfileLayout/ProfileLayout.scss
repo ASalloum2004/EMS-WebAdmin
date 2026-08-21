@@ -29,3 +29,7 @@
   flex-direction: column;
   gap: 32px;
 }
+
+[dir="rtl"] .profile-layout .card__header {
+  justify-content: flex-start;
+}
